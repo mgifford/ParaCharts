@@ -6,15 +6,35 @@ Each example includes:
 - A realistic manifest you can copy and adapt
 - Suggested interpretation prompts for teaching, QA, or onboarding
 - A brief "when to use" note
+- Data source and refresh notes for monthly updates
+
+All manifests in this gallery are refreshed monthly from third-party public sources, as long as those sources continue publishing compatible data.
 
 ## Gallery Index
 
-1. [Column Unemployment Example (Greece)](example-bar-comparison.md)
-2. [Line Trend Example (Vietnam Median Age)](example-line-trend.md)
-3. [Multi-Line Sector Comparison Example (China GDP)](example-multiline-crossover.md)
-4. [Multi-Line Inflation Comparison Example (EU vs Euro Area)](example-scatter-clusters.md)
-5. [Single-Line Unemployment Example (Spain)](example-heatmap-weekly.md)
-6. [Donut Energy Composition Example](example-donut-budget.md)
+1. [Column Unemployment Example (United States, Monthly)](example-bar-comparison.md)
+2. [Line Trend Example (U.S. Median Age)](example-line-trend.md)
+3. [Multi-Line Sector Comparison Example (U.S. GDP by Industry)](example-multiline-crossover.md)
+4. [Multi-Line Inflation Comparison Example (EU vs United States)](example-scatter-clusters.md)
+5. [Single-Line Unemployment Example (United States, 10-Year)](example-heatmap-weekly.md)
+6. [Donut Energy Composition Example (U.S. Electricity)](example-donut-budget.md)
+
+## Data Sources And Refresh Policy
+
+- Data is pulled from BLS, U.S. Census, BEA, Eurostat, FRED, and EIA.
+- Cached manifests are refreshed monthly via GitHub Actions.
+- Existing cached data is retained until replacement data is downloaded and validated.
+- Availability depends on third-party publication schedules and endpoint stability.
+
+## TODO Next Live Examples
+
+- Add a monthly scatter example for inflation vs unemployment relationship analysis.
+- Add a monthly heatmap example for hourly or day-by-hour patterns.
+- Add a monthly waterfall example for contribution-to-change storytelling.
+- Add a monthly stepline example for policy threshold/rate changes.
+- Add a monthly lollipop example for ranked movers.
+- Add a monthly venn example for overlap-based summaries.
+- Evaluate and wire histogram runtime support before adding histogram live demos.
 
 ## How To Use This In Demos
 

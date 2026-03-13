@@ -50,12 +50,14 @@ Suggested adaptation for this repository:
 
 Current implementation in this repo:
 - [Example Gallery](exampleGallery.md)
-- [Column Unemployment Example (Greece)](example-bar-comparison.md)
-- [Line Trend Example (Vietnam Median Age)](example-line-trend.md)
-- [Multi-Line Sector Comparison Example (China GDP)](example-multiline-crossover.md)
-- [Multi-Line Inflation Comparison Example (EU vs Euro Area)](example-scatter-clusters.md)
-- [Single-Line Unemployment Example (Spain)](example-heatmap-weekly.md)
-- [Donut Energy Composition Example](example-donut-budget.md)
+- [Column Unemployment Example (United States, Monthly)](example-bar-comparison.md)
+- [Line Trend Example (U.S. Median Age)](example-line-trend.md)
+- [Multi-Line Sector Comparison Example (U.S. GDP by Industry)](example-multiline-crossover.md)
+- [Multi-Line Inflation Comparison Example (EU vs United States)](example-scatter-clusters.md)
+- [Single-Line Unemployment Example (United States, 10-Year)](example-heatmap-weekly.md)
+- [Donut Energy Composition Example (U.S. Electricity)](example-donut-budget.md)
+
+These pages use cached manifests that are refreshed monthly from third-party public sources when updated values are available.
 
 ## What Usually Needs More Than Pages
 

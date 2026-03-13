@@ -6,13 +6,17 @@
 
 <script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
 
-<iframe src="https://fizzstudio.github.io/ParaCharts-demo/preview/?manifesturl=https%3A%2F%2Fraw.githubusercontent.com%2Fmgifford%2FParaCharts%2Fmain%2Fdocs%2Fdata%2Fmanifests%2Fus-unemployment-monthly.json" title="Reference preview: U.S. monthly unemployment chart" style="display:block; width:100%; min-height: 32rem; border: 1px solid #d0d7de; margin: 0.75rem 0;" loading="lazy"></iframe>
-
-If the component preview does not load in your browser, open this fallback demo page: [ParaCharts preview for this live manifest](https://fizzstudio.github.io/ParaCharts-demo/preview/?manifesturl=https%3A%2F%2Fraw.githubusercontent.com%2Fmgifford%2FParaCharts%2Fmain%2Fdocs%2Fdata%2Fmanifests%2Fus-unemployment-monthly.json)
+Concept reference from Fizz Studio demo: [ParaCharts demo bar chart](https://fizzstudio.github.io/ParaCharts-demo/charts/bar.html)
 
 ## Scenario
 
 Track the U.S. unemployment rate across the most recent 12 published months.
+
+## Data Source And Refresh
+
+- Source: BLS public API series `LNS14000000`.
+- Refresh cadence: Monthly via GitHub Actions cache update workflow.
+- Data continuity: This page will continue updating while BLS publishes compatible data.
 
 ## When To Use
 
