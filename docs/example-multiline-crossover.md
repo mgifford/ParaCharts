@@ -6,6 +6,8 @@
 
 <script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
 
+<iframe src="https://fizzstudio.github.io/ParaCharts-demo/charts/line-multi-1.html" title="Reference preview: multi-line sector chart" style="display:block; width:100%; min-height: 32rem; border: 1px solid #d0d7de; margin: 0.75rem 0;" loading="lazy"></iframe>
+
 If the component preview does not load in your browser, open this fallback demo page: [ParaCharts demo multi-line chart](https://fizzstudio.github.io/ParaCharts-demo/charts/line-multi-1.html)
 
 ## Scenario
