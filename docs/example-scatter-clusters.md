@@ -1,53 +1,32 @@
-# Scatter Clusters Example
+# Multi-Line Inflation Comparison Example (EU vs Euro Area)
 
 ## Live Preview
 
-<para-chart id="scatter-clusters-live" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
+<para-chart manifest="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/data/manifests/line-multi-manifest-76.json" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
 <script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
-<script>
-  (function () {
-    const el = document.getElementById('scatter-clusters-live');
-    if (!el) return;
-    el.manifestType = 'content';
-    el.manifest = JSON.stringify({
-      type: 'scatter',
-      series: [
-        { name: 'Cohort A', data: [[2, 55], [3, 58], [4, 62], [5, 66], [6, 70]] },
-        { name: 'Cohort B', data: [[2, 48], [3, 52], [4, 55], [5, 59], [6, 63]] },
-        { name: 'Cohort C', data: [[2, 68], [3, 71], [4, 74], [5, 78], [6, 81]] }
-      ],
-      description: 'Study hours vs score by cohort'
-    });
-  })();
-</script>
 
-If the component preview does not load in your browser, open this fallback demo page: [ParaCharts demo chart list](https://fizzstudio.github.io/ParaCharts-demo/)
+If the component preview does not load in your browser, open this fallback demo page: [ParaCharts demo multi-line chart](https://fizzstudio.github.io/ParaCharts-demo/charts/line-multi-2.html)
 
 ## Scenario
 
-Analyze relationship between study hours and test score for three cohorts.
+Compare inflation rate movement between the EU and Euro area in 2024.
 
 ## When To Use
 
-Use a scatter chart when you need to inspect spread, clusters, and outliers rather than only averages.
+Use a multi-line chart when two correlated indicators must be tracked across the same timeline.
 
 ## Manifest
 
-```json
-{
-  "type": "scatter",
-  "series": [
-    { "name": "Cohort A", "data": [[2, 55], [3, 58], [4, 62], [5, 66], [6, 70]] },
-    { "name": "Cohort B", "data": [[2, 48], [3, 52], [4, 55], [5, 59], [6, 63]] },
-    { "name": "Cohort C", "data": [[2, 68], [3, 71], [4, 74], [5, 78], [6, 81]] }
-  ],
-  "description": "Study hours vs score by cohort"
-}
+```html
+<para-chart manifest="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/data/manifests/line-multi-manifest-76.json"></para-chart>
 ```
+
+Full manifest (JSON):
+- https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/data/manifests/line-multi-manifest-76.json
 
 ## Interpretation Prompts
 
-1. Which cohort appears to have the highest baseline performance?
-2. Is there a positive relationship between study hours and score in all cohorts?
-3. Do you see any outlier points that break the pattern?
+1. Which line starts higher?
+2. Do the lines remain close or diverge through the year?
+3. Which line ends higher at the final point?

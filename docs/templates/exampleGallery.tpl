@@ -9,12 +9,12 @@ Each example includes:
 
 ## Gallery Index
 
-1. [Bar Comparison Example](example-bar-comparison.md)
-2. [Line Trend Example](example-line-trend.md)
-3. [Multi-Line Crossover Example](example-multiline-crossover.md)
-4. [Scatter Clusters Example](example-scatter-clusters.md)
-5. [Heatmap Weekly Pattern Example](example-heatmap-weekly.md)
-6. [Donut Budget Share Example](example-donut-budget.md)
+1. [Column Unemployment Example (Greece)](example-bar-comparison.md)
+2. [Line Trend Example (Vietnam Median Age)](example-line-trend.md)
+3. [Multi-Line Sector Comparison Example (China GDP)](example-multiline-crossover.md)
+4. [Multi-Line Inflation Comparison Example (EU vs Euro Area)](example-scatter-clusters.md)
+5. [Single-Line Unemployment Example (Spain)](example-heatmap-weekly.md)
+6. [Donut Energy Composition Example](example-donut-budget.md)
 
 ## How To Use This In Demos
 
