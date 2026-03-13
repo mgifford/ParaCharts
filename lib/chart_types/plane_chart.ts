@@ -369,8 +369,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   protected _canCreateSequenceNavNodes(): boolean {
-    return !!this._navMap && Object.keys(this._paraState.seriesAnalyses).length === this._paraState.model!.seriesKeys.length
-      && !!this._paraState.seriesAnalyses[this._paraState.model!.seriesKeys[0]];
+    return !!this._navMap
+      && Object.keys(this._paraState.seriesAnalyses).length === this._paraState.model!.seriesKeys.length
+      && this._paraState.model!.seriesKeys.every(seriesKey => !!this._paraState.seriesAnalyses[seriesKey]);
   }
 
   protected _createSequenceNavNodes() {

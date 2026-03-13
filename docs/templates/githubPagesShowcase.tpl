@@ -53,7 +53,7 @@ Current implementation in this repo:
 - [Column Unemployment Example (United States, Monthly)](example-bar-comparison.md)
 - [Line Trend Example (U.S. Median Age)](example-line-trend.md)
 - [Multi-Line Sector Comparison Example (U.S. GDP by Industry)](example-multiline-crossover.md)
-- [Multi-Line Inflation Comparison Example (EU vs United States)](example-scatter-clusters.md)
+- [Scatter Clusters Example (Old Faithful Geyser Eruptions)](example-scatter-clusters.md)
 - [Single-Line Unemployment Example (United States, 10-Year)](example-heatmap-weekly.md)
 - [Donut Energy Composition Example (U.S. Electricity)](example-donut-budget.md)
 - [Scatter Live Macro Relationship (U.S. Unemployment vs Inflation)](example-scatter-macro-live.md)

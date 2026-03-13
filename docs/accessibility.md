@@ -1,49 +1,89 @@
 # Accessibility Features
 
-ParaCharts is designed with accessibility at its core. This page explains the practical controls users can use to make charts easier to perceive and navigate.
+ParaCharts is designed to provide equivalent insight across multiple interaction modes. This page explains the core disability-related affordances, how each one helps, and how to test that it is functioning.
 
-## What you can do (quick)
+## Quick Controls
 
-- Enable/disable sonification: press `s` when the chart is focused.
-- Toggle self-voicing (text-to-speech): press `v` when the chart is focused.
-- Query a focused point for a detailed description: press `Q`.
-- Access the latest AI-generated summary in the ARIA live region (announced automatically when updated).
+- Toggle sonification: `s`
+- Toggle self-voicing: `v`
+- Query focused data detail: `q`
+- Open keyboard help: `h`
+- Stop speech/audio playback: `Ctrl` or `Escape`
 
-## Screen reader behavior
+For the full keyboard map, see [Shortcuts & Commands](shortcutsAndCommands.md).
 
-ParaCharts provides semantic markup and ARIA attributes so screen readers can announce chart summaries, updates, and focused points. When a chart or element is focused, the chart updates an ARIA live region with a short description.
+## Affordance Matrix
 
-Practical tips:
+| User need | ParaCharts affordance | Practical result | How to verify |
+| :--- | :--- | :--- | :--- |
+| Cannot use a mouse | Full keyboard navigation across chart and datapoints | Users can explore trend and value detail without pointer input | Focus chart, use arrow keys, confirm point traversal and status updates |
+| Blind or low-vision screen reader users | ARIA live summaries and query announcements | High-level and point-level chart meaning can be heard | Focus chart, trigger `q`, confirm spoken/announced data description |
+| Users who benefit from non-visual trend cues | Sonification mode | Relative value movement is perceivable through sound | Toggle `s`, traverse points, confirm pitch/motion mapping |
+| Users who need built-in speech output | Self-voicing mode | Chart summaries can be spoken without external setup | Toggle `v`, trigger summary/query, confirm browser speech output |
+| Users with color-vision differences | Color controls and non-color cues | Distinctions remain interpretable beyond hue alone | Change palette/color mode in control panel and confirm readability |
+| Users with cognitive load constraints | Query/summary shortcuts and focused prompts | Key insights are available in concise, structured text/speech | Use `q` and compare output to chart context |
 
-- If you want a quick overview, focus the chart and wait for the AI summary to be announced.
-- To hear details for a data point, focus the point and press `Q`.
-- If announcements are too frequent, toggle self-voicing off or reduce live-region verbosity in your app settings.
+## Manual Test Script (10-15 Minutes)
 
-## Sonification (audio representation of data)
+Run this script on any page from [Example Gallery](exampleGallery.md):
 
-Sonification translates data values into sound to give an immediate sense of trends and outliers.
+1. Keyboard-only navigation
+	- Focus the chart.
+	- Press arrow keys to move point-by-point.
+	- Expected: the focus target changes and the currently focused datapoint context updates.
 
-How to use it:
+2. Query behavior
+	- Press `q` while a datapoint is focused.
+	- Expected: a meaningful datapoint description is produced.
 
-- Focus the chart and press `s` to toggle sonification mode.
-- Use the arrow keys to step through points and hear their values.
-- From the start of the series, press the left arrow to play points in sequence.
+3. Sonification
+	- Press `s` to enable sonification.
+	- Move across several points.
+	- Expected: audible changes track value movement.
 
-What to expect:
+4. Self-voicing
+	- Press `v` to enable speech mode.
+	- Trigger a query and move focus.
+	- Expected: spoken output reflects updates.
 
-- Pitch generally maps to value (higher = higher pitch).
-- Additional audio cues may indicate series boundaries or outliers.
+5. Screen-reader/announcement check
+	- With a screen reader active, focus chart and query.
+	- Expected: chart summary and point details are announced in a usable order.
 
-## Self-voicing and AI descriptions
+6. Control-panel parity
+	- Open Audio and related tabs in control panel.
+	- Toggle the same features there.
+	- Expected: control panel toggles match keyboard command outcomes.
 
-Self-voicing mode uses the browser's speech synthesis to read chart announcements and AI summaries automatically.
+## Implementation Notes For Accessible Outcomes
 
-- Toggle: press `v` while the chart is focused.
-- While enabled, AI summaries and important announcements are spoken automatically.
-- For a point-level description, focus the point and press `Q` to request more detail.
+- Always provide clear chart titles and descriptions in manifests.
+- Keep facet labels explicit (units, time period, measure).
+- Avoid encoding critical distinctions by color only.
+- Preserve keyboard focusability wherever charts are embedded.
+- Prefer local cached manifests for predictable behavior on static hosting.
 
-## Troubleshooting (audio & screen reader)
+## Troubleshooting
 
-- No sound: ensure your device volume and browser audio permissions are enabled.
-- Announcements not heard: check that a screen reader or self-voicing mode is active and the browser focus is on the chart.
-- Sonification too fast/slow: look for playback speed controls in the control panel (or use keyboard shortcuts if provided).
+- No audio output:
+  - Check system volume and browser audio permissions.
+  - Verify sonification is enabled with `s`.
+
+- No spoken announcements:
+  - Ensure focus is on the chart.
+  - Toggle self-voicing with `v`.
+  - If using a screen reader, confirm live-region announcements are not muted.
+
+- Keyboard commands not responding:
+  - Click the chart once to ensure focus is inside the component.
+  - Use `h` to confirm help dialog and active shortcut scope.
+
+## Acceptance Criteria
+
+Treat accessibility as passing only when all are true:
+
+1. Keyboard-only exploration works end-to-end.
+2. Query output provides understandable point-level context.
+3. Sonification and self-voicing toggles both function.
+4. Screen-reader announcements occur with meaningful content.
+5. Chart meaning remains interpretable without relying on color alone.

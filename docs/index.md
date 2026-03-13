@@ -6,15 +6,23 @@ This site contains information on how to get the most out of ParaCharts as an en
 ## Start Here
 
 - [Getting Started](gettingStarted.md): what ParaCharts does, how it works, and a minimal first integration.
+- [Implementation & Testing Guide](implementationAndTesting.md): how to add charts, wire monthly live data updates, and validate accessibility behavior.
 - [GitHub Pages Showcase](githubPagesShowcase.md): what can be effectively demonstrated on GitHub Pages and how to use GitHub workflows and Copilot around it.
-- [Example Gallery](exampleGallery.md): six concrete chart pages with copyable manifests and interpretation prompts.
+- [Example Gallery](exampleGallery.md): live chart examples with copyable manifests and interpretation prompts.
 
 ## User Guide
 
 - [Chart Types](chartTypes.md): overview of chart types.
 - [Control Panel & Settings](controlPanel.md): quick guide to the control panel tabs and common settings.
 - [Shortcuts & Commands](shortcutsAndCommands.md): full keyboard reference and flows.
-- [Accessibility Features](accessibility.md): sonification, screen reader behavior, and AI summaries.
+- [Accessibility Features](accessibility.md): disability-focused affordances, expected outcomes, and testing steps.
+
+## Quick Workflow
+
+1. Start with [Getting Started](gettingStarted.md) and load one manifest.
+2. Use [Implementation & Testing Guide](implementationAndTesting.md) to add a page or data source.
+3. Validate behavior using the accessibility test matrix in [Accessibility Features](accessibility.md).
+4. Compare your output to the live patterns in [Example Gallery](exampleGallery.md).
 
 ## Developer Guide
 

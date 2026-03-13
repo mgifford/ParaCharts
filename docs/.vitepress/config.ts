@@ -9,6 +9,7 @@ export default defineConfig({
     nav: [
       { text: 'Docs', link: '/index' },
       { text: 'Getting Started', link: '/gettingStarted' },
+      { text: 'Implement & Test', link: '/implementationAndTesting' },
       { text: 'Examples', link: '/exampleGallery' },
       { text: 'API', link: '/chartTypes' }
     ],
@@ -19,6 +20,7 @@ export default defineConfig({
           items: [
             { text: 'Introduction', link: '/index' },
             { text: 'Getting Started', link: '/gettingStarted' },
+            { text: 'Implementation & Testing', link: '/implementationAndTesting' },
             { text: 'GitHub Pages Showcase', link: '/githubPagesShowcase' }
           ]
         },

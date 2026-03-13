@@ -201,7 +201,10 @@ export class PopupLayer extends PlotLayer {
             const leftDPView = datapointViews[(datapointViews.length - 1) / 2];
             y = leftDPView.y;
         }
-        const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey]!;
+        const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey];
+        if (!seriesAnalysis) {
+            return [];
+        }
         const index = seriesAnalysis.sequences.findIndex(s => s.start === datapointViews[0].index && s.end - 1 === datapointViews[datapointViews.length - 1].index);
         const labels = this.paraview.paraState.model!.series[0].datapoints.map(
             (p) => formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType('horizTick'))
@@ -259,7 +262,7 @@ export class PopupLayer extends PlotLayer {
             const leftDPView = datapointViews[(datapointViews.length - 1) / 2];
             y = leftDPView.y;
         }
-        const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey]!;
+        const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey] ?? null;
         const labels = this.paraview.paraState.model!.series[0].datapoints.map(
             (p) => formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType('horizTick'))
         );

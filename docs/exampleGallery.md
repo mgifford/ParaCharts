@@ -15,7 +15,7 @@ All manifests in this gallery are refreshed monthly from third-party public sour
 1. [Column Unemployment Example (United States, Monthly)](example-bar-comparison.md)
 2. [Line Trend Example (U.S. Median Age)](example-line-trend.md)
 3. [Multi-Line Sector Comparison Example (U.S. GDP by Industry)](example-multiline-crossover.md)
-4. [Multi-Line Inflation Comparison Example (EU vs United States)](example-scatter-clusters.md)
+4. [Scatter Clusters Example (Old Faithful Geyser Eruptions)](example-scatter-clusters.md)
 5. [Single-Line Unemployment Example (United States, 10-Year)](example-heatmap-weekly.md)
 6. [Donut Energy Composition Example (U.S. Electricity)](example-donut-budget.md)
 7. [Scatter Live Macro Relationship (U.S. Unemployment vs Inflation)](example-scatter-macro-live.md)

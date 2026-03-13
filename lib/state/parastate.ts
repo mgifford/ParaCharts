@@ -260,6 +260,28 @@ export class ParaState extends BaseState {
     return this._jimerator;
   }
 
+  protected async _getSeriesAnalysis(seriesKey: string): Promise<SeriesAnalysis | null> {
+    if (!(this._model instanceof PlaneModel)) {
+      return null;
+    }
+    try {
+      return await this._model.getSeriesAnalysis(seriesKey);
+    } catch (error) {
+      this.log.warn(
+        `Series analysis failed for '${seriesKey}': ${error instanceof Error ? error.message : String(error)}`
+      );
+      return null;
+    }
+  }
+
+  protected async _refreshSeriesAnalysis(seriesKey: string): Promise<void> {
+    const analysis = await this._getSeriesAnalysis(seriesKey);
+    this.seriesAnalyses = {
+      [seriesKey]: analysis,
+      ...this.seriesAnalyses
+    };
+  }
+
   get seriesProperties() {
     return this._seriesProperties;
   }
@@ -366,11 +388,8 @@ export class ParaState extends BaseState {
       throw new Error('store lacks external or inline chart data');
     }
     if (this._model instanceof PlaneModel) {
-      this._model.seriesKeys.forEach(async (seriesKey) => {
-        this.seriesAnalyses = {
-          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey),
-          ...this.seriesAnalyses
-        };
+      this._model.seriesKeys.forEach((seriesKey) => {
+        void this._refreshSeriesAnalysis(seriesKey);
       });
     }
     this.postNotice('paranotice', {key: 'manifestSet'});
@@ -679,14 +698,10 @@ export class ParaState extends BaseState {
         let seriesKey: string;
         if (this.visitedDatapoints.size > 0) {
           seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
-          seriesAnalysis = this.model
-            ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
-            : undefined;
+          seriesAnalysis = await this._getSeriesAnalysis(seriesKey) ?? undefined;
         } else {
           seriesKey = this.model!.series[0][0].seriesKey;
-          seriesAnalysis = this.model
-            ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
-            : undefined;
+          seriesAnalysis = await this._getSeriesAnalysis(seriesKey) ?? undefined;
         };
         if (!seriesAnalysis) {
           this.log.info("This chart does not support AI trend annotations")
@@ -741,14 +756,10 @@ export class ParaState extends BaseState {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.size > 0) {
       seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
-      seriesAnalysis = this.model
-        ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
-        : null;
+      seriesAnalysis = await this._getSeriesAnalysis(seriesKey);
     } else {
       seriesKey = this.model!.series[0][0].seriesKey;
-      seriesAnalysis = this.model
-        ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
-        : null;
+      seriesAnalysis = await this._getSeriesAnalysis(seriesKey);
     }
     const length = this.model!.series[0].length - 1;
     let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);

@@ -1,38 +1,36 @@
-# Multi-Line Inflation Comparison Example (EU vs United States)
+# Scatter Clusters Example (Old Faithful Geyser Eruptions)
 
-## Live Preview
+## Preview
 
-<para-chart manifest="data/manifests/us-eu-inflation.json" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
+<img src="assets/scatter.svg" alt="Scatter chart of Old Faithful geyser eruptions showing clustered groups by eruption duration and time since last eruption." style="display:block; width:100%; max-width: 52rem; margin: 0.75rem 0;" />
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
-
-Concept reference from Fizz Studio demo: [ParaCharts demo multi-line chart](https://fizzstudio.github.io/ParaCharts-demo/charts/line-multi-2.html)
+This page uses a checked-in ParaCharts SVG artifact for now. The previous page content was a mislabeled line-chart example that pulled a stale external demo bundle and failed before render on GitHub Pages.
 
 ## Scenario
 
-Compare monthly inflation rates between the EU aggregate and the United States.
+Explore how Old Faithful eruption duration relates to the waiting time before the next eruption, and identify the visible clusters in those observations.
 
 ## Data Source And Refresh
 
-- Sources: Eurostat `prc_hicp_manr` and FRED `CPIAUCSL`.
-- Refresh cadence: Monthly via GitHub Actions cache update workflow.
-- Data continuity: This page will continue updating while Eurostat and FRED publish compatible data.
+- Source: Old Faithful geyser eruptions sample dataset used in ParaCharts demos.
+- Structure: One scatter series with eruption duration on the x-axis and waiting time on the y-axis.
+- Refresh cadence: Static reference dataset.
 
 ## When To Use
 
-Use a multi-line chart when two correlated indicators must be tracked across the same timeline.
+Use a scatter chart when the question is about clustering, separation, or outliers between two numeric variables.
 
-## Manifest
+## Asset
 
 ```html
-<para-chart manifest="data/manifests/us-eu-inflation.json"></para-chart>
+<img src="assets/scatter.svg" alt="Old Faithful clustered scatter chart" />
 ```
 
-Full manifest (JSON):
-- https://raw.githubusercontent.com/mgifford/ParaCharts/main/docs/data/manifests/us-eu-inflation.json
+The checked-in SVG is at:
+- https://raw.githubusercontent.com/mgifford/ParaCharts/main/docs/assets/scatter.svg
 
 ## Interpretation Prompts
 
-1. Which economy starts with higher year-over-year inflation in the visible range?
-2. Do the two lines converge or separate during disinflation periods?
-3. Which economy has the higher latest reading?
+1. Do the points separate into distinct eruption patterns, or form a single continuous cloud?
+2. Which cluster appears to contain the longest waiting times?
+3. Are there points that sit clearly outside the main groups?

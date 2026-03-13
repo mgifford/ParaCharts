@@ -1,6 +1,6 @@
 # Getting Started
 
-This page gives you the shortest path to understanding ParaCharts: what it is, how it works, and which options matter first.
+This page gives you the shortest path to understanding ParaCharts: what it is, how it works, how to implement it, and how to verify what it provides users.
 
 ## What ParaCharts Solves
 
@@ -21,6 +21,21 @@ Use this mental model:
 3. ParaCharts renders the chart and accessibility semantics.
 4. Users explore via pointer, keyboard, screen reader, or audio.
 5. Optional controls adjust appearance, behavior, and analysis.
+
+## Choose An Implementation Mode
+
+Use one of these integration modes:
+
+1. Inline manifest (`manifestType="content"`): fastest for prototypes and experiments.
+2. URL manifest (`manifestType="url"`): best for production pages and reproducible docs.
+3. Cached live manifests: best for GitHub Pages with scheduled monthly data refresh.
+
+For this repository, the standard live-data flow is:
+
+1. Fetch third-party source data.
+2. Build validated local manifests in `docs/data/manifests`.
+3. Point documentation pages to those local manifests.
+4. Refresh monthly with the workflow.
 
 ## Minimal Manifest Example
 
@@ -50,6 +65,17 @@ Use this mental model:
 ></para-chart>
 ```
 
+## URL Manifest Example (Recommended)
+
+```html
+<para-chart
+  manifestType="url"
+  manifest="data/manifests/us-unemployment-monthly.json"
+></para-chart>
+```
+
+This approach keeps published docs stable and still allows monthly updates to data.
+
 ## First Options To Learn
 
 | Option | Where | Why it matters |
@@ -67,8 +93,30 @@ After loading any chart, verify these basics:
 - Keyboard focus can reach the chart
 - `s` toggles sonification
 - `v` toggles self-voicing
-- `Q` provides point-level description
+- `q` provides point-level description
 - Important updates are announced through ARIA live behavior
+
+## What Accessibility Affordances Users Get
+
+- Keyboard-only chart exploration with structured navigation.
+- Screen-reader announcements through ARIA live updates and query actions.
+- Sonification for trend and magnitude understanding through sound.
+- Self-voicing for spoken summaries without requiring separate assistive software.
+
+For detailed behavior and validation, see [Accessibility Features](accessibility.md).
+
+## 5-Minute Smoke Test
+
+Run this quick script on any page in [Example Gallery](exampleGallery.md):
+
+1. Focus the chart and press `h` to confirm help appears.
+2. Use arrow keys to move between points and confirm focus movement.
+3. Press `q` and confirm query output describes the focused point.
+4. Press `s`, move again, and confirm sonification plays.
+5. Press `v` and confirm speech behavior changes.
+6. Open the control panel and verify Audio tab toggles match keyboard shortcuts.
+
+If any check fails, continue with [Implementation & Testing Guide](implementationAndTesting.md).
 
 See related docs:
 - [Accessibility Features](accessibility.md)
@@ -78,5 +126,6 @@ See related docs:
 ## Where To Go Next
 
 - [Chart Types](chartTypes.md): pick the right visual model for your data
+- [Implementation & Testing Guide](implementationAndTesting.md): implementation patterns and validation workflow
 - [Custom Elements](customElements.md): integration details for `para-chart` and `para-chart-ai`
 - [GitHub Pages Showcase](githubPagesShowcase.md): what to present publicly and how
