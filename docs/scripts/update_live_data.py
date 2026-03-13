@@ -759,6 +759,134 @@ def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
     )
 
 
+def build_us_inflation_snapshot_manifest() -> dict[str, Any]:
+    monthly = fetch_fred_monthly_series(CPI_SERIES)
+    yoy = yoy_from_monthly(monthly)
+
+    sorted_months = sorted(yoy.keys())[-24:]
+    if len(sorted_months) < 18:
+        raise RuntimeError("Insufficient CPI YoY points for inflation snapshot")
+
+    records = [(m, yoy[m]) for m in sorted_months]
+    return make_xy_manifest(
+        chart_type="column",
+        title="U.S. Inflation Rate: Last 24 Months (CPI YoY)",
+        x_label="Month",
+        y_label="Inflation rate (CPI YoY)",
+        y_units="percent",
+        y_multiplier=0.01,
+        series=[("Inflation rate (CPI YoY)", records)],
+    )
+
+
+def build_us_policy_unemployment_manifest() -> dict[str, Any]:
+    now = dt.date.today()
+    bls = fetch_bls_series(now.year - 6, now.year)
+    unemployment_by_month = {f"{y:04d}-{m:02d}": v for y, m, v in bls}
+
+    fedfunds = fetch_fred_monthly_series(FEDFUNDS_SERIES)
+    fedfunds_by_month = dict(fedfunds)
+
+    common = sorted(set(unemployment_by_month.keys()) & set(fedfunds_by_month.keys()))
+    common = common[-72:]
+    if len(common) < 24:
+        raise RuntimeError("Insufficient overlapping months for policy-unemployment line chart")
+
+    unemployment_records = [(m, unemployment_by_month[m]) for m in common]
+    fedfunds_records = [(m, fedfunds_by_month[m]) for m in common]
+
+    return make_xy_manifest(
+        chart_type="line",
+        title="U.S. Policy Rate and Unemployment Rate (Last 6 Years)",
+        x_label="Month",
+        y_label="Rate",
+        y_units="percent",
+        y_multiplier=0.01,
+        series=[
+            ("Unemployment rate", unemployment_records),
+            ("Federal funds rate", fedfunds_records),
+        ],
+    )
+
+
+def build_us_electricity_top_movers_manifest() -> dict[str, Any]:
+    rows = list(csv.DictReader(io.StringIO(http_get_text("https://www.eia.gov/totalenergy/data/browser/csv.php?tbl=T07.02A"))))
+    month_keys = sorted({r["YYYYMM"] for r in rows if len(r["YYYYMM"]) == 6 and not r["YYYYMM"].endswith("13")})
+    if len(month_keys) < 2:
+        raise RuntimeError("Insufficient monthly EIA rows for top movers chart")
+
+    latest, prev = month_keys[-1], month_keys[-2]
+
+    def parse_sources(yyyymm: str) -> dict[str, float]:
+        sources: dict[str, float] = {}
+        for r in rows:
+            if r.get("YYYYMM") != yyyymm:
+                continue
+            desc = (r.get("Description") or "").strip()
+            raw = (r.get("Value") or "").strip()
+            try:
+                value = float(raw)
+            except ValueError:
+                continue
+            if desc.startswith("Electricity Net Generation From "):
+                if "Pumped Storage" in desc:
+                    continue
+                label = (
+                    desc.replace("Electricity Net Generation From ", "")
+                    .replace(", All Sectors", "")
+                    .strip()
+                )
+                sources[label] = value
+        return sources
+
+    latest_sources = parse_sources(latest)
+    prev_sources = parse_sources(prev)
+
+    common = sorted(set(latest_sources.keys()) & set(prev_sources.keys()))
+    deltas = [(s, latest_sources[s] - prev_sources[s]) for s in common]
+    deltas.sort(key=lambda t: abs(t[1]), reverse=True)
+    top = deltas[:6]
+    if len(top) < 3:
+        raise RuntimeError("Insufficient source deltas for top movers bar chart")
+
+    latest_label = f"{latest[:4]}-{latest[4:6]}"
+    prev_label = f"{prev[:4]}-{prev[4:6]}"
+    return make_xy_manifest(
+        chart_type="bar",
+        title=f"U.S. Electricity: Top Generation Movers ({latest_label} vs {prev_label})",
+        x_label="Electricity source",
+        y_label="Change in generation (million kilowatthours)",
+        series=[("Month-over-month change", top)],
+    )
+
+
+def build_us_policy_scatter_manifest() -> dict[str, Any]:
+    now = dt.date.today()
+    bls = fetch_bls_series(now.year - 6, now.year)
+    unemployment_by_month = {f"{y:04d}-{m:02d}": v for y, m, v in bls}
+
+    fedfunds = fetch_fred_monthly_series(FEDFUNDS_SERIES)
+    fedfunds_by_month = dict(fedfunds)
+
+    common_months = sorted(set(unemployment_by_month.keys()) & set(fedfunds_by_month.keys()))
+    common_months = common_months[-60:]
+    if len(common_months) < 24:
+        raise RuntimeError("Insufficient overlapping points for policy scatter")
+
+    points = [(unemployment_by_month[m], fedfunds_by_month[m]) for m in common_months]
+    return make_xy_numeric_manifest(
+        chart_type="scatter",
+        title="U.S. Policy Response: Unemployment vs Federal Funds Rate (Monthly)",
+        x_label="Unemployment rate",
+        y_label="Federal funds rate",
+        x_units="percent",
+        y_units="percent",
+        x_multiplier=0.01,
+        y_multiplier=0.01,
+        series=[("Monthly observations", points)],
+    )
+
+
 def main() -> int:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -812,6 +940,26 @@ def main() -> int:
             "us_policy_rate_stepline",
             DATA_DIR / "us-policy-rate-stepline.json",
             build_us_policy_rate_stepline_manifest,
+        ),
+        (
+            "us_inflation_snapshot",
+            DATA_DIR / "us-inflation-snapshot.json",
+            build_us_inflation_snapshot_manifest,
+        ),
+        (
+            "us_policy_unemployment_line",
+            DATA_DIR / "us-policy-unemployment-line.json",
+            build_us_policy_unemployment_manifest,
+        ),
+        (
+            "us_electricity_top_movers",
+            DATA_DIR / "us-electricity-top-movers.json",
+            build_us_electricity_top_movers_manifest,
+        ),
+        (
+            "us_policy_scatter",
+            DATA_DIR / "us-policy-scatter.json",
+            build_us_policy_scatter_manifest,
         ),
     ]
 

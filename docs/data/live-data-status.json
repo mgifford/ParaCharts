@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-03-13T17:45:46Z",
+  "updatedAt": "2026-03-13T18:52:27Z",
   "sources": {
     "us_unemployment_monthly": {
       "state": "updated",
@@ -40,6 +40,22 @@
     "us_policy_rate_stepline": {
       "state": "updated",
       "path": "docs/data/manifests/us-policy-rate-stepline.json"
+    },
+    "us_inflation_snapshot": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-inflation-snapshot.json"
+    },
+    "us_policy_unemployment_line": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-policy-unemployment-line.json"
+    },
+    "us_electricity_top_movers": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-electricity-top-movers.json"
+    },
+    "us_policy_scatter": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-policy-scatter.json"
     }
   },
   "policy": "cached files are retained until replacement data is downloaded and validated"

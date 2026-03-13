@@ -1,0 +1,67 @@
+{
+  "datasets": [
+    {
+      "type": "bar",
+      "title": "U.S. Electricity: Top Generation Movers (2025-11 vs 2025-10)",
+      "facets": {
+        "x": {
+          "label": "Electricity source",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Change in generation (million kilowatthours)",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Month-over-month change",
+          "records": [
+            {
+              "x": "Natural Gas",
+              "y": "-12546.35"
+            },
+            {
+              "x": "Solar",
+              "y": "-5907.48"
+            },
+            {
+              "x": "Nuclear Electric Power",
+              "y": "4587.11"
+            },
+            {
+              "x": "Conventional Hydroelectric Power",
+              "y": "1870.64"
+            },
+            {
+              "x": "Wind",
+              "y": "1407.41"
+            },
+            {
+              "x": "Other Fossil Gases",
+              "y": "-215.03"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": true
+      }
+    }
+  ]
+}

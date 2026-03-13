@@ -18,6 +18,10 @@ const exampleFixtures: ExampleFixture[] = [
   { name: 'heatmap hourly live', manifest: '/docs/data/manifests/us-hourly-temperature-heatmap.json' },
   { name: 'waterfall contribution live', manifest: '/docs/data/manifests/us-electricity-waterfall.json' },
   { name: 'stepline policy rate live', manifest: '/docs/data/manifests/us-policy-rate-stepline.json' },
+  { name: 'inflation snapshot', manifest: '/docs/data/manifests/us-inflation-snapshot.json' },
+  { name: 'policy unemployment line', manifest: '/docs/data/manifests/us-policy-unemployment-line.json' },
+  { name: 'electricity top movers', manifest: '/docs/data/manifests/us-electricity-top-movers.json' },
+  { name: 'policy scatter', manifest: '/docs/data/manifests/us-policy-scatter.json' },
 ];
 
 function renderChart(manifest: string) {

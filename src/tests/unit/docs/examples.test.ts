@@ -37,7 +37,19 @@ describe('docs example integrity', () => {
     }
 
     // Most examples are para-chart based; keep a minimum floor so accidental removals fail loudly.
-    expect(referencedManifestNames.size).toBeGreaterThanOrEqual(8);
+    // Raise floor when new examples are added.
+    expect(referencedManifestNames.size).toBeGreaterThanOrEqual(12);
+
+    // Verify the 4 new source-backed examples are all present.
+    const expectedNewManifests = [
+      'us-inflation-snapshot.json',
+      'us-policy-unemployment-line.json',
+      'us-electricity-top-movers.json',
+      'us-policy-scatter.json',
+    ];
+    for (const name of expectedNewManifests) {
+      expect(referencedManifestNames.has(name), `expected manifest ${name} to be referenced by an example page`).toBe(true);
+    }
   });
 
   it('keeps scatter-clusters page as static fallback example', () => {

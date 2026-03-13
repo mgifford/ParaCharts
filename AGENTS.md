@@ -6,6 +6,9 @@ This file is aligned with https://agents.md/ and incorporates accessibility and 
 - https://mgifford.github.io/ACCESSIBILITY.md
 - https://mgifford.github.io/SUSTAINABILITY.md
 
+For the full project accessibility commitment, requirements, known gaps, and testing checklist, see **[ACCESSIBILITY.md](ACCESSIBILITY.md)**.
+For GitHub Copilot-specific instructions, see **[.github/copilot-instructions.md](.github/copilot-instructions.md)**.
+
 ## Scope and precedence
 
 Use this precedence order when instructions conflict:
@@ -67,7 +70,7 @@ Avoid misleading visual encodings:
 
 ## Accessibility requirements (WCAG 2.2 AA target)
 
-Accessibility is a quality gate.
+Accessibility is a quality gate. Full requirements, chart-specific rules, known gaps, and the testing checklist live in [ACCESSIBILITY.md](ACCESSIBILITY.md).
 
 Minimum requirements for relevant UI changes:
 - Full keyboard operation, visible focus, and logical focus order

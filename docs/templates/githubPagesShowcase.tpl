@@ -60,6 +60,10 @@ Current implementation in this repo:
 - [Heatmap Live Hourly Pattern (New York City Temperatures)](example-heatmap-hourly-live.md)
 - [Waterfall Live Contribution Breakdown (U.S. Electricity)](example-waterfall-contribution-live.md)
 - [Stepline Live Policy-Rate Timeline (U.S. FEDFUNDS)](example-stepline-policy-rate-live.md)
+- [Column Inflation Snapshot (U.S., Last 24 Months)](example-inflation-snapshot.md)
+- [Multi-Line Policy Rate and Unemployment (U.S., Last 6 Years)](example-policy-unemployment-line.md)
+- [Bar Chart Electricity Top Movers (U.S., Month-over-Month)](example-electricity-top-movers.md)
+- [Scatter Policy Response (U.S. Unemployment vs Federal Funds Rate)](example-policy-scatter.md)
 
 These pages use cached manifests that are refreshed monthly from third-party public sources when updated values are available.
 

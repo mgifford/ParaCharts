@@ -22,6 +22,10 @@ All manifests in this gallery are refreshed monthly from third-party public sour
 8. [Heatmap Live Hourly Pattern (New York City Temperatures)](example-heatmap-hourly-live.md)
 9. [Waterfall Live Contribution Breakdown (U.S. Electricity)](example-waterfall-contribution-live.md)
 10. [Stepline Live Policy-Rate Timeline (U.S. FEDFUNDS)](example-stepline-policy-rate-live.md)
+11. [Column Inflation Snapshot (U.S., Last 24 Months)](example-inflation-snapshot.md)
+12. [Multi-Line Policy Rate and Unemployment (U.S., Last 6 Years)](example-policy-unemployment-line.md)
+13. [Bar Chart Electricity Top Movers (U.S., Month-over-Month)](example-electricity-top-movers.md)
+14. [Scatter Policy Response (U.S. Unemployment vs Federal Funds Rate)](example-policy-scatter.md)
 
 ## Data Sources And Refresh Policy
 
@@ -44,25 +48,12 @@ The current monthly updater and validation pipeline is ready for these chart typ
 
 ### Next Source-Backed Examples (No Runtime Wiring Needed)
 
-1. **Monthly Inflation Snapshot (U.S., Last 24 Months)**
-	- Type: `column`
-	- Source: FRED `CPIAUCSL` (YoY transform)
-	- Why: gives a shorter-horizon inflation page to complement the existing U.S./EU crossover page.
+All four previously planned source-backed examples are now implemented and listed in the gallery above (items 11–14).
 
-2. **Policy Rate vs Unemployment Timeline (U.S.)**
-	- Type: `line` (two series)
-	- Source: FRED `FEDFUNDS` + BLS `LNS14000000`
-	- Why: clear policy context and an interpretation-focused companion to the macro scatter.
-
-3. **Electricity Mix Momentum (Top Movers, Month-over-Month)**
-	- Type: `bar`
-	- Source: EIA `T07.02A`
-	- Why: ranked directional change page that is easier to scan than a full waterfall for first-time readers.
-
-4. **Unemployment Regime Scatter (U.S., Last 5 Years)**
-	- Type: `scatter`
-	- Source: BLS + FRED overlap months
-	- Why: second scatter with a different analytical question (regime clustering instead of raw relationship).
+- [Column Inflation Snapshot (U.S., Last 24 Months)](example-inflation-snapshot.md) — `column` via FRED `CPIAUCSL`
+- [Multi-Line Policy Rate and Unemployment (U.S., Last 6 Years)](example-policy-unemployment-line.md) — `line` via FRED `FEDFUNDS` + BLS
+- [Bar Chart Electricity Top Movers (U.S., Month-over-Month)](example-electricity-top-movers.md) — `bar` via EIA `T07.02A`
+- [Scatter Policy Response (Unemployment vs Federal Funds Rate)](example-policy-scatter.md) — `scatter` via BLS + FRED `FEDFUNDS`
 
 ### Chart-Family Examples That Need Runtime Validation Or Wiring
 

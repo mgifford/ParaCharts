@@ -1,0 +1,141 @@
+{
+  "datasets": [
+    {
+      "type": "column",
+      "title": "U.S. Inflation Rate: Last 24 Months (CPI YoY)",
+      "facets": {
+        "x": {
+          "label": "Month",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Inflation rate (CPI YoY)",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          },
+          "units": "percent",
+          "multiplier": 0.01
+        }
+      },
+      "series": [
+        {
+          "key": "Inflation rate (CPI YoY)",
+          "records": [
+            {
+              "x": "2023-10",
+              "y": "3.25"
+            },
+            {
+              "x": "2023-11",
+              "y": "3.13"
+            },
+            {
+              "x": "2023-12",
+              "y": "3.32"
+            },
+            {
+              "x": "2024-01",
+              "y": "3.09"
+            },
+            {
+              "x": "2024-02",
+              "y": "3.16"
+            },
+            {
+              "x": "2024-03",
+              "y": "3.49"
+            },
+            {
+              "x": "2024-04",
+              "y": "3.36"
+            },
+            {
+              "x": "2024-05",
+              "y": "3.24"
+            },
+            {
+              "x": "2024-06",
+              "y": "2.97"
+            },
+            {
+              "x": "2024-07",
+              "y": "2.94"
+            },
+            {
+              "x": "2024-08",
+              "y": "2.61"
+            },
+            {
+              "x": "2024-09",
+              "y": "2.43"
+            },
+            {
+              "x": "2024-10",
+              "y": "2.58"
+            },
+            {
+              "x": "2024-11",
+              "y": "2.72"
+            },
+            {
+              "x": "2024-12",
+              "y": "2.87"
+            },
+            {
+              "x": "2025-01",
+              "y": "2.99"
+            },
+            {
+              "x": "2025-02",
+              "y": "2.8"
+            },
+            {
+              "x": "2025-03",
+              "y": "2.38"
+            },
+            {
+              "x": "2025-04",
+              "y": "2.33"
+            },
+            {
+              "x": "2025-05",
+              "y": "2.38"
+            },
+            {
+              "x": "2025-06",
+              "y": "2.68"
+            },
+            {
+              "x": "2025-07",
+              "y": "2.74"
+            },
+            {
+              "x": "2025-08",
+              "y": "2.94"
+            },
+            {
+              "x": "2025-09",
+              "y": "3.02"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": true
+      }
+    }
+  ]
+}
