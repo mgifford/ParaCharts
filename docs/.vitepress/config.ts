@@ -8,6 +8,8 @@ export default defineConfig({
     logo: '/fizz-logo.svg',
     nav: [
       { text: 'Docs', link: '/index' },
+      { text: 'Getting Started', link: '/gettingStarted' },
+      { text: 'Examples', link: '/exampleGallery' },
       { text: 'API', link: '/chartTypes' }
     ],
     sidebar: {
@@ -15,12 +17,15 @@ export default defineConfig({
         {
           text: 'Overview',
           items: [
-            { text: 'Introduction', link: '/index' }
+            { text: 'Introduction', link: '/index' },
+            { text: 'Getting Started', link: '/gettingStarted' },
+            { text: 'GitHub Pages Showcase', link: '/githubPagesShowcase' }
           ]
         },
         {
           text: 'User Guide',
           items: [
+            { text: 'Example Gallery', link: '/exampleGallery' },
             { text: 'Chart Types', link: '/chartTypes' },
             { text: 'Control Panel', link: '/controlPanel' },
              { text: 'Accessibility', link: '/accessibility' },
