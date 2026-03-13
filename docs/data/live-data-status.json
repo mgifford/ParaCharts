@@ -1,13 +1,14 @@
 {
-  "updatedAt": "2026-03-13T16:56:59Z",
+  "updatedAt": "2026-03-13T17:14:09Z",
   "sources": {
     "us_unemployment_monthly": {
       "state": "updated",
       "path": "docs/data/manifests/us-unemployment-monthly.json"
     },
     "us_median_age_census": {
-      "state": "updated",
-      "path": "docs/data/manifests/us-median-age-census.json"
+      "state": "kept_cached",
+      "path": "docs/data/manifests/us-median-age-census.json",
+      "reason": "The read operation timed out"
     },
     "us_gdp_industry_tech": {
       "state": "updated",
