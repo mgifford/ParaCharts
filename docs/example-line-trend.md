@@ -2,7 +2,7 @@
 
 ## Live Preview
 
-<para-chart id="line-trend-live"></para-chart>
+<para-chart id="line-trend-live" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
 <script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
 <script>
