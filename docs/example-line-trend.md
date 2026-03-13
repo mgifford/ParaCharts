@@ -1,5 +1,26 @@
 # Line Trend Example
 
+## Live Preview
+
+<para-chart id="line-trend-live"></para-chart>
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
+<script>
+  (function () {
+    const el = document.getElementById('line-trend-live');
+    if (!el) return;
+    el.manifestType = 'content';
+    el.manifest = JSON.stringify({
+      type: 'line',
+      series: [{ name: 'MAU', data: [1200, 1275, 1330, 1410, 1480, 1545, 1620, 1710, 1805, 1890, 1980, 2100] }],
+      categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      description: 'Monthly active users across one calendar year'
+    });
+  })();
+</script>
+
+If the component preview does not load in your browser, open this fallback demo page: [ParaCharts demo line chart](https://fizzstudio.github.io/ParaCharts-demo/charts/line-single-1.html)
+
 ## Scenario
 
 Track monthly active users over one year.

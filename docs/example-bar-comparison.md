@@ -1,5 +1,26 @@
 # Bar Comparison Example
 
+## Live Preview
+
+<para-chart id="bar-comparison-live"></para-chart>
+
+<script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
+<script>
+  (function () {
+    const el = document.getElementById('bar-comparison-live');
+    if (!el) return;
+    el.manifestType = 'content';
+    el.manifest = JSON.stringify({
+      type: 'bar',
+      series: [{ name: 'Tickets', data: [82, 61, 104, 47, 73] }],
+      categories: ['Billing', 'Onboarding', 'Mobile', 'API', 'Reporting'],
+      description: 'Support ticket counts by product area for Q1'
+    });
+  })();
+</script>
+
+If the component preview does not load in your browser, open this fallback demo page: [ParaCharts demo bar chart](https://fizzstudio.github.io/ParaCharts-demo/charts/bar.html)
+
 ## Scenario
 
 Compare support ticket volume by product area over one quarter.
