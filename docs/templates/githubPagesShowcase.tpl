@@ -56,6 +56,10 @@ Current implementation in this repo:
 - [Multi-Line Inflation Comparison Example (EU vs United States)](example-scatter-clusters.md)
 - [Single-Line Unemployment Example (United States, 10-Year)](example-heatmap-weekly.md)
 - [Donut Energy Composition Example (U.S. Electricity)](example-donut-budget.md)
+- [Scatter Live Macro Relationship (U.S. Unemployment vs Inflation)](example-scatter-macro-live.md)
+- [Heatmap Live Hourly Pattern (New York City Temperatures)](example-heatmap-hourly-live.md)
+- [Waterfall Live Contribution Breakdown (U.S. Electricity)](example-waterfall-contribution-live.md)
+- [Stepline Live Policy-Rate Timeline (U.S. FEDFUNDS)](example-stepline-policy-rate-live.md)
 
 These pages use cached manifests that are refreshed monthly from third-party public sources when updated values are available.
 

@@ -29,6 +29,8 @@ DATA_DIR = REPO_ROOT / "docs" / "data" / "manifests"
 STATUS_FILE = REPO_ROOT / "docs" / "data" / "live-data-status.json"
 
 BLS_SERIES = "LNS14000000"
+CPI_SERIES = "CPIAUCSL"
+FEDFUNDS_SERIES = "FEDFUNDS"
 
 
 def http_get_text(url: str, timeout: int = 40) -> str:
@@ -56,7 +58,16 @@ def validate_manifest(manifest: dict[str, Any]) -> bool:
     ds = datasets[0]
     if not isinstance(ds, dict):
         return False
-    if ds.get("type") not in {"line", "column", "bar", "donut"}:
+    if ds.get("type") not in {
+        "line",
+        "column",
+        "bar",
+        "donut",
+        "scatter",
+        "heatmap",
+        "waterfall",
+        "stepline",
+    }:
         return False
     series = ds.get("series")
     if not isinstance(series, list) or not series:
@@ -152,6 +163,61 @@ def make_xy_manifest(
     }
 
 
+def make_xy_numeric_manifest(
+    *,
+    chart_type: str,
+    title: str,
+    x_label: str,
+    y_label: str,
+    series: list[tuple[str, list[tuple[float, float]]]],
+    x_units: str | None = None,
+    y_units: str | None = None,
+    x_multiplier: float | None = None,
+    y_multiplier: float | None = None,
+) -> dict[str, Any]:
+    x_facet: dict[str, Any] = {
+        "label": x_label,
+        "variableType": "independent",
+        "measure": "interval",
+        "datatype": "number",
+        "displayType": {"type": "axis", "orientation": "horizontal"},
+    }
+    y_facet: dict[str, Any] = {
+        "label": y_label,
+        "variableType": "dependent",
+        "measure": "ratio",
+        "datatype": "number",
+        "displayType": {"type": "axis", "orientation": "vertical"},
+    }
+    if x_units:
+        x_facet["units"] = x_units
+    if y_units:
+        y_facet["units"] = y_units
+    if x_multiplier is not None:
+        x_facet["multiplier"] = x_multiplier
+    if y_multiplier is not None:
+        y_facet["multiplier"] = y_multiplier
+
+    return {
+        "datasets": [
+            {
+                "type": chart_type,
+                "title": title,
+                "facets": {"x": x_facet, "y": y_facet},
+                "series": [
+                    {
+                        "key": key,
+                        "records": [{"x": round(x, 3), "y": round(y, 3)} for x, y in records],
+                    }
+                    for key, records in series
+                ],
+                "data": {"source": "inline"},
+                "settings": {"controlPanel.isControlPanelDefaultOpen": True},
+            }
+        ]
+    }
+
+
 def make_donut_manifest(*, title: str, records: list[tuple[str, float]]) -> dict[str, Any]:
     return {
         "datasets": [
@@ -214,6 +280,54 @@ def fetch_bls_series(start_year: int, end_year: int) -> list[tuple[int, int, flo
         out.append((year, month, value))
 
     out.sort(key=lambda t: (t[0], t[1]))
+    return out
+
+
+def fetch_fred_monthly_series(series_id: str) -> list[tuple[str, float]]:
+    csv_text = http_get_text(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}")
+    reader = csv.DictReader(io.StringIO(csv_text))
+    if not reader.fieldnames:
+        raise RuntimeError(f"FRED CSV missing header row for series {series_id}")
+
+    date_key = None
+    for key in reader.fieldnames:
+        if key and key.lower() in {"date", "observation_date"}:
+            date_key = key
+            break
+    if date_key is None:
+        date_key = reader.fieldnames[0]
+
+    value_key = None
+    for key in reader.fieldnames:
+        if key != date_key:
+            value_key = key
+            break
+    if value_key is None:
+        raise RuntimeError(f"FRED CSV missing value column for series {series_id}")
+
+    out: list[tuple[str, float]] = []
+    for row in reader:
+        date = (row.get(date_key) or "").strip()
+        raw = (row.get(value_key) or "").strip()
+        if not date or raw in {"", ".", "NA", "null"}:
+            continue
+        try:
+            out.append((date[:7], float(raw)))
+        except ValueError:
+            continue
+    return out
+
+
+def yoy_from_monthly(series: list[tuple[str, float]]) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for i in range(12, len(series)):
+        cur_label, cur_val = series[i]
+        prev_label, prev_val = series[i - 12]
+        if prev_val == 0:
+            continue
+        if cur_label[:4] != str(int(prev_label[:4]) + 1) or cur_label[5:] != prev_label[5:]:
+            continue
+        out[cur_label] = ((cur_val / prev_val) - 1.0) * 100.0
     return out
 
 
@@ -313,45 +427,7 @@ def build_us_eu_inflation_manifest() -> dict[str, Any]:
             continue
         eu_series[label] = float(v)
 
-    fred_csv = http_get_text("https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL")
-    reader = csv.DictReader(io.StringIO(fred_csv))
-    if not reader.fieldnames:
-        raise RuntimeError("FRED CSV missing header row")
-
-    date_key = None
-    for key in reader.fieldnames:
-        if key and key.lower() in {"date", "observation_date"}:
-            date_key = key
-            break
-    if date_key is None:
-        date_key = reader.fieldnames[0]
-
-    value_key = None
-    for key in reader.fieldnames:
-        if key != date_key:
-            value_key = key
-            break
-    if value_key is None:
-        raise RuntimeError("FRED CSV missing value column")
-
-    monthly: list[tuple[str, float]] = []
-    for r in reader:
-        date = (r.get(date_key) or "").strip()
-        val = (r.get(value_key) or "").strip()
-        if not date or val in {"", ".", "NA", "null"}:
-            continue
-        try:
-            monthly.append((date[:7], float(val)))
-        except ValueError:
-            continue
-
-    us_yoy: dict[str, float] = {}
-    for i in range(12, len(monthly)):
-        cur_label, cur_val = monthly[i]
-        prev_label, prev_val = monthly[i - 12]
-        if cur_label[:4] != str(int(prev_label[:4]) + 1) or cur_label[5:] != prev_label[5:]:
-            continue
-        us_yoy[cur_label] = ((cur_val / prev_val) - 1.0) * 100.0
+    us_yoy = yoy_from_monthly(fetch_fred_monthly_series(CPI_SERIES))
 
     common = sorted(set(eu_series.keys()) & set(us_yoy.keys()))
     common = common[-120:]
@@ -369,6 +445,87 @@ def build_us_eu_inflation_manifest() -> dict[str, Any]:
         y_multiplier=0.01,
         series=[("EU (HICP annual rate)", eu_records), ("United States (CPI YoY)", us_records)],
     )
+
+
+def build_us_macro_scatter_manifest() -> dict[str, Any]:
+    now = dt.date.today()
+    bls = fetch_bls_series(now.year - 6, now.year)
+    unemployment_by_month = {f"{y:04d}-{m:02d}": v for y, m, v in bls}
+
+    inflation_yoy = yoy_from_monthly(fetch_fred_monthly_series(CPI_SERIES))
+    common_months = sorted(set(unemployment_by_month.keys()) & set(inflation_yoy.keys()))
+    common_months = common_months[-60:]
+    if len(common_months) < 24:
+        raise RuntimeError("Insufficient overlapping unemployment and inflation points")
+
+    points = [(unemployment_by_month[m], inflation_yoy[m]) for m in common_months]
+    manifest = make_xy_numeric_manifest(
+        chart_type="scatter",
+        title="U.S. Macro Relationship: Unemployment vs Inflation (Monthly)",
+        x_label="Unemployment rate",
+        y_label="Inflation rate (CPI YoY)",
+        x_units="percent",
+        y_units="percent",
+        x_multiplier=0.01,
+        y_multiplier=0.01,
+        series=[("Monthly observations", points)],
+    )
+    manifest["datasets"][0]["settings"].update(
+        {
+            "type.scatter.isDrawTrendLine": True,
+            "type.scatter.isShowOutliers": True,
+        }
+    )
+    return manifest
+
+
+def build_us_hourly_heatmap_manifest() -> dict[str, Any]:
+    today = dt.date.today()
+    first_of_month = today.replace(day=1)
+    end_prev_month = first_of_month - dt.timedelta(days=1)
+    start_prev_month = end_prev_month.replace(day=1)
+
+    query = urllib.parse.urlencode(
+        {
+            "latitude": "40.7128",
+            "longitude": "-74.0060",
+            "start_date": start_prev_month.isoformat(),
+            "end_date": end_prev_month.isoformat(),
+            "hourly": "temperature_2m",
+            "timezone": "UTC",
+        }
+    )
+    payload = http_get_json(f"https://archive-api.open-meteo.com/v1/archive?{query}")
+    hourly = payload.get("hourly", {})
+    times = hourly.get("time", [])
+    temps = hourly.get("temperature_2m", [])
+    if len(times) != len(temps) or len(times) < 24 * 10:
+        raise RuntimeError("Insufficient hourly records from Open-Meteo archive")
+
+    points: list[tuple[float, float]] = []
+    for ts, temp in zip(times, temps):
+        if temp in (None, "", "NA", "null"):
+            continue
+        try:
+            hour = float(str(ts)[11:13])
+            points.append((hour, float(temp)))
+        except Exception:
+            continue
+
+    if len(points) < 24 * 10:
+        raise RuntimeError("Insufficient valid hourly points for heatmap")
+
+    month_label = start_prev_month.strftime("%Y-%m")
+    manifest = make_xy_numeric_manifest(
+        chart_type="heatmap",
+        title=f"Hourly Temperature Pattern (New York City, {month_label})",
+        x_label="Hour of day (UTC)",
+        y_label="Temperature",
+        y_units="celsius",
+        series=[("Hourly observations", points)],
+    )
+    manifest["datasets"][0]["settings"]["type.heatmap.resolution"] = 24
+    return manifest
 
 
 def _parse_xlsx_shared_strings(zf: zipfile.ZipFile) -> list[str]:
@@ -528,6 +685,80 @@ def build_us_electricity_top5_manifest() -> dict[str, Any]:
     )
 
 
+def build_us_electricity_waterfall_manifest() -> dict[str, Any]:
+    rows = list(csv.DictReader(io.StringIO(http_get_text("https://www.eia.gov/totalenergy/data/browser/csv.php?tbl=T07.02A"))))
+    month_keys = sorted({r["YYYYMM"] for r in rows if len(r["YYYYMM"]) == 6 and not r["YYYYMM"].endswith("13")})
+    if len(month_keys) < 2:
+        raise RuntimeError("Insufficient monthly EIA rows for waterfall chart")
+
+    latest, prev = month_keys[-1], month_keys[-2]
+
+    def parse_month(yyyymm: str) -> tuple[dict[str, float], float | None]:
+        sources: dict[str, float] = {}
+        total: float | None = None
+        for r in rows:
+            if r.get("YYYYMM") != yyyymm:
+                continue
+            desc = (r.get("Description") or "").strip()
+            raw = (r.get("Value") or "").strip()
+            try:
+                value = float(raw)
+            except ValueError:
+                continue
+            if desc.startswith("Electricity Net Generation From "):
+                if "Pumped Storage" in desc:
+                    continue
+                label = desc.replace("Electricity Net Generation From ", "").replace(", All Sectors", "").strip()
+                sources[label] = value
+            elif desc.startswith("Electricity Net Generation Total"):
+                total = value
+        return sources, total
+
+    latest_sources, latest_total = parse_month(latest)
+    prev_sources, prev_total = parse_month(prev)
+    if latest_total is None or prev_total is None:
+        raise RuntimeError("Missing total row in EIA monthly data")
+
+    common_sources = sorted(set(latest_sources.keys()) & set(prev_sources.keys()))
+    deltas = [(s, latest_sources[s] - prev_sources[s]) for s in common_sources]
+    deltas = [d for d in deltas if abs(d[1]) >= 0.01]
+    deltas.sort(key=lambda t: abs(t[1]), reverse=True)
+    top = deltas[:4]
+    if len(top) < 3:
+        raise RuntimeError("Insufficient source deltas for waterfall chart")
+
+    total_change = latest_total - prev_total
+    residual = total_change - sum(v for _k, v in top)
+    waterfall_records = top + [("Other sources", residual), ("Net total change", total_change)]
+
+    latest_label = f"{latest[:4]}-{latest[4:6]}"
+    prev_label = f"{prev[:4]}-{prev[4:6]}"
+    return make_xy_manifest(
+        chart_type="waterfall",
+        title=f"U.S. Electricity Generation Change by Source ({latest_label} vs {prev_label})",
+        x_label="Source contribution",
+        y_label="Change in generation (million kilowatthours)",
+        series=[("Month-over-month contribution", waterfall_records)],
+    )
+
+
+def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
+    monthly = fetch_fred_monthly_series(FEDFUNDS_SERIES)
+    monthly = monthly[-72:]
+    if len(monthly) < 24:
+        raise RuntimeError("Insufficient FEDFUNDS monthly points for stepline chart")
+
+    return make_xy_manifest(
+        chart_type="stepline",
+        title="U.S. Policy Rate Timeline (FEDFUNDS, Last 6 Years)",
+        x_label="Month",
+        y_label="Effective federal funds rate",
+        y_units="percent",
+        y_multiplier=0.01,
+        series=[("Effective federal funds rate", monthly)],
+    )
+
+
 def main() -> int:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -561,6 +792,26 @@ def main() -> int:
             "us_electricity_top5",
             DATA_DIR / "us-electricity-top5.json",
             build_us_electricity_top5_manifest,
+        ),
+        (
+            "us_macro_scatter",
+            DATA_DIR / "us-macro-scatter.json",
+            build_us_macro_scatter_manifest,
+        ),
+        (
+            "us_hourly_heatmap",
+            DATA_DIR / "us-hourly-temperature-heatmap.json",
+            build_us_hourly_heatmap_manifest,
+        ),
+        (
+            "us_electricity_waterfall",
+            DATA_DIR / "us-electricity-waterfall.json",
+            build_us_electricity_waterfall_manifest,
+        ),
+        (
+            "us_policy_rate_stepline",
+            DATA_DIR / "us-policy-rate-stepline.json",
+            build_us_policy_rate_stepline_manifest,
         ),
     ]
 

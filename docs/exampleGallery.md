@@ -1,6 +1,6 @@
 # Example Gallery
 
-This gallery provides six concrete examples designed for GitHub Pages documentation.
+This gallery provides ten concrete examples designed for GitHub Pages documentation.
 
 Each example includes:
 - A realistic manifest you can copy and adapt
@@ -18,6 +18,10 @@ All manifests in this gallery are refreshed monthly from third-party public sour
 4. [Multi-Line Inflation Comparison Example (EU vs United States)](example-scatter-clusters.md)
 5. [Single-Line Unemployment Example (United States, 10-Year)](example-heatmap-weekly.md)
 6. [Donut Energy Composition Example (U.S. Electricity)](example-donut-budget.md)
+7. [Scatter Live Macro Relationship (U.S. Unemployment vs Inflation)](example-scatter-macro-live.md)
+8. [Heatmap Live Hourly Pattern (New York City Temperatures)](example-heatmap-hourly-live.md)
+9. [Waterfall Live Contribution Breakdown (U.S. Electricity)](example-waterfall-contribution-live.md)
+10. [Stepline Live Policy-Rate Timeline (U.S. FEDFUNDS)](example-stepline-policy-rate-live.md)
 
 ## Data Sources And Refresh Policy
 
@@ -28,10 +32,6 @@ All manifests in this gallery are refreshed monthly from third-party public sour
 
 ## TODO Next Live Examples
 
-- Add a monthly scatter example for inflation vs unemployment relationship analysis.
-- Add a monthly heatmap example for hourly or day-by-hour patterns.
-- Add a monthly waterfall example for contribution-to-change storytelling.
-- Add a monthly stepline example for policy threshold/rate changes.
 - Add a monthly lollipop example for ranked movers.
 - Add a monthly venn example for overlap-based summaries.
 - Evaluate and wire histogram runtime support before adding histogram live demos.

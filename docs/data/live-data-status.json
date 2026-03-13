@@ -1,14 +1,13 @@
 {
-  "updatedAt": "2026-03-13T17:14:09Z",
+  "updatedAt": "2026-03-13T17:45:46Z",
   "sources": {
     "us_unemployment_monthly": {
       "state": "updated",
       "path": "docs/data/manifests/us-unemployment-monthly.json"
     },
     "us_median_age_census": {
-      "state": "kept_cached",
-      "path": "docs/data/manifests/us-median-age-census.json",
-      "reason": "The read operation timed out"
+      "state": "updated",
+      "path": "docs/data/manifests/us-median-age-census.json"
     },
     "us_gdp_industry_tech": {
       "state": "updated",
@@ -25,6 +24,22 @@
     "us_electricity_top5": {
       "state": "updated",
       "path": "docs/data/manifests/us-electricity-top5.json"
+    },
+    "us_macro_scatter": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-macro-scatter.json"
+    },
+    "us_hourly_heatmap": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-hourly-temperature-heatmap.json"
+    },
+    "us_electricity_waterfall": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-electricity-waterfall.json"
+    },
+    "us_policy_rate_stepline": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-policy-rate-stepline.json"
     }
   },
   "policy": "cached files are retained until replacement data is downloaded and validated"
