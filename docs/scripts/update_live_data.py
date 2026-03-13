@@ -1,0 +1,613 @@
+#!/usr/bin/env python3
+"""Update live-data manifests for ParaCharts example pages.
+
+Safety guarantees:
+- Existing cached manifests are never deleted preemptively.
+- Each target file is updated atomically only after new data passes validation.
+- Failed source fetches keep prior cached files untouched.
+"""
+
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import io
+import json
+import math
+import os
+import tempfile
+import urllib.error
+import urllib.parse
+import urllib.request
+import zipfile
+import xml.etree.ElementTree as ET
+from pathlib import Path
+from typing import Any
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DATA_DIR = REPO_ROOT / "docs" / "data" / "manifests"
+STATUS_FILE = REPO_ROOT / "docs" / "data" / "live-data-status.json"
+
+BLS_SERIES = "LNS14000000"
+
+
+def http_get_text(url: str, timeout: int = 40) -> str:
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "ParaCharts-live-data-updater/1.0 (+https://github.com/fizzstudio/ParaCharts)",
+            "Accept": "application/json,text/csv,text/plain,*/*",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.read().decode("utf-8", "replace")
+
+
+def http_get_json(url: str, timeout: int = 40) -> dict[str, Any]:
+    return json.loads(http_get_text(url, timeout=timeout))
+
+
+def validate_manifest(manifest: dict[str, Any]) -> bool:
+    if not isinstance(manifest, dict):
+        return False
+    datasets = manifest.get("datasets")
+    if not isinstance(datasets, list) or not datasets:
+        return False
+    ds = datasets[0]
+    if not isinstance(ds, dict):
+        return False
+    if ds.get("type") not in {"line", "column", "bar", "donut"}:
+        return False
+    series = ds.get("series")
+    if not isinstance(series, list) or not series:
+        return False
+    for s in series:
+        if not isinstance(s, dict):
+            return False
+        recs = s.get("records")
+        if not isinstance(recs, list) or not recs:
+            return False
+        for r in recs:
+            if not isinstance(r, dict) or "x" not in r or "y" not in r:
+                return False
+    return True
+
+
+def atomic_write_json(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(prefix=path.name + ".", suffix=".tmp", dir=str(path.parent))
+    os.close(fd)
+    tmp_path = Path(tmp_name)
+    try:
+        with tmp_path.open("w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+            f.write("\n")
+        tmp_path.replace(path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+
+
+def load_json_if_exists(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    with path.open("r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def fmt_num(v: float, digits: int = 2) -> str:
+    if math.isnan(v) or math.isinf(v):
+        raise ValueError("Invalid numeric value")
+    return f"{v:.{digits}f}".rstrip("0").rstrip(".")
+
+
+def make_xy_manifest(
+    *,
+    chart_type: str,
+    title: str,
+    x_label: str,
+    y_label: str,
+    series: list[tuple[str, list[tuple[str, float]]]],
+    y_units: str | None = None,
+    y_multiplier: float | None = None,
+) -> dict[str, Any]:
+    y_facet: dict[str, Any] = {
+        "label": y_label,
+        "variableType": "dependent",
+        "measure": "ratio",
+        "datatype": "number",
+        "displayType": {"type": "axis", "orientation": "vertical"},
+    }
+    if y_units:
+        y_facet["units"] = y_units
+    if y_multiplier is not None:
+        y_facet["multiplier"] = y_multiplier
+
+    return {
+        "datasets": [
+            {
+                "type": chart_type,
+                "title": title,
+                "facets": {
+                    "x": {
+                        "label": x_label,
+                        "variableType": "independent",
+                        "measure": "interval",
+                        "datatype": "string",
+                        "displayType": {"type": "axis", "orientation": "horizontal"},
+                    },
+                    "y": y_facet,
+                },
+                "series": [
+                    {
+                        "key": key,
+                        "records": [{"x": x, "y": fmt_num(y)} for x, y in records],
+                    }
+                    for key, records in series
+                ],
+                "data": {"source": "inline"},
+                "settings": {"controlPanel.isControlPanelDefaultOpen": True},
+            }
+        ]
+    }
+
+
+def make_donut_manifest(*, title: str, records: list[tuple[str, float]]) -> dict[str, Any]:
+    return {
+        "datasets": [
+            {
+                "type": "donut",
+                "title": title,
+                "facets": {
+                    "x": {
+                        "label": "Generation source",
+                        "variableType": "independent",
+                        "measure": "nominal",
+                        "datatype": "string",
+                        "displayType": {"type": "marking"},
+                    },
+                    "y": {
+                        "label": "Generation (million kilowatthours)",
+                        "variableType": "dependent",
+                        "measure": "ratio",
+                        "datatype": "number",
+                        "displayType": {"type": "angle"},
+                    },
+                },
+                "series": [
+                    {
+                        "key": "Top 5 electricity generation sources",
+                        "records": [{"x": x, "y": fmt_num(y)} for x, y in records],
+                    }
+                ],
+                "data": {"source": "inline"},
+                "settings": {"controlPanel.isControlPanelDefaultOpen": True},
+            }
+        ]
+    }
+
+
+def fetch_bls_series(start_year: int, end_year: int) -> list[tuple[int, int, float]]:
+    url = (
+        f"https://api.bls.gov/publicAPI/v2/timeseries/data/{BLS_SERIES}?"
+        f"startyear={start_year}&endyear={end_year}"
+    )
+    payload = http_get_json(url)
+    if payload.get("status") != "REQUEST_SUCCEEDED":
+        raise RuntimeError(f"BLS request failed: {payload.get('message')}")
+
+    entries = payload["Results"]["series"][0]["data"]
+    out: list[tuple[int, int, float]] = []
+    for e in entries:
+        period = e.get("period", "")
+        if not period.startswith("M") or period == "M13":
+            continue
+        raw_value = str(e.get("value", "")).strip()
+        if raw_value in {"", "-", ".", "NA", "null"}:
+            continue
+        year = int(e["year"])
+        month = int(period[1:])
+        try:
+            value = float(raw_value)
+        except ValueError:
+            continue
+        out.append((year, month, value))
+
+    out.sort(key=lambda t: (t[0], t[1]))
+    return out
+
+
+def build_us_unemployment_monthly_manifest() -> dict[str, Any]:
+    now = dt.date.today()
+    pts = fetch_bls_series(now.year - 3, now.year)
+    pts = pts[-12:]
+    if len(pts) < 10:
+        raise RuntimeError("Insufficient BLS monthly points for unemployment chart")
+
+    records = [(f"{y}-{m:02d}", v) for y, m, v in pts]
+    return make_xy_manifest(
+        chart_type="column",
+        title="U.S. Unemployment Rate (Last 12 Months)",
+        x_label="Month",
+        y_label="Unemployment rate",
+        y_units="percent",
+        y_multiplier=0.01,
+        series=[("Unemployment rate", records)],
+    )
+
+
+def build_us_unemployment_decade_manifest() -> dict[str, Any]:
+    now = dt.date.today()
+    pts = fetch_bls_series(now.year - 11, now.year)
+    yearly: dict[int, list[float]] = {}
+    for y, _m, v in pts:
+        yearly.setdefault(y, []).append(v)
+
+    years = sorted(yearly.keys())[-10:]
+    if len(years) < 8:
+        raise RuntimeError("Insufficient BLS annual points for decade chart")
+
+    records = [(str(y), sum(yearly[y]) / len(yearly[y])) for y in years]
+    return make_xy_manifest(
+        chart_type="line",
+        title="U.S. Unemployment Rate (Annual Average, Last 10 Years)",
+        x_label="Year",
+        y_label="Unemployment rate",
+        y_units="percent",
+        y_multiplier=0.01,
+        series=[("Unemployment rate", records)],
+    )
+
+
+def build_us_census_median_age_manifest() -> dict[str, Any]:
+    now = dt.date.today()
+    start = now.year - 12
+    values: list[tuple[int, float]] = []
+    for year in range(start, now.year + 1):
+        url = f"https://api.census.gov/data/{year}/acs/acs1?get=NAME,B01002_001E&for=us:1"
+        try:
+            payload = json.loads(http_get_text(url))
+            if len(payload) >= 2 and payload[1][1] not in (None, "", "null"):
+                values.append((year, float(payload[1][1])))
+        except urllib.error.HTTPError:
+            # Some ACS years are unavailable; skip and continue.
+            continue
+
+    values = values[-10:]
+    if len(values) < 6:
+        raise RuntimeError("Insufficient Census median-age points")
+
+    records = [(str(y), v) for y, v in values]
+    return make_xy_manifest(
+        chart_type="line",
+        title="U.S. Median Age (Census ACS 1-Year)",
+        x_label="Year",
+        y_label="Median age",
+        y_units="years",
+        series=[("Median age", records)],
+    )
+
+
+def build_us_eu_inflation_manifest() -> dict[str, Any]:
+    eu_url = (
+        "https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/"
+        "prc_hicp_manr?geo=EU27_2020&coicop=CP00&freq=M"
+    )
+    eu = http_get_json(eu_url)
+    dim = eu.get("dimension", {})
+    time_idx = dim.get("time", {}).get("category", {}).get("index", {})
+    values_map = eu.get("value", {})
+
+    eu_series: dict[str, float] = {}
+    for period, idx in time_idx.items():
+        v = values_map.get(str(idx), values_map.get(idx))
+        if v is None:
+            continue
+        label: str | None = None
+        if len(period) == 7 and period[4] == "-":
+            label = period
+        elif "M" in period:
+            year, month = period.split("M")
+            label = f"{int(year):04d}-{int(month):02d}"
+        if label is None:
+            continue
+        eu_series[label] = float(v)
+
+    fred_csv = http_get_text("https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL")
+    reader = csv.DictReader(io.StringIO(fred_csv))
+    if not reader.fieldnames:
+        raise RuntimeError("FRED CSV missing header row")
+
+    date_key = None
+    for key in reader.fieldnames:
+        if key and key.lower() in {"date", "observation_date"}:
+            date_key = key
+            break
+    if date_key is None:
+        date_key = reader.fieldnames[0]
+
+    value_key = None
+    for key in reader.fieldnames:
+        if key != date_key:
+            value_key = key
+            break
+    if value_key is None:
+        raise RuntimeError("FRED CSV missing value column")
+
+    monthly: list[tuple[str, float]] = []
+    for r in reader:
+        date = (r.get(date_key) or "").strip()
+        val = (r.get(value_key) or "").strip()
+        if not date or val in {"", ".", "NA", "null"}:
+            continue
+        try:
+            monthly.append((date[:7], float(val)))
+        except ValueError:
+            continue
+
+    us_yoy: dict[str, float] = {}
+    for i in range(12, len(monthly)):
+        cur_label, cur_val = monthly[i]
+        prev_label, prev_val = monthly[i - 12]
+        if cur_label[:4] != str(int(prev_label[:4]) + 1) or cur_label[5:] != prev_label[5:]:
+            continue
+        us_yoy[cur_label] = ((cur_val / prev_val) - 1.0) * 100.0
+
+    common = sorted(set(eu_series.keys()) & set(us_yoy.keys()))
+    common = common[-120:]
+    if len(common) < 24:
+        raise RuntimeError("Insufficient overlapping inflation points")
+
+    eu_records = [(k, eu_series[k]) for k in common]
+    us_records = [(k, us_yoy[k]) for k in common]
+    return make_xy_manifest(
+        chart_type="line",
+        title="Inflation Rate: EU vs United States (YoY, Monthly)",
+        x_label="Month",
+        y_label="Inflation rate",
+        y_units="percent",
+        y_multiplier=0.01,
+        series=[("EU (HICP annual rate)", eu_records), ("United States (CPI YoY)", us_records)],
+    )
+
+
+def _parse_xlsx_shared_strings(zf: zipfile.ZipFile) -> list[str]:
+    ns = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    root = ET.fromstring(zf.read("xl/sharedStrings.xml"))
+    values: list[str] = []
+    for si in root.findall("a:si", ns):
+        values.append("".join((t.text or "") for t in si.findall(".//a:t", ns)))
+    return values
+
+
+def _xlsx_sheet_xml_for_name(zf: zipfile.ZipFile, sheet_name: str) -> ET.Element:
+    ns = {
+        "a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main",
+        "r": "http://schemas.openxmlformats.org/officeDocument/2006/relationships",
+    }
+    wb = ET.fromstring(zf.read("xl/workbook.xml"))
+    rels = ET.fromstring(zf.read("xl/_rels/workbook.xml.rels"))
+    rel_map = {rel.attrib["Id"]: rel.attrib["Target"] for rel in rels}
+
+    for sh in wb.findall(".//a:sheets/a:sheet", ns):
+        if sh.attrib.get("name") == sheet_name:
+            rid = sh.attrib["{http://schemas.openxmlformats.org/officeDocument/2006/relationships}id"]
+            target = "xl/" + rel_map[rid]
+            return ET.fromstring(zf.read(target))
+    raise RuntimeError(f"Sheet '{sheet_name}' not found")
+
+
+def _xlsx_cell_value(cell: ET.Element, shared: list[str], ns: dict[str, str]) -> str | None:
+    v = cell.find("a:v", ns)
+    if v is None:
+        return None
+    raw = v.text or ""
+    if cell.attrib.get("t") == "s":
+        try:
+            return shared[int(raw)]
+        except Exception:
+            return raw
+    return raw
+
+
+def build_us_gdp_industry_manifest() -> dict[str, Any]:
+    # No-key fallback based on BEA's public GDP workbook table 14 (latest available release).
+    url = "https://www.bea.gov/sites/default/files/2026-01/gdp3q25-updated.xlsx"
+    with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tf:
+        tmp_name = tf.name
+    try:
+        urllib.request.urlretrieve(url, tmp_name)
+        with zipfile.ZipFile(tmp_name) as zf:
+            shared = _parse_xlsx_shared_strings(zf)
+            sheet = _xlsx_sheet_xml_for_name(zf, "Table 14")
+
+        ns = {"a": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+        rows = {int(r.attrib["r"]): r for r in sheet.findall(".//a:sheetData/a:row", ns)}
+
+        # Column headers for recent quarters live in row 4 (year) and row 5 (quarter).
+        quarter_cols = ["D", "E", "F", "G", "H"]
+
+        def row_map(row_num: int) -> dict[str, str]:
+            out: dict[str, str] = {}
+            row = rows[row_num]
+            for c in row.findall("a:c", ns):
+                ref = c.attrib.get("r", "")
+                col = "".join(ch for ch in ref if ch.isalpha())
+                val = _xlsx_cell_value(c, shared, ns)
+                if val is not None:
+                    out[col] = val
+            return out
+
+        r4 = row_map(4)
+        r5 = row_map(5)
+        labels: list[str] = []
+        for c in quarter_cols:
+            year = r4.get(c)
+            quarter = r5.get(c)
+            if year and quarter:
+                labels.append(f"{year}-{quarter}")
+            else:
+                labels.append(c)
+
+        # Rows from Table 14:
+        # 6 = GDP total, 18 = Information, 22 = Professional/scientific/technical services.
+        gdp_row = row_map(6)
+        info_row = row_map(18)
+        tech_row = row_map(22)
+
+        def as_points(row: dict[str, str]) -> list[tuple[str, float]]:
+            pts: list[tuple[str, float]] = []
+            for i, c in enumerate(quarter_cols):
+                if c not in row:
+                    continue
+                pts.append((labels[i], float(row[c])))
+            return pts
+
+        gdp_pts = as_points(gdp_row)
+        info_pts = as_points(info_row)
+        tech_pts = as_points(tech_row)
+
+        if min(len(gdp_pts), len(info_pts), len(tech_pts)) < 4:
+            raise RuntimeError("Insufficient BEA points in workbook table 14")
+
+        return make_xy_manifest(
+            chart_type="line",
+            title="U.S. GDP by Industry Group (Recent Quarters)",
+            x_label="Quarter",
+            y_label="Billions of dollars",
+            series=[
+                ("Gross domestic product", gdp_pts),
+                ("Information", info_pts),
+                ("Professional, scientific, and technical services", tech_pts),
+            ],
+        )
+    finally:
+        Path(tmp_name).unlink(missing_ok=True)
+
+
+def build_us_electricity_top5_manifest() -> dict[str, Any]:
+    url = "https://www.eia.gov/totalenergy/data/browser/csv.php?tbl=T07.02A"
+    rows = list(csv.DictReader(io.StringIO(http_get_text(url))))
+
+    annual_keys = [r["YYYYMM"] for r in rows if r["YYYYMM"].endswith("13")]
+    if not annual_keys:
+        raise RuntimeError("No annual EIA rows found")
+
+    latest = max(annual_keys)
+    annual_rows = [r for r in rows if r["YYYYMM"] == latest]
+
+    def to_float(v: str) -> float:
+        return float(v) if v not in ("", "NA", "null") else float("nan")
+
+    gen_rows = []
+    for r in annual_rows:
+        desc = r.get("Description", "")
+        if not desc.startswith("Electricity Net Generation From"):
+            continue
+        if "Pumped Storage" in desc:
+            continue
+        val = to_float(r["Value"])
+        if math.isnan(val) or val <= 0:
+            continue
+        label = (
+            desc.replace("Electricity Net Generation From ", "")
+            .replace(", All Sectors", "")
+            .strip()
+        )
+        gen_rows.append((label, val))
+
+    gen_rows.sort(key=lambda t: t[1], reverse=True)
+    top5 = gen_rows[:5]
+    if len(top5) < 5:
+        raise RuntimeError("Failed to extract top 5 generation sources")
+
+    title_year = latest[:4]
+    return make_donut_manifest(
+        title=f"Top 5 U.S. Electricity Generation Sources ({title_year})",
+        records=top5,
+    )
+
+
+def main() -> int:
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    targets: list[tuple[str, Path, Any]] = [
+        (
+            "us_unemployment_monthly",
+            DATA_DIR / "us-unemployment-monthly.json",
+            build_us_unemployment_monthly_manifest,
+        ),
+        (
+            "us_median_age_census",
+            DATA_DIR / "us-median-age-census.json",
+            build_us_census_median_age_manifest,
+        ),
+        (
+            "us_gdp_industry_tech",
+            DATA_DIR / "us-gdp-industry-tech.json",
+            build_us_gdp_industry_manifest,
+        ),
+        (
+            "us_eu_inflation",
+            DATA_DIR / "us-eu-inflation.json",
+            build_us_eu_inflation_manifest,
+        ),
+        (
+            "us_unemployment_decade",
+            DATA_DIR / "us-unemployment-decade.json",
+            build_us_unemployment_decade_manifest,
+        ),
+        (
+            "us_electricity_top5",
+            DATA_DIR / "us-electricity-top5.json",
+            build_us_electricity_top5_manifest,
+        ),
+    ]
+
+    status: dict[str, Any] = {
+        "updatedAt": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "sources": {},
+        "policy": "cached files are retained until replacement data is downloaded and validated",
+    }
+
+    failures = 0
+    updates = 0
+
+    for name, path, builder in targets:
+        existing = load_json_if_exists(path)
+        try:
+            candidate = builder()
+            if not validate_manifest(candidate):
+                raise RuntimeError("Manifest validation failed")
+
+            atomic_write_json(path, candidate)
+            updates += 1
+            status["sources"][name] = {
+                "state": "updated",
+                "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+            }
+        except Exception as exc:
+            if existing is not None and validate_manifest(existing):
+                status["sources"][name] = {
+                    "state": "kept_cached",
+                    "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+                    "reason": str(exc),
+                }
+            else:
+                failures += 1
+                status["sources"][name] = {
+                    "state": "failed_no_cache",
+                    "path": str(path.relative_to(REPO_ROOT)).replace("\\", "/"),
+                    "reason": str(exc),
+                }
+
+    atomic_write_json(STATUS_FILE, status)
+
+    print(json.dumps(status, indent=2))
+    print(f"Updated: {updates}, Failures without cache: {failures}")
+
+    return 1 if failures > 0 else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,84 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "U.S. Median Age (Census ACS 1-Year)",
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Median age",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          },
+          "units": "years"
+        }
+      },
+      "series": [
+        {
+          "key": "Median age",
+          "records": [
+            {
+              "x": "2014",
+              "y": "37.7"
+            },
+            {
+              "x": "2015",
+              "y": "37.8"
+            },
+            {
+              "x": "2016",
+              "y": "37.9"
+            },
+            {
+              "x": "2017",
+              "y": "38.1"
+            },
+            {
+              "x": "2018",
+              "y": "38.2"
+            },
+            {
+              "x": "2019",
+              "y": "38.5"
+            },
+            {
+              "x": "2021",
+              "y": "38.8"
+            },
+            {
+              "x": "2022",
+              "y": "39"
+            },
+            {
+              "x": "2023",
+              "y": "39.2"
+            },
+            {
+              "x": "2024",
+              "y": "39.2"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": true
+      }
+    }
+  ]
+}

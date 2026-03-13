@@ -1,0 +1,30 @@
+{
+  "updatedAt": "2026-03-13T16:56:59Z",
+  "sources": {
+    "us_unemployment_monthly": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-unemployment-monthly.json"
+    },
+    "us_median_age_census": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-median-age-census.json"
+    },
+    "us_gdp_industry_tech": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-gdp-industry-tech.json"
+    },
+    "us_eu_inflation": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-eu-inflation.json"
+    },
+    "us_unemployment_decade": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-unemployment-decade.json"
+    },
+    "us_electricity_top5": {
+      "state": "updated",
+      "path": "docs/data/manifests/us-electricity-top5.json"
+    }
+  },
+  "policy": "cached files are retained until replacement data is downloaded and validated"
+}

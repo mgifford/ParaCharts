@@ -1,0 +1,113 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "U.S. GDP by Industry Group (Recent Quarters)",
+      "facets": {
+        "x": {
+          "label": "Quarter",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Billions of dollars",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Gross domestic product",
+          "records": [
+            {
+              "x": "2024-Q3",
+              "y": "29511.7"
+            },
+            {
+              "x": "2024-Q4",
+              "y": "29825.2"
+            },
+            {
+              "x": "2025-Q1",
+              "y": "30042.1"
+            },
+            {
+              "x": "2025-Q2",
+              "y": "30485.7"
+            },
+            {
+              "x": "2025-Q3",
+              "y": "31098"
+            }
+          ]
+        },
+        {
+          "key": "Information",
+          "records": [
+            {
+              "x": "2024-Q3",
+              "y": "1610.2"
+            },
+            {
+              "x": "2024-Q4",
+              "y": "1626.4"
+            },
+            {
+              "x": "2025-Q1",
+              "y": "1633.8"
+            },
+            {
+              "x": "2025-Q2",
+              "y": "1666.3"
+            },
+            {
+              "x": "2025-Q3",
+              "y": "1718.8"
+            }
+          ]
+        },
+        {
+          "key": "Professional, scientific, and technical services",
+          "records": [
+            {
+              "x": "2024-Q3",
+              "y": "3844.5"
+            },
+            {
+              "x": "2024-Q4",
+              "y": "3907.4"
+            },
+            {
+              "x": "2025-Q1",
+              "y": "3933.4"
+            },
+            {
+              "x": "2025-Q2",
+              "y": "3980.2"
+            },
+            {
+              "x": "2025-Q3",
+              "y": "4068.5"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": true
+      }
+    }
+  ]
+}

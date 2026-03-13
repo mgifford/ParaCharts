@@ -1,0 +1,85 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "U.S. Unemployment Rate (Annual Average, Last 10 Years)",
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Unemployment rate",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          },
+          "units": "percent",
+          "multiplier": 0.01
+        }
+      },
+      "series": [
+        {
+          "key": "Unemployment rate",
+          "records": [
+            {
+              "x": "2015",
+              "y": "5.27"
+            },
+            {
+              "x": "2016",
+              "y": "4.88"
+            },
+            {
+              "x": "2017",
+              "y": "4.36"
+            },
+            {
+              "x": "2018",
+              "y": "3.89"
+            },
+            {
+              "x": "2019",
+              "y": "3.68"
+            },
+            {
+              "x": "2020",
+              "y": "8.1"
+            },
+            {
+              "x": "2021",
+              "y": "5.35"
+            },
+            {
+              "x": "2022",
+              "y": "3.65"
+            },
+            {
+              "x": "2023",
+              "y": "3.62"
+            },
+            {
+              "x": "2024",
+              "y": "4.02"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": true
+      }
+    }
+  ]
+}

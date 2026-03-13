@@ -1,0 +1,93 @@
+{
+  "datasets": [
+    {
+      "type": "column",
+      "title": "U.S. Unemployment Rate (Last 12 Months)",
+      "facets": {
+        "x": {
+          "label": "Month",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Unemployment rate",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          },
+          "units": "percent",
+          "multiplier": 0.01
+        }
+      },
+      "series": [
+        {
+          "key": "Unemployment rate",
+          "records": [
+            {
+              "x": "2025-02",
+              "y": "4.2"
+            },
+            {
+              "x": "2025-03",
+              "y": "4.2"
+            },
+            {
+              "x": "2025-04",
+              "y": "4.2"
+            },
+            {
+              "x": "2025-05",
+              "y": "4.3"
+            },
+            {
+              "x": "2025-06",
+              "y": "4.1"
+            },
+            {
+              "x": "2025-07",
+              "y": "4.3"
+            },
+            {
+              "x": "2025-08",
+              "y": "4.3"
+            },
+            {
+              "x": "2025-09",
+              "y": "4.4"
+            },
+            {
+              "x": "2025-11",
+              "y": "4.5"
+            },
+            {
+              "x": "2025-12",
+              "y": "4.4"
+            },
+            {
+              "x": "2026-01",
+              "y": "4.3"
+            },
+            {
+              "x": "2026-02",
+              "y": "4.4"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": true
+      }
+    }
+  ]
+}

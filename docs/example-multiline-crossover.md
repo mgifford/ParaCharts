@@ -1,18 +1,18 @@
-# Multi-Line Sector Comparison Example (China GDP)
+# Multi-Line Sector Comparison Example (U.S. GDP by Industry)
 
 ## Live Preview
 
-<para-chart manifest="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/data/manifests/line-multi-manifest-57.json" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
+<para-chart manifest="data/manifests/us-gdp-industry-tech.json" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
 <script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
 
-<iframe src="https://fizzstudio.github.io/ParaCharts-demo/charts/line-multi-1.html" title="Reference preview: multi-line sector chart" style="display:block; width:100%; min-height: 32rem; border: 1px solid #d0d7de; margin: 0.75rem 0;" loading="lazy"></iframe>
+<iframe src="https://fizzstudio.github.io/ParaCharts-demo/preview/?manifesturl=https%3A%2F%2Fraw.githubusercontent.com%2Fmgifford%2FParaCharts%2Fmain%2Fdocs%2Fdata%2Fmanifests%2Fus-gdp-industry-tech.json" title="Reference preview: U.S. GDP by industry chart" style="display:block; width:100%; min-height: 32rem; border: 1px solid #d0d7de; margin: 0.75rem 0;" loading="lazy"></iframe>
 
-If the component preview does not load in your browser, open this fallback demo page: [ParaCharts demo multi-line chart](https://fizzstudio.github.io/ParaCharts-demo/charts/line-multi-1.html)
+If the component preview does not load in your browser, open this fallback demo page: [ParaCharts preview for this live manifest](https://fizzstudio.github.io/ParaCharts-demo/preview/?manifesturl=https%3A%2F%2Fraw.githubusercontent.com%2Fmgifford%2FParaCharts%2Fmain%2Fdocs%2Fdata%2Fmanifests%2Fus-gdp-industry-tech.json)
 
 ## Scenario
 
-Compare multiple GDP sector trajectories over time.
+Compare recent-quarter trajectories for U.S. total GDP, Information, and Professional/Scientific/Technical services.
 
 ## When To Use
 
@@ -21,14 +21,14 @@ Use a multi-line chart when relative movement between several series is as impor
 ## Manifest
 
 ```html
-<para-chart manifest="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/data/manifests/line-multi-manifest-57.json"></para-chart>
+<para-chart manifest="data/manifests/us-gdp-industry-tech.json"></para-chart>
 ```
 
 Full manifest (JSON):
-- https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/data/manifests/line-multi-manifest-57.json
+- https://raw.githubusercontent.com/mgifford/ParaCharts/main/docs/data/manifests/us-gdp-industry-tech.json
 
 ## Interpretation Prompts
 
-1. Which series appears to dominate near the end of the timeline?
-2. Do any lines converge or diverge strongly in later years?
-3. Which series seems most volatile across the period?
+1. Which series is highest in absolute dollars at the most recent quarter?
+2. Do Information and Professional/Scientific/Technical services move in parallel?
+3. Where do growth rates appear to diverge across the three lines?
