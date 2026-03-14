@@ -114,27 +114,48 @@ def fmt_num(v: float, digits: int = 2) -> str:
 
 _MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+_QUARTER_MARK_MONTHS = {3: 'Mar', 6: 'Jun', 9: 'Sep'}
 
 
 def format_month_labels(yyyymm_list: list[str]) -> list[str]:
-    """Convert a list of 'YYYY-MM' strings to compact display labels.
+    """Convert a list of 'YYYY-MM' strings to compact x-axis display labels.
 
-    Shows abbreviated month and 2-digit year on the first entry and on each
-    year change.  Subsequent months in the same year show month only.
+    For series of 18 months or fewer every month gets a label:
+    abbreviated month plus 2-digit year on first entry and on each year change,
+    abbreviated month only otherwise.  e.g. "Feb '25", "Mar", …, "Jan '26".
 
-    Examples: "Feb '25", "Mar", "Apr", ..., "Jan '26", "Feb"
+    For longer series sparse mode activates to prevent axis crowding:
+    the 4-digit year appears at the first entry of each calendar year,
+    abbreviated months appear at quarterly pivots (Mar, Jun, Sep), and all
+    other months receive an empty string.
     """
-    labels: list[str] = []
-    prev_year: int | None = None
+    if len(yyyymm_list) <= 18:
+        labels: list[str] = []
+        prev_year: int | None = None
+        for ym in yyyymm_list:
+            year, month = int(ym[:4]), int(ym[5:7])
+            abbr = _MONTH_ABBR[month - 1]
+            if prev_year is None or year != prev_year:
+                labels.append(f"{abbr} '{str(year)[2:]}")
+            else:
+                labels.append(abbr)
+            prev_year = year
+        return labels
+
+    # Sparse mode: year at first entry of each calendar year,
+    # abbreviated month at Mar/Jun/Sep quarterly pivots, empty otherwise.
+    seen_years: set[int] = set()
+    sparse: list[str] = []
     for ym in yyyymm_list:
         year, month = int(ym[:4]), int(ym[5:7])
-        abbr = _MONTH_ABBR[month - 1]
-        if prev_year is None or year != prev_year:
-            labels.append(f"{abbr} '{str(year)[2:]}")
+        if year not in seen_years:
+            sparse.append(str(year))
+            seen_years.add(year)
+        elif month in _QUARTER_MARK_MONTHS:
+            sparse.append(_QUARTER_MARK_MONTHS[month])
         else:
-            labels.append(abbr)
-        prev_year = year
-    return labels
+            sparse.append('')
+    return sparse
 
 
 def make_xy_manifest(
@@ -654,7 +675,7 @@ def build_us_gdp_industry_manifest() -> dict[str, Any]:
         if min(len(gdp_pts), len(info_pts), len(tech_pts)) < 4:
             raise RuntimeError("Insufficient BEA points in workbook table 14")
 
-        return make_xy_manifest(
+        manifest = make_xy_manifest(
             chart_type="line",
             title="U.S. GDP by Industry Group (Recent Quarters)",
             x_label="Quarter",
@@ -665,6 +686,8 @@ def build_us_gdp_industry_manifest() -> dict[str, Any]:
                 ("Professional, scientific, and technical services", tech_pts),
             ],
         )
+        manifest["datasets"][0]["settings"]["chart.hasDirectLabels"] = False
+        return manifest
     finally:
         Path(tmp_name).unlink(missing_ok=True)
 
@@ -845,7 +868,7 @@ def build_us_policy_unemployment_manifest() -> dict[str, Any]:
     unemployment_records = [(lbl, unemployment_by_month[m]) for lbl, m in zip(shared_labels, common)]
     fedfunds_records = [(lbl, fedfunds_by_month[m]) for lbl, m in zip(shared_labels, common)]
 
-    return make_xy_manifest(
+    manifest = make_xy_manifest(
         chart_type="line",
         title="U.S. Policy Rate and Unemployment Rate (Last 6 Years)",
         x_label="Month",
@@ -857,6 +880,8 @@ def build_us_policy_unemployment_manifest() -> dict[str, Any]:
             ("Federal funds rate", fedfunds_records),
         ],
     )
+    manifest["datasets"][0]["settings"]["chart.hasDirectLabels"] = False
+    return manifest
 
 
 def build_us_electricity_top_movers_manifest() -> dict[str, Any]:

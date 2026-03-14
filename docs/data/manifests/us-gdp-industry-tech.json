@@ -106,7 +106,8 @@
         "source": "inline"
       },
       "settings": {
-        "controlPanel.isControlPanelDefaultOpen": true
+        "controlPanel.isControlPanelDefaultOpen": true,
+        "chart.hasDirectLabels": false
       }
     }
   ]
