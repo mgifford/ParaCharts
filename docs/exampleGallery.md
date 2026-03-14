@@ -46,15 +46,6 @@ The current monthly updater and validation pipeline is ready for these chart typ
 - `waterfall`
 - `stepline`
 
-### Next Source-Backed Examples (No Runtime Wiring Needed)
-
-All four previously planned source-backed examples are now implemented and listed in the gallery above (items 11–14).
-
-- [Column Inflation Snapshot (U.S., Last 24 Months)](example-inflation-snapshot.md) — `column` via FRED `CPIAUCSL`
-- [Multi-Line Policy Rate and Unemployment (U.S., Last 6 Years)](example-policy-unemployment-line.md) — `line` via FRED `FEDFUNDS` + BLS
-- [Bar Chart Electricity Top Movers (U.S., Month-over-Month)](example-electricity-top-movers.md) — `bar` via EIA `T07.02A`
-- [Scatter Policy Response (Unemployment vs Federal Funds Rate)](example-policy-scatter.md) — `scatter` via BLS + FRED `FEDFUNDS`
-
 ### Chart-Family Examples That Need Runtime Validation Or Wiring
 
 1. **Lollipop Ranked Movers (Live)**
