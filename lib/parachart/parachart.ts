@@ -82,6 +82,8 @@ export class ParaChart extends ParaComponent {
   protected _scrollyteller: Scrollyteller | undefined;
   private _resizeObserver?: ResizeObserver;
   private _resizeRafId?: number;
+  private _darkModeMediaQuery?: MediaQueryList;
+  private _darkModeListener?: (e: MediaQueryListEvent) => void;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -300,6 +302,50 @@ export class ParaChart extends ParaComponent {
     }
     this._resizeObserver?.disconnect();
     this._resizeObserver = undefined;
+    if (this._darkModeListener && this._darkModeMediaQuery) {
+      this._darkModeMediaQuery.removeEventListener('change', this._darkModeListener);
+      this._darkModeMediaQuery = undefined;
+      this._darkModeListener = undefined;
+    }
+  }
+
+  /**
+   * Sync `isDarkModeEnabled` with the OS `prefers-color-scheme` media feature,
+   * respecting any explicit value the author passed through `config`.
+   * A listener is attached so that OS-level theme changes are reflected
+   * automatically as long as the user has not overridden the setting via the
+   * control panel (i.e. the setting still matches the current OS preference).
+   */
+  private _initSystemDarkMode(): void {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    // SettingsInput uses flat dot-path string keys, e.g. 'color.isDarkModeEnabled'.
+    // If the author explicitly passed this key in config, respect their choice.
+    if ('color.isDarkModeEnabled' in this.config) return;
+
+    this._darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyPreference = (prefersDark: boolean) => {
+      this._paraState.updateSettings(draft => {
+        draft.color!.isDarkModeEnabled = prefersDark;
+      });
+    };
+
+    applyPreference(this._darkModeMediaQuery.matches);
+
+    this._darkModeListener = (e: MediaQueryListEvent) => {
+      // Only follow OS changes while the setting still tracks the OS value.
+      // When the OS flips (e.g. from light→dark), e.matches is the NEW value and
+      // !e.matches is the OLD OS value. If the in-app setting equals the OLD OS
+      // value, the user hasn't manually overridden it, so we follow the new OS
+      // value. If they differ, the user has explicitly toggled via the control
+      // panel and we leave their choice alone.
+      const currentlyDark = this._paraState.settings.color.isDarkModeEnabled;
+      const previousOsValue = !e.matches;
+      if (currentlyDark === previousOsValue) {
+        applyPreference(e.matches);
+      }
+    };
+    this._darkModeMediaQuery.addEventListener('change', this._darkModeListener);
   }
 
   private _setupResizeObserver(): void {
@@ -329,6 +375,7 @@ export class ParaChart extends ParaComponent {
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     this._commander = Commander.getInst(this._paraViewRef.value!);
+    this._initSystemDarkMode();
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {

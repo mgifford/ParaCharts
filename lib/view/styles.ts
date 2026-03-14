@@ -277,15 +277,15 @@ export const styles = css`
     stroke-linejoin: round;
   }
   .symbol.outline {
-    fill: white;
+    fill: var(--background-color);
   }
   .slice path {
     stroke: none;
     /*opacity: 0.5;*/
   }
   .slice text {
-    fill: black;
-    stroke: black;
+    fill: var(--label-color);
+    stroke: var(--label-color);
     text-anchor: middle;
   }
 
