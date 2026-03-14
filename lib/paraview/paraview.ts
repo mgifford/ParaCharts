@@ -469,6 +469,11 @@ export class ParaView extends ParaComponent {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this._documentView?.settingDidChange(path, oldValue, newValue);
     switch (path) {
+      case 'chart.size.width':
+      case 'chart.size.height':
+        this.computeViewBox();
+        this.requestUpdate();
+        break;
       case 'ui.isFullscreenEnabled':
         this._handleFullscreen(newValue);
         break;

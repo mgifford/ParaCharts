@@ -80,6 +80,7 @@ export class ParaChart extends ParaComponent {
   protected _paraAPI!: ParaAPI;
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
+  private _resizeObserver?: ResizeObserver;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -287,6 +288,32 @@ export class ParaChart extends ParaComponent {
       });
     }
     this._styleManager.update();
+    this._setupResizeObserver();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = undefined;
+  }
+
+  private _setupResizeObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+    this._resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const width = Math.round(entry.contentRect.width);
+        if (width > 0 && width !== this._paraState.settings.chart.size.width) {
+          const currentWidth = this._paraState.settings.chart.size.width;
+          const currentHeight = this._paraState.settings.chart.size.height;
+          const newHeight = Math.round(width * currentHeight / currentWidth);
+          this._paraState.updateSettings(draft => {
+            draft.chart.size.width = width;
+            draft.chart.size.height = newHeight;
+          });
+        }
+      }
+    });
+    this._resizeObserver.observe(this);
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
