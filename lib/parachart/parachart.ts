@@ -81,6 +81,7 @@ export class ParaChart extends ParaComponent {
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
   private _resizeObserver?: ResizeObserver;
+  private _resizeRafId?: number;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -293,6 +294,10 @@ export class ParaChart extends ParaComponent {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    if (this._resizeRafId !== undefined) {
+      cancelAnimationFrame(this._resizeRafId);
+      this._resizeRafId = undefined;
+    }
     this._resizeObserver?.disconnect();
     this._resizeObserver = undefined;
   }
@@ -300,18 +305,24 @@ export class ParaChart extends ParaComponent {
   private _setupResizeObserver(): void {
     if (typeof ResizeObserver === 'undefined') return;
     this._resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
+      const [entry] = entries;
+      if (!entry) return;
+      if (this._resizeRafId !== undefined) {
+        cancelAnimationFrame(this._resizeRafId);
+      }
+      this._resizeRafId = requestAnimationFrame(() => {
+        this._resizeRafId = undefined;
         const width = Math.round(entry.contentRect.width);
-        if (width > 0 && width !== this._paraState.settings.chart.size.width) {
-          const currentWidth = this._paraState.settings.chart.size.width;
-          const currentHeight = this._paraState.settings.chart.size.height;
+        const currentWidth = this._paraState.settings.chart.size.width;
+        const currentHeight = this._paraState.settings.chart.size.height;
+        if (width > 0 && currentWidth > 0 && width !== currentWidth) {
           const newHeight = Math.round(width * currentHeight / currentWidth);
           this._paraState.updateSettings(draft => {
             draft.chart.size.width = width;
             draft.chart.size.height = newHeight;
           });
         }
-      }
+      });
     });
     this._resizeObserver.observe(this);
   }
