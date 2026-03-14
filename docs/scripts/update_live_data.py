@@ -722,20 +722,39 @@ def build_us_electricity_waterfall_manifest() -> dict[str, Any]:
     common_sources = sorted(set(latest_sources.keys()) & set(prev_sources.keys()))
     deltas = [(s, latest_sources[s] - prev_sources[s]) for s in common_sources]
     deltas = [d for d in deltas if abs(d[1]) >= 0.01]
+    if not deltas:
+        raise RuntimeError("No non-zero source deltas for waterfall chart")
+
+    latest_label = f"{latest[:4]}-{latest[4:6]}"
+    prev_label = f"{prev[:4]}-{prev[4:6]}"
+    title_left = latest_label
+    title_right = prev_label
+    total_change = latest_total - prev_total
+
+    # Compatibility note: some renderers fail when every cumulative step is negative.
+    # If all deltas are <= 0, invert the comparison direction and update labels.
+    if not any(v > 0 for _k, v in deltas):
+        deltas = [(k, -v) for k, v in deltas]
+        total_change = -total_change
+        title_left = prev_label
+        title_right = latest_label
+
     deltas.sort(key=lambda t: abs(t[1]), reverse=True)
     top = deltas[:4]
     if len(top) < 3:
         raise RuntimeError("Insufficient source deltas for waterfall chart")
 
-    total_change = latest_total - prev_total
     residual = total_change - sum(v for _k, v in top)
-    waterfall_records = top + [("Other sources", residual), ("Net total change", total_change)]
 
-    latest_label = f"{latest[:4]}-{latest[4:6]}"
-    prev_label = f"{prev[:4]}-{prev[4:6]}"
+    # Keep positive contributions first so cumulative totals cross above zero when possible.
+    contributions = top + [("Other sources", residual)]
+    positives = [row for row in contributions if row[1] >= 0]
+    negatives = [row for row in contributions if row[1] < 0]
+    waterfall_records = positives + negatives + [("Net total change", total_change)]
+
     return make_xy_manifest(
         chart_type="waterfall",
-        title=f"U.S. Electricity Generation Change by Source ({latest_label} vs {prev_label})",
+        title=f"U.S. Electricity Generation Change by Source ({title_left} vs {title_right})",
         x_label="Source contribution",
         y_label="Change in generation (million kilowatthours)",
         series=[("Month-over-month contribution", waterfall_records)],

@@ -30,14 +30,6 @@
           "key": "Month-over-month contribution",
           "records": [
             {
-              "x": "Natural Gas",
-              "y": "-12546.35"
-            },
-            {
-              "x": "Solar",
-              "y": "-5907.48"
-            },
-            {
               "x": "Nuclear Electric Power",
               "y": "4587.11"
             },
@@ -48,6 +40,14 @@
             {
               "x": "Other sources",
               "y": "1288.57"
+            },
+            {
+              "x": "Natural Gas",
+              "y": "-12546.35"
+            },
+            {
+              "x": "Solar",
+              "y": "-5907.48"
             },
             {
               "x": "Net total change",
