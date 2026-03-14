@@ -1,9 +1,9 @@
 const PUBLIC_BUNDLE_URL = 'https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js';
-const LOAD_ERROR_MESSAGE = 'ParaCharts failed to load for this page. If you are building from source, configure NPM_AUTH_TOKEN with read access to https://npm.fizz.studio.';
+const LOAD_ERROR_MESSAGE = 'ParaCharts failed to load for this page. The public runtime could not be loaded for this example.';
 
 function formatErrorMessage(detail) {
   const detailText = detail ? ` Runtime detail: ${detail}` : '';
-  return `This chart could not be rendered by the public ParaCharts runtime.${detailText} If you are building from source, configure NPM_AUTH_TOKEN with read access to https://npm.fizz.studio.`;
+  return `This chart could not be rendered by the public ParaCharts runtime.${detailText} If this keeps happening, use the source build with NPM_AUTH_TOKEN read access to https://npm.fizz.studio.`;
 }
 
 function replaceWithError(chart, detail) {
@@ -21,8 +21,16 @@ function replaceWithError(chart, detail) {
   chart.replaceWith(message);
 }
 
-function replaceAllChartsWithError(detail) {
-  document.querySelectorAll('para-chart').forEach((chart) => replaceWithError(chart, detail));
+function hasRenderedChart(chart) {
+  const state = chart?.paraState?.dataState ?? chart?._paraState?.dataState;
+  if (state === 'complete') {
+    return true;
+  }
+  const root = chart?.shadowRoot;
+  if (!root) {
+    return false;
+  }
+  return Boolean(root.querySelector('[role="application"], svg, para-view'));
 }
 
 function watchChartForRenderFailure(chart) {
@@ -39,35 +47,18 @@ function watchChartForRenderFailure(chart) {
       clearInterval(timer);
       loaded.catch((error) => {
         const detail = error?.message || String(error || 'Unknown render error');
-        replaceWithError(chart, detail);
+        // Some public-bundle promise rejections are non-fatal; only replace truly blank/error charts.
+        setTimeout(() => {
+          const state = chart?.paraState?.dataState ?? chart?._paraState?.dataState;
+          if (state === 'error' || !hasRenderedChart(chart)) {
+            replaceWithError(chart, detail);
+          }
+        }, 400);
       });
     } else if (attempts > 40) {
       clearInterval(timer);
     }
   }, 125);
-}
-
-function installGlobalRuntimeErrorHandlers() {
-  if (window.__parachartsRuntimeErrorHandlersInstalled) {
-    return;
-  }
-  window.__parachartsRuntimeErrorHandlersInstalled = true;
-
-  window.addEventListener('error', (event) => {
-    const source = `${event?.filename || ''} ${event?.message || ''}`;
-    if (source.includes('paracharts.js')) {
-      replaceAllChartsWithError(event?.message || 'Unknown runtime error');
-    }
-  });
-
-  window.addEventListener('unhandledrejection', (event) => {
-    const reason = event?.reason;
-    const text = `${reason?.stack || ''} ${reason?.message || reason || ''}`;
-    if (text.includes('paracharts.js') || text.includes('ParaLoader') || text.includes('is not iterable')) {
-      const detail = reason?.message || String(reason || 'Unknown promise rejection');
-      replaceAllChartsWithError(detail);
-    }
-  });
 }
 
 function ensureParaChartsRuntime() {
@@ -76,6 +67,7 @@ function ensureParaChartsRuntime() {
     return;
   }
   if (customElements.get('para-chart')) {
+    charts.forEach(watchChartForRenderFailure);
     return;
   }
   if (window.__parachartsPublicBundleLoading) {
@@ -108,9 +100,14 @@ function ensureParaChartsRuntime() {
   setTimeout(() => {
     if (!customElements.get('para-chart')) {
       fail();
+      return;
     }
+    document.querySelectorAll('para-chart').forEach((chart) => {
+      if (!hasRenderedChart(chart)) {
+        replaceWithError(chart);
+      }
+    });
   }, 5000);
 }
 
-installGlobalRuntimeErrorHandlers();
 ensureParaChartsRuntime();
