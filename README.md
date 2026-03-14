@@ -12,10 +12,14 @@ ParaCharts focuses on:
 ParaCharts combines visual charts, textual descriptions, and audio exploration so more people can understand the same dataset.
 
 Key capabilities:
-- Multiple chart families: bar/column, line, scatter, heatmap, histogram, pie/donut, graph, venn, and more
+- Multiple chart families in current default registry: bar/column, line/stepline, scatter, heatmap, pie/donut, waterfall, lollipop, and venn
 - Rich control panel for chart appearance, data, audio, annotations, and analysis
 - ARIA live updates and point-level descriptions
 - Sonification and keyboard-first exploration
+
+Current wiring note:
+- Histogram and gauge settings exist in the codebase but are not enabled in the current default chart-info mapping.
+- Graphing-function examples are documented as roadmap work, not a stable published example flow yet.
 
 ## How It Works
 
@@ -30,15 +34,12 @@ At a high level, ParaCharts works as a pipeline:
 
 ```html
 <para-chart
-	manifestType="content"
-	manifest='{
-		"type": "column",
-		"series": [{ "name": "Revenue", "data": [120, 150, 165, 200] }],
-		"categories": ["Q1", "Q2", "Q3", "Q4"],
-		"description": "Quarterly revenue in USD thousands"
-	}'
+	manifestType="url"
+	manifest="data/manifests/us-unemployment-monthly.json"
 ></para-chart>
 ```
+
+Inline manifests are also supported with `manifestType="content"`.
 
 ## Project Options At A Glance
 
@@ -61,6 +62,10 @@ npm ci
 npm run dev
 ```
 
+Private package note:
+- This repository installs private `@fizz/*` packages from `https://npm.fizz.studio`.
+- Set `NPM_AUTH_TOKEN` and write it to `.npmrc` before `npm ci`.
+
 Useful scripts:
 - `npm run build`: build primary package (`dist/`)
 - `npm run build:ai`: build AI-enhanced package (`dist-ai/`)
@@ -80,9 +85,35 @@ This is ideal for showcasing:
 - Accessibility and keyboard usage guidance
 
 Current docs deployment flow:
-1. Generate docs (`npm run docs:generate`)
-2. Build VitePress site (`npm run docs:build`)
+1. Build docs (`npm run docs:build`, which runs `docs:generate` first)
+2. Upload `docs/.vitepress/dist`
 3. Deploy static artifact to GitHub Pages
+
+### Live Data Refresh Model
+
+The monthly updater refreshes cached data values in manifest JSON files. It does not change chart runtime code or example page wiring.
+
+- Workflow: `.github/workflows/update-live-data.yml`
+- Schedule: monthly (`17 9 1 * *`)
+- Script: `docs/scripts/update_live_data.py`
+- Output: `docs/data/manifests/*.json` and `docs/data/live-data-status.json`
+
+Each example page includes upstream source URLs so readers can inspect where the data came from.
+
+### Accessibility Scanner Workflow
+
+Accessibility scanning is configured for regular feedback with lower CI load:
+
+- Workflow: `.github/workflows/accessibility-scan.yml`
+- Weekly scheduled run
+- PR run when a PR is marked ready for review
+- Optional PR run when label `a11y-scan` is applied
+- Manual run with `core` or `full` URL scopes
+
+Required secrets:
+- `NPM_AUTH_TOKEN` for build/test/docs install steps
+- `GH_TOKEN` for accessibility scanner issue/PR operations
+- `BEA_API_KEY` and `EIA_API_KEY` for live-data update workflow
 
 ## Working With Copilot On GitHub
 

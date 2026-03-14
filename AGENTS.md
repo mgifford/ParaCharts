@@ -38,6 +38,12 @@ Core areas:
 - `lib/assets/audio/`: sonification
 - `lib/state/`: settings, defaults, keyboard mapping, and state management
 - `docs/`: user and developer documentation
+- `docs/scripts/update_live_data.py`: monthly live-data manifest refresh pipeline
+- `.github/workflows/`: CI, docs deploy, monthly data refresh, and accessibility scanning
+
+Docs authoring notes:
+- Many docs pages are generated from `docs/templates/` via `docs/scripts/buildDocs.ts`.
+- Example pages under `docs/example-*.md` are hand-authored and not generated from templates.
 
 ## Build, test, and docs commands
 
@@ -49,6 +55,7 @@ Use npm scripts from the repo root:
 - `npm run test:watch`: watch mode for tests
 - `npm run docs:generate`: regenerate API/docs artifacts
 - `npm run docs:dev`: local docs dev server
+- `npm run docs:build`: production docs build
 
 Before finishing substantial code changes, run relevant checks for touched areas.
 
@@ -62,6 +69,12 @@ Required behavior:
 - Use chart types that match data semantics.
 - Keep units, labels, legends, and scales unambiguous.
 - Ensure table or textual fallbacks communicate equivalent insight.
+
+Current chart-registry reality (from `lib/chart_types/index.ts`):
+- Registered by default: `bar`, `column`, `line`, `stepline`, `pie`, `donut`, `scatter`, `heatmap`, `waterfall`, `lollipop`, `venn`.
+- `stepline` currently uses line-chart info path; `lollipop` currently uses bar-chart info path.
+- `histogram` and `gauge` are not enabled in the current chart-info mapping.
+- For any new docs examples in partially wired families, validate runtime rendering plus keyboard/ARIA behavior before publishing.
 
 Avoid misleading visual encodings:
 - Bar-like comparisons should default to zero baselines unless a documented exception is required.
@@ -121,6 +134,13 @@ When code changes are made, agents should run checks appropriate to impact:
 - Docs generators/templates/API docs: `npm run docs:generate`
 
 If checks cannot be run, report that clearly with reason and risk.
+
+## CI and secrets expectations
+
+- `NPM_AUTH_TOKEN` is required for dependency install in `build-and-test.yml` and `deploy-docs.yml`.
+- `GH_TOKEN` is required for `.github/workflows/accessibility-scan.yml`.
+- `BEA_API_KEY` and `EIA_API_KEY` are used by `.github/workflows/update-live-data.yml`.
+- Prefer low-impact automation patterns (scheduled/manual or readiness-based triggers) over running expensive scans on every commit.
 
 ## PR and change reporting guidance
 
