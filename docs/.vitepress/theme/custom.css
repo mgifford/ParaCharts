@@ -15,3 +15,12 @@
 .VPDoc:not(.has-aside) .content-container {
   max-width: 100% !important;
 }
+
+/* Ensure footer/edit links are distinguishable without relying on color alone. */
+.footer a,
+.VPDocFooter a,
+.VPDocFooter .edit-link-button {
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.15em;
+}
