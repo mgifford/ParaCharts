@@ -2,6 +2,19 @@
 
 The ParaCharts control panel groups UI and accessibility options into a set of tabs. Each tab focuses on related controls so you can quickly find and change the behavior or appearance of a chart. Below you will find one short section per tab describing what that tab does and the most useful actions for end users.
 
+## Where To See Tabs In Action
+
+Use these examples when explaining control panel behavior to front-end developers:
+
+- Chart tab (titles, legend, sizing): [Multi-Line Sector Comparison Example](example-multiline-crossover.md)
+- Colors tab (palette and contrast effects): [Donut Energy Composition Example](example-donut-budget.md)
+- Data tab (source links and downloadable data context): [Bar Chart Electricity Top Movers](example-electricity-top-movers.md)
+- Audio tab (sonification and self-voicing toggles): [Stepline Live Policy-Rate Timeline](example-stepline-policy-rate-live.md)
+- Description tab (caption and text summary behavior): [Line Trend Example](example-line-trend.md)
+- Controls tab (keyboard help and interaction toggles): [Column Unemployment Example](example-bar-comparison.md)
+
+For broad coverage in one place, start from [Example Gallery](exampleGallery.md).
+
 ## Styling para-control-panel
 
 Yes, you can style the control panel directly. The `para-control-panel` component reads CSS custom properties and tab layout variables from its host.

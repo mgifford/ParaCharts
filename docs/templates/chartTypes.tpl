@@ -2,6 +2,22 @@
 
 This section describes each chart type supported by ParaCharts, grouped by family. For each, you'll find a description, typical use cases, structure, and a placeholder for a screenshot. The second section shows how each chart type is encoded in a manifest, with code snippet examples.
 
+## Live Examples By Chart Type
+
+Use these pages to see each chart family running with real manifests and data:
+
+- Bar: [Bar Chart Electricity Top Movers](example-electricity-top-movers.md)
+- Column: [Column Unemployment Example](example-bar-comparison.md)
+- Line (single series): [Line Trend Example](example-line-trend.md)
+- Line (multi series): [Multi-Line Sector Comparison Example](example-multiline-crossover.md)
+- Stepline: [Stepline Live Policy-Rate Timeline](example-stepline-policy-rate-live.md)
+- Scatter: [Scatter Live Macro Relationship](example-scatter-macro-live.md)
+- Heatmap: [Heatmap Live Hourly Pattern](example-heatmap-hourly-live.md)
+- Donut: [Donut Energy Composition Example](example-donut-budget.md)
+- Waterfall: [Waterfall Live Contribution Breakdown](example-waterfall-contribution-live.md)
+
+For a complete index, see [Example Gallery](exampleGallery.md).
+
 
 # Chart Type Families
 

@@ -2,6 +2,19 @@
 
 ParaCharts is designed to provide equivalent insight across multiple interaction modes. This page explains the core disability-related affordances, how each one helps, and how to test that it is functioning.
 
+## Example Pages That Demonstrate Accessibility Features
+
+Use these pages to pair each accessibility claim with a concrete implementation:
+
+- Keyboard point navigation and query behavior: [Column Unemployment Example](example-bar-comparison.md)
+- Multi-series comparison with legend and non-color cues: [Multi-Line Sector Comparison Example](example-multiline-crossover.md)
+- Sonification and self-voicing controls: [Stepline Live Policy-Rate Timeline](example-stepline-policy-rate-live.md)
+- Dense-data readability with non-color structure: [Heatmap Live Hourly Pattern](example-heatmap-hourly-live.md)
+- Positive/negative contribution interpretation: [Waterfall Live Contribution Breakdown](example-waterfall-contribution-live.md)
+- Relationship analysis and outlier exploration: [Scatter Live Macro Relationship](example-scatter-macro-live.md)
+
+For all accessibility test targets in one list, use [Example Gallery](exampleGallery.md).
+
 ## Why This Matters In The Wider Data-Viz Ecosystem
 
 Most charts published online still assume a sighted mouse user. In practice, that means many people can see a chart but cannot fully use it, or cannot access it at all.
