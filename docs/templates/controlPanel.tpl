@@ -2,6 +2,84 @@
 
 The ParaCharts control panel groups UI and accessibility options into a set of tabs. Each tab focuses on related controls so you can quickly find and change the behavior or appearance of a chart. Below you will find one short section per tab describing what that tab does and the most useful actions for end users.
 
+## Styling para-control-panel
+
+Yes, you can style the control panel directly. The `para-control-panel` component reads CSS custom properties and tab layout variables from its host.
+
+Common styling hooks:
+
+- `--control-panel-font-size`: base font size inside the panel.
+- `--control-panel-icon`: URL for the toggle icon.
+- `--control-panel-icon-size`: toggle icon size.
+- `--background`: panel background (supports gradients).
+- `--summary-padding`: toggle button padding.
+- `--summary-margin`: toggle button margin.
+- `--contents-margin`: panel body margin.
+- `--theme-color`: border/accent color used by expanded state.
+
+Behavior/layout controls via settings:
+
+- `controlPanel.tabLabelStyle`: `'icon' | 'iconLabel' | 'label'`.
+- `controlPanel.isControlPanelDefaultOpen`: open/closed on load.
+- Tab visibility toggles such as `controlPanel.isDataTabVisible`, `controlPanel.isColorsTabVisible`, etc.
+
+### Example A: Clean Modern Light Panel
+
+```html
+<style>
+	.cp-modern-light {
+		width: min(100%, 720px);
+		--control-panel-font-size: 0.95rem;
+		--theme-color: #0f766e;
+		--background: linear-gradient(180deg, #f8fbff 0%, #eef6ff 100%);
+		--summary-padding: 0.08rem 0.6rem;
+		--summary-margin: -2px 0;
+		--contents-margin: 6px 0 0 0;
+		border: 1px solid #c9d8ef;
+		border-radius: 12px;
+		box-shadow: 0 8px 24px rgba(15, 35, 60, 0.12);
+	}
+</style>
+
+<para-control-panel class="cp-modern-light"></para-control-panel>
+```
+
+### Example B: Warm Neutral Editorial Panel
+
+```html
+<style>
+	.cp-editorial {
+		width: min(100%, 760px);
+		--control-panel-font-size: 1rem;
+		--theme-color: #9a3412;
+		--background: linear-gradient(180deg, #fffaf3 0%, #fff3e2 100%);
+		--summary-padding: 0.15rem 0.7rem;
+		--summary-margin: -2px 0;
+		--contents-margin: 8px 0 0 0;
+		border: 1px solid #f3d6b5;
+		border-radius: 14px;
+		box-shadow: 0 10px 26px rgba(120, 70, 20, 0.14);
+	}
+</style>
+
+<para-control-panel class="cp-editorial"></para-control-panel>
+```
+
+### Settings Example (Manifest)
+
+```json
+{
+	"settings": {
+		"controlPanel.isControlPanelDefaultOpen": true,
+		"controlPanel.tabLabelStyle": "iconLabel",
+		"controlPanel.isDataTabVisible": true,
+		"controlPanel.isColorsTabVisible": true,
+		"controlPanel.isAudioTabVisible": true,
+		"controlPanel.isAnalysisTabVisible": true
+	}
+}
+```
+
 ## Audio
 
 The Audio tab contains settings that control how charts produce sound and spoken output. Use these when you want to enable audible exploration (sonification) or control automatic speech announcements and their verbosity.
