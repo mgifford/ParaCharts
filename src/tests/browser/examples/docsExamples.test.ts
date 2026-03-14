@@ -14,6 +14,7 @@ const exampleFixtures: ExampleFixture[] = [
   { name: 'multiline crossover', manifest: '/docs/data/manifests/us-gdp-industry-tech.json' },
   { name: 'heatmap weekly', manifest: '/docs/data/manifests/us-unemployment-decade.json' },
   { name: 'donut budget', manifest: '/docs/data/manifests/us-electricity-top5.json' },
+  { name: 'scatter clusters', manifest: '/docs/data/manifests/old-faithful-scatter.json' },
   { name: 'scatter macro live', manifest: '/docs/data/manifests/us-macro-scatter.json' },
   { name: 'heatmap hourly live', manifest: '/docs/data/manifests/us-hourly-temperature-heatmap.json' },
   { name: 'waterfall contribution live', manifest: '/docs/data/manifests/us-electricity-waterfall.json' },

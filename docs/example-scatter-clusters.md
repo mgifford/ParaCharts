@@ -1,10 +1,8 @@
 # Scatter Clusters Example (Old Faithful Geyser Eruptions)
 
-## Preview
+## Live Preview
 
-<img src="assets/scatter.svg" alt="Scatter chart of Old Faithful geyser eruptions showing clustered groups by eruption duration and time since last eruption." style="display:block; width:100%; max-width: 52rem; margin: 0.75rem 0;" />
-
-This page uses a checked-in ParaCharts SVG artifact for now. The previous page content was a mislabeled line-chart example that pulled a stale external demo bundle and failed before render on GitHub Pages.
+<para-chart manifest="data/manifests/old-faithful-scatter.json" style="display:block; width:100%; max-width: 52rem; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
 ## Scenario
 
@@ -20,14 +18,14 @@ Explore how Old Faithful eruption duration relates to the waiting time before th
 
 Use a scatter chart when the question is about clustering, separation, or outliers between two numeric variables.
 
-## Asset
+## Manifest
 
 ```html
-<img src="assets/scatter.svg" alt="Old Faithful clustered scatter chart" />
+<para-chart manifest="data/manifests/old-faithful-scatter.json"></para-chart>
 ```
 
-The checked-in SVG is at:
-- https://raw.githubusercontent.com/mgifford/ParaCharts/main/docs/assets/scatter.svg
+Full manifest (JSON):
+- https://raw.githubusercontent.com/mgifford/ParaCharts/main/docs/data/manifests/old-faithful-scatter.json
 
 ## Interpretation Prompts
 

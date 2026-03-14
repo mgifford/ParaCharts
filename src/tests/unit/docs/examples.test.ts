@@ -38,7 +38,7 @@ describe('docs example integrity', () => {
 
     // Most examples are para-chart based; keep a minimum floor so accidental removals fail loudly.
     // Raise floor when new examples are added.
-    expect(referencedManifestNames.size).toBeGreaterThanOrEqual(12);
+    expect(referencedManifestNames.size).toBeGreaterThanOrEqual(13);
 
     // Verify the 4 new source-backed examples are all present.
     const expectedNewManifests = [
@@ -46,16 +46,17 @@ describe('docs example integrity', () => {
       'us-policy-unemployment-line.json',
       'us-electricity-top-movers.json',
       'us-policy-scatter.json',
+      'old-faithful-scatter.json',
     ];
     for (const name of expectedNewManifests) {
       expect(referencedManifestNames.has(name), `expected manifest ${name} to be referenced by an example page`).toBe(true);
     }
   });
 
-  it('keeps scatter-clusters page as static fallback example', () => {
+  it('keeps scatter-clusters page as manifest-based scatter example', () => {
     const markdown = readFileSync(resolve(DOCS_DIR, 'example-scatter-clusters.md'), 'utf-8');
 
-    expect(markdown).toContain('assets/scatter.svg');
-    expect(markdown).not.toContain('<para-chart');
+    expect(markdown).toContain('data/manifests/old-faithful-scatter.json');
+    expect(markdown).toContain('<para-chart');
   });
 });

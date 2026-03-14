@@ -2,9 +2,8 @@
 
 ## Live Preview
 
-<para-chart manifest="data/manifests/us-unemployment-monthly.json" style="display:block; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
+<para-chart manifest="data/manifests/us-unemployment-monthly.json" style="display:block; width:100%; max-width: 52rem; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
-<script type="module" src="https://cdn.jsdelivr.net/gh/fizzstudio/ParaCharts-demo@main/script/paracharts.js"></script>
 
 Concept reference from Fizz Studio demo: [ParaCharts demo bar chart](https://fizzstudio.github.io/ParaCharts-demo/charts/bar.html)
 
