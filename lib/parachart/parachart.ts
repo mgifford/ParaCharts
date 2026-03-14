@@ -80,6 +80,8 @@ export class ParaChart extends ParaComponent {
   protected _paraAPI!: ParaAPI;
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
+  private _resizeObserver?: ResizeObserver;
+  private _resizeRafId?: number;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -287,6 +289,42 @@ export class ParaChart extends ParaComponent {
       });
     }
     this._styleManager.update();
+    this._setupResizeObserver();
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    if (this._resizeRafId !== undefined) {
+      cancelAnimationFrame(this._resizeRafId);
+      this._resizeRafId = undefined;
+    }
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = undefined;
+  }
+
+  private _setupResizeObserver(): void {
+    if (typeof ResizeObserver === 'undefined') return;
+    this._resizeObserver = new ResizeObserver(entries => {
+      const [entry] = entries;
+      if (!entry) return;
+      if (this._resizeRafId !== undefined) {
+        cancelAnimationFrame(this._resizeRafId);
+      }
+      this._resizeRafId = requestAnimationFrame(() => {
+        this._resizeRafId = undefined;
+        const width = Math.round(entry.contentRect.width);
+        const currentWidth = this._paraState.settings.chart.size.width;
+        const currentHeight = this._paraState.settings.chart.size.height;
+        if (width > 0 && currentWidth > 0 && width !== currentWidth) {
+          const newHeight = Math.round(width * currentHeight / currentWidth);
+          this._paraState.updateSettings(draft => {
+            draft.chart.size.width = width;
+            draft.chart.size.height = newHeight;
+          });
+        }
+      });
+    });
+    this._resizeObserver.observe(this);
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
