@@ -114,7 +114,6 @@ def fmt_num(v: float, digits: int = 2) -> str:
 
 _MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
                'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-_QUARTER_MARK_MONTHS = {3: 'Mar', 6: 'Jun', 9: 'Sep'}
 
 
 def format_month_labels(yyyymm_list: list[str]) -> list[str]:
@@ -124,10 +123,8 @@ def format_month_labels(yyyymm_list: list[str]) -> list[str]:
     abbreviated month plus 2-digit year on first entry and on each year change,
     abbreviated month only otherwise.  e.g. "Feb '25", "Mar", …, "Jan '26".
 
-    For longer series sparse mode activates to prevent axis crowding:
-    the 4-digit year appears at the first entry of each calendar year,
-    abbreviated months appear at quarterly pivots (Mar, Jun, Sep), and all
-    other months receive an empty string.
+    For longer series each label includes month plus 2-digit year, which keeps
+    labels unique and avoids category collisions in interval-axis charts.
     """
     if len(yyyymm_list) <= 18:
         labels: list[str] = []
@@ -142,20 +139,12 @@ def format_month_labels(yyyymm_list: list[str]) -> list[str]:
             prev_year = year
         return labels
 
-    # Sparse mode: year at first entry of each calendar year,
-    # abbreviated month at Mar/Jun/Sep quarterly pivots, empty otherwise.
-    seen_years: set[int] = set()
-    sparse: list[str] = []
+    # Long-series mode: keep labels unique to avoid collisions on interval axes.
+    compact: list[str] = []
     for ym in yyyymm_list:
         year, month = int(ym[:4]), int(ym[5:7])
-        if year not in seen_years:
-            sparse.append(str(year))
-            seen_years.add(year)
-        elif month in _QUARTER_MARK_MONTHS:
-            sparse.append(_QUARTER_MARK_MONTHS[month])
-        else:
-            sparse.append('')
-    return sparse
+        compact.append(f"{_MONTH_ABBR[month - 1]} '{str(year)[2:]}")
+    return compact
 
 
 def make_xy_manifest(
@@ -834,7 +823,7 @@ def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
 
     labels = format_month_labels([m for m, _ in monthly])
     records = list(zip(labels, [v for _, v in monthly]))
-    return make_xy_manifest(
+    manifest = make_xy_manifest(
         chart_type="stepline",
         title="U.S. Policy Rate Timeline (FEDFUNDS, Last 6 Years)",
         x_label="Month",
@@ -843,6 +832,8 @@ def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
         y_multiplier=0.01,
         series=[("Effective federal funds rate", records)],
     )
+    manifest["datasets"][0]["settings"]["axis.horiz.ticks.step"] = 3
+    return manifest
 
 
 def build_us_inflation_snapshot_manifest() -> dict[str, Any]:
@@ -855,7 +846,7 @@ def build_us_inflation_snapshot_manifest() -> dict[str, Any]:
 
     labels = format_month_labels(sorted_months)
     records = [(lbl, yoy[m]) for lbl, m in zip(labels, sorted_months)]
-    return make_xy_manifest(
+    manifest = make_xy_manifest(
         chart_type="column",
         title="U.S. Inflation Rate: Last 24 Months (CPI YoY)",
         x_label="Month",
@@ -864,6 +855,8 @@ def build_us_inflation_snapshot_manifest() -> dict[str, Any]:
         y_multiplier=0.01,
         series=[("Inflation rate (CPI YoY)", records)],
     )
+    manifest["datasets"][0]["settings"]["axis.horiz.ticks.step"] = 3
+    return manifest
 
 
 def build_us_policy_unemployment_manifest() -> dict[str, Any]:
@@ -896,6 +889,7 @@ def build_us_policy_unemployment_manifest() -> dict[str, Any]:
         ],
     )
     manifest["datasets"][0]["settings"]["chart.hasDirectLabels"] = False
+    manifest["datasets"][0]["settings"]["axis.horiz.ticks.step"] = 3
     return manifest
 
 
