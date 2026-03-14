@@ -31,12 +31,13 @@ All manifests in this gallery are refreshed monthly from third-party public sour
 
 - Data is pulled from BLS, U.S. Census, BEA, Eurostat, FRED, and EIA.
 - Cached manifests are refreshed monthly via GitHub Actions.
+- Monthly refresh updates data values in manifest JSON files, not chart code or example page wiring.
 - Existing cached data is retained until replacement data is downloaded and validated.
 - Availability depends on third-party publication schedules and endpoint stability.
 
 ## Expanded Backlog (What Is Missing)
 
-The current monthly updater and validation pipeline is ready for these chart types now:
+The current monthly live-data updater and validation pipeline can refresh manifest data for these chart types now:
 - `line`
 - `column`
 - `bar`
