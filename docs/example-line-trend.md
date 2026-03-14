@@ -2,7 +2,7 @@
 
 ## Live Preview
 
-<para-chart manifest="data/manifests/us-median-age-census.json" style="display:block; width:100%; max-width: 52rem; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
+<para-chart manifest="data/manifests/us-median-age-census.json" style="display:block; width:100%; max-width: 52rem; aspect-ratio: 4/3; margin: 0.75rem 0;"></para-chart>
 
 <script type="module" src="assets/paracharts-loader.js"></script>
 
