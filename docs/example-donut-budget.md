@@ -4,6 +4,8 @@
 
 <para-chart manifest="data/manifests/us-electricity-top5.json" style="display:block; width:100%; max-width: 52rem; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
+<script type="module" src="assets/paracharts-loader.js"></script>
+
 
 Concept reference from Fizz Studio demo: [ParaCharts demo donut chart](https://fizzstudio.github.io/ParaCharts-demo/charts/donut.html)
 

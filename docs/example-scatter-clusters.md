@@ -4,6 +4,8 @@
 
 <para-chart manifest="data/manifests/old-faithful-scatter.json" style="display:block; width:100%; max-width: 52rem; min-height: 28rem; margin: 0.75rem 0;"></para-chart>
 
+<script type="module" src="assets/paracharts-loader.js"></script>
+
 ## Scenario
 
 Explore how Old Faithful eruption duration relates to the waiting time before the next eruption, and identify the visible clusters in those observations.
