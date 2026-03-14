@@ -3,6 +3,8 @@
 Welcome to the paracharts documentation.
 This site contains information on how to get the most out of ParaCharts as an end-user, as well as developer documentation.
 
+ParaCharts exists to close a persistent accessibility gap in online data visualization: many published charts are still visual-first and mouse-first. ParaCharts is built so chart insight is also available through keyboard interaction, screen-reader announcements, self-voicing, and sonification.
+
 ## Start Here
 
 - [Getting Started](gettingStarted.md): what ParaCharts does, how it works, and a minimal first integration.

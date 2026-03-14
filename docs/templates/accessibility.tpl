@@ -2,6 +2,38 @@
 
 ParaCharts is designed to provide equivalent insight across multiple interaction modes. This page explains the core disability-related affordances, how each one helps, and how to test that it is functioning.
 
+## Why This Matters In The Wider Data-Viz Ecosystem
+
+Most charts published online still assume a sighted mouse user. In practice, that means many people can see a chart but cannot fully use it, or cannot access it at all.
+
+Common gaps in public charts:
+
+- Keyboard trap or no keyboard point navigation.
+- Visual-only interpretation with no meaningful text equivalent.
+- No screen reader announcements when focus or state changes.
+- Color-only encoding that fails for color-vision differences.
+- No non-visual trend channel such as sound.
+
+ParaCharts is designed to close those gaps by default, so the same core insight is available through keyboard interaction, screen reader output, self-voicing, and sonification.
+
+## Gap To Capability Mapping
+
+| Typical online chart gap | Why it excludes people | ParaCharts capability | How to verify quickly |
+| :--- | :--- | :--- | :--- |
+| Hover-only interaction | Keyboard and many assistive tech users cannot access point detail | Keyboard-first point traversal and query shortcuts | Focus chart, use arrow keys and `q` |
+| Visual-only trend communication | Blind users and some low-vision users miss main insight | ARIA live summaries and self-voicing output | Trigger summary/query and confirm spoken/announced result |
+| Color-only distinctions | Users with color-vision differences cannot separate series reliably | Non-color cues, labels, and configurable palettes | Switch palette/mode and confirm interpretation remains clear |
+| Static chart with no state announcements | Dynamic updates are silent to assistive tech | Live-region announcements for focus and state changes | Move points and confirm screen reader announcements |
+| No audio channel for trend pattern | Some users lose rapid pattern perception | Sonification mode for directional and relative movement | Toggle `s` and traverse points |
+
+## Accessibility Outcome For Teams
+
+When adopted consistently, ParaCharts helps teams move from "visual chart published" to "insight is operationally available to more users." This is especially important for:
+
+- Public dashboards (health, climate, transit, elections).
+- Civic and policy reporting where equal access is a legal and trust requirement.
+- Education and newsroom contexts where interpretation quality matters as much as visual polish.
+
 ## Quick Controls
 
 - Toggle sonification: `s`
