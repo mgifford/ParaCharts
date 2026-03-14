@@ -1,0 +1,95 @@
+name: Accessibility Scanner
+
+on:
+  workflow_dispatch:
+    inputs:
+      scan_scope:
+        description: URL set to scan
+        required: true
+        default: core
+        type: choice
+        options:
+          - core
+          - full
+  schedule:
+    - cron: '23 10 * * 1'
+  pull_request:
+    branches: [main]
+    types: [ready_for_review, labeled]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: accessibility-scan-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    if: |
+      github.event_name != 'pull_request' ||
+      github.event.action == 'ready_for_review' ||
+      (github.event.action == 'labeled' && github.event.label.name == 'a11y-scan')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate scanner token
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "::error::Missing GH_TOKEN secret. Add a fine-grained PAT with actions/content/issues/pull-request write access for this repository."
+            exit 1
+          fi
+
+      - name: Select URL set
+        id: urls
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_SCOPE: ${{ inputs.scan_scope }}
+        run: |
+          scope="${DISPATCH_SCOPE:-core}"
+          if [ "${EVENT_NAME}" != "workflow_dispatch" ]; then
+            scope="core"
+          fi
+
+          if [ "${scope}" = "full" ]; then
+            {
+              echo 'urls<<EOF'
+              echo 'https://mgifford.github.io/ParaCharts/'
+              echo 'https://mgifford.github.io/ParaCharts/exampleGallery.html'
+              echo 'https://mgifford.github.io/ParaCharts/accessibility.html'
+              echo 'https://mgifford.github.io/ParaCharts/example-bar-comparison.html'
+              echo 'https://mgifford.github.io/ParaCharts/example-line-trend.html'
+              echo 'https://mgifford.github.io/ParaCharts/example-scatter-clusters.html'
+              echo 'https://mgifford.github.io/ParaCharts/example-heatmap-hourly-live.html'
+              echo 'https://mgifford.github.io/ParaCharts/example-waterfall-contribution-live.html'
+              echo EOF
+            } >> "$GITHUB_OUTPUT"
+            echo "cache_key=cached_results-ParaCharts-full-main.json" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo 'urls<<EOF'
+              echo 'https://mgifford.github.io/ParaCharts/'
+              echo 'https://mgifford.github.io/ParaCharts/exampleGallery.html'
+              echo 'https://mgifford.github.io/ParaCharts/accessibility.html'
+              echo EOF
+            } >> "$GITHUB_OUTPUT"
+            echo "cache_key=cached_results-ParaCharts-core-main.json" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run accessibility scanner
+        uses: github/accessibility-scanner@v2
+        with:
+          urls: ${{ steps.urls.outputs.urls }}
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GH_TOKEN }}
+          cache_key: ${{ steps.urls.outputs.cache_key }}
+          skip_copilot_assignment: true
+          include_screenshots: false
+          reduced_motion: reduce
+          color_scheme: light
