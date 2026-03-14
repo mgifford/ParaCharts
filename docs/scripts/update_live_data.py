@@ -112,6 +112,31 @@ def fmt_num(v: float, digits: int = 2) -> str:
     return f"{v:.{digits}f}".rstrip("0").rstrip(".")
 
 
+_MONTH_ABBR = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+               'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+
+def format_month_labels(yyyymm_list: list[str]) -> list[str]:
+    """Convert a list of 'YYYY-MM' strings to compact display labels.
+
+    Shows abbreviated month and 2-digit year on the first entry and on each
+    year change.  Subsequent months in the same year show month only.
+
+    Examples: "Feb '25", "Mar", "Apr", ..., "Jan '26", "Feb"
+    """
+    labels: list[str] = []
+    prev_year: int | None = None
+    for ym in yyyymm_list:
+        year, month = int(ym[:4]), int(ym[5:7])
+        abbr = _MONTH_ABBR[month - 1]
+        if prev_year is None or year != prev_year:
+            labels.append(f"{abbr} '{str(year)[2:]}")
+        else:
+            labels.append(abbr)
+        prev_year = year
+    return labels
+
+
 def make_xy_manifest(
     *,
     chart_type: str,
@@ -338,7 +363,9 @@ def build_us_unemployment_monthly_manifest() -> dict[str, Any]:
     if len(pts) < 10:
         raise RuntimeError("Insufficient BLS monthly points for unemployment chart")
 
-    records = [(f"{y}-{m:02d}", v) for y, m, v in pts]
+    raw_keys = [f"{y}-{m:02d}" for y, m, v in pts]
+    labels = format_month_labels(raw_keys)
+    records = [(lbl, v) for lbl, (_, _, v) in zip(labels, pts)]
     return make_xy_manifest(
         chart_type="column",
         title="U.S. Unemployment Rate (Last 12 Months)",
@@ -767,6 +794,8 @@ def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
     if len(monthly) < 24:
         raise RuntimeError("Insufficient FEDFUNDS monthly points for stepline chart")
 
+    labels = format_month_labels([m for m, _ in monthly])
+    records = list(zip(labels, [v for _, v in monthly]))
     return make_xy_manifest(
         chart_type="stepline",
         title="U.S. Policy Rate Timeline (FEDFUNDS, Last 6 Years)",
@@ -774,7 +803,7 @@ def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
         y_label="Effective federal funds rate",
         y_units="percent",
         y_multiplier=0.01,
-        series=[("Effective federal funds rate", monthly)],
+        series=[("Effective federal funds rate", records)],
     )
 
 
@@ -786,7 +815,8 @@ def build_us_inflation_snapshot_manifest() -> dict[str, Any]:
     if len(sorted_months) < 18:
         raise RuntimeError("Insufficient CPI YoY points for inflation snapshot")
 
-    records = [(m, yoy[m]) for m in sorted_months]
+    labels = format_month_labels(sorted_months)
+    records = [(lbl, yoy[m]) for lbl, m in zip(labels, sorted_months)]
     return make_xy_manifest(
         chart_type="column",
         title="U.S. Inflation Rate: Last 24 Months (CPI YoY)",
@@ -811,8 +841,9 @@ def build_us_policy_unemployment_manifest() -> dict[str, Any]:
     if len(common) < 24:
         raise RuntimeError("Insufficient overlapping months for policy-unemployment line chart")
 
-    unemployment_records = [(m, unemployment_by_month[m]) for m in common]
-    fedfunds_records = [(m, fedfunds_by_month[m]) for m in common]
+    shared_labels = format_month_labels(common)
+    unemployment_records = [(lbl, unemployment_by_month[m]) for lbl, m in zip(shared_labels, common)]
+    fedfunds_records = [(lbl, fedfunds_by_month[m]) for lbl, m in zip(shared_labels, common)]
 
     return make_xy_manifest(
         chart_type="line",
