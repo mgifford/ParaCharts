@@ -4,6 +4,7 @@ export default defineConfig({
   base: '/ParaCharts/',
   title: 'ParaCharts',
   description: 'ParaCharts user and developer documentation',
+  appearance: false,
   themeConfig: {
     logo: '/fizz-logo.svg',
     nav: [
