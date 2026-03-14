@@ -319,7 +319,7 @@ export class ParaChart extends ParaComponent {
         --summary-marker-size: 1.1rem;
       }
       figure {
-        display: inline flex;
+        display: flex;
         flex-direction: column;
         margin: 0;
       }
@@ -403,7 +403,8 @@ export class ParaChart extends ParaComponent {
       'sr-only': this.headless
     };
     const cpanelStyles = {
-      'width': `${this._paraState.settings.chart.size.width}px`
+      'width': `${this._paraState.settings.chart.size.width}px`,
+      'max-width': '100%'
     };
     return html`
       <figure

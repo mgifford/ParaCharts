@@ -96,6 +96,15 @@ export class ParaView extends ParaComponent {
   static styles = [
     //styles,
     css`
+      :host {
+        display: block;
+        max-width: 100%;
+      }
+      svg {
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
       #frame {
         fill: var(--background-color);
         stroke: none;
