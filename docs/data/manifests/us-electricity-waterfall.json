@@ -2,7 +2,7 @@
   "datasets": [
     {
       "type": "waterfall",
-      "title": "U.S. Electricity Generation Change by Source (2025-11 vs 2025-10)",
+      "title": "U.S. Electricity Generation Change by Source (2025-10 vs 2025-11)",
       "facets": {
         "x": {
           "label": "Source contribution",
@@ -30,28 +30,28 @@
           "key": "Month-over-month contribution",
           "records": [
             {
-              "x": "Nuclear Electric Power",
-              "y": "4587.11"
-            },
-            {
-              "x": "Conventional Hydroelectric Power",
-              "y": "1870.64"
-            },
-            {
-              "x": "Other sources",
-              "y": "1288.57"
-            },
-            {
               "x": "Natural Gas",
-              "y": "-12546.35"
+              "y": "12546.35"
             },
             {
               "x": "Solar",
-              "y": "-5907.48"
+              "y": "5907.48"
             },
             {
-              "x": "Net total change",
-              "y": "-10707.52"
+              "x": "Nuclear power",
+              "y": "-4587.11"
+            },
+            {
+              "x": "Hydroelectric",
+              "y": "-1870.64"
+            },
+            {
+              "x": "Other",
+              "y": "-1288.57"
+            },
+            {
+              "x": "Net total",
+              "y": "10707.52"
             }
           ]
         }
@@ -60,7 +60,8 @@
         "source": "inline"
       },
       "settings": {
-        "controlPanel.isControlPanelDefaultOpen": true
+        "controlPanel.isControlPanelDefaultOpen": true,
+        "type.waterfall.isDrawLabels": false
       }
     }
   ]

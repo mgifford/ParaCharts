@@ -784,9 +784,10 @@ def build_us_electricity_waterfall_manifest() -> dict[str, Any]:
     title_right = prev_label
     total_change = latest_total - prev_total
 
-    # Compatibility note: some renderers fail when every cumulative step is negative.
-    # If all deltas are <= 0, invert the comparison direction and update labels.
-    if not any(v > 0 for _k, v in deltas):
+    # Compatibility note: some renderers clip waterfalls when cumulative totals
+    # finish below zero. Invert comparison direction when net change is negative
+    # so contributions remain legible while preserving data truthfulness.
+    if total_change < 0:
         deltas = [(k, -v) for k, v in deltas]
         total_change = -total_change
         title_left = prev_label
@@ -799,19 +800,30 @@ def build_us_electricity_waterfall_manifest() -> dict[str, Any]:
 
     residual = total_change - sum(v for _k, v in top)
 
-    # Keep positive contributions first so cumulative totals cross above zero when possible.
+    # Keep positive contributions first so cumulative totals remain readable.
     contributions = top + [("Other sources", residual)]
     positives = [row for row in contributions if row[1] >= 0]
     negatives = [row for row in contributions if row[1] < 0]
     waterfall_records = positives + negatives + [("Net total change", total_change)]
 
-    return make_xy_manifest(
+    # Compact long source names to reduce x-axis collisions.
+    short_label = {
+        "Nuclear Electric Power": "Nuclear power",
+        "Conventional Hydroelectric Power": "Hydroelectric",
+        "Other sources": "Other",
+        "Net total change": "Net total",
+    }
+    waterfall_records = [(short_label.get(k, k), v) for k, v in waterfall_records]
+
+    manifest = make_xy_manifest(
         chart_type="waterfall",
         title=f"U.S. Electricity Generation Change by Source ({title_left} vs {title_right})",
         x_label="Source contribution",
         y_label="Change in generation (million kilowatthours)",
         series=[("Month-over-month contribution", waterfall_records)],
     )
+    manifest["datasets"][0]["settings"]["type.waterfall.isDrawLabels"] = False
+    return manifest
 
 
 def build_us_policy_rate_stepline_manifest() -> dict[str, Any]:
