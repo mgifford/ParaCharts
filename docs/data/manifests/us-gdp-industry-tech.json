@@ -107,7 +107,8 @@
       },
       "settings": {
         "controlPanel.isControlPanelDefaultOpen": true,
-        "chart.hasDirectLabels": false
+        "chart.hasDirectLabels": false,
+        "legend.position": "south"
       }
     }
   ]

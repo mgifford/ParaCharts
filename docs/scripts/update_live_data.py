@@ -679,6 +679,7 @@ def build_us_gdp_industry_manifest() -> dict[str, Any]:
             ],
         )
         manifest["datasets"][0]["settings"]["chart.hasDirectLabels"] = False
+        manifest["datasets"][0]["settings"]["legend.position"] = "south"
         return manifest
     finally:
         Path(tmp_name).unlink(missing_ok=True)
