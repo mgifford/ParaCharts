@@ -265,7 +265,7 @@ def make_xy_numeric_manifest(
 
 
 def make_donut_manifest(*, title: str, records: list[tuple[str, float]]) -> dict[str, Any]:
-    return {
+    manifest = {
         "datasets": [
             {
                 "type": "donut",
@@ -297,6 +297,9 @@ def make_donut_manifest(*, title: str, records: list[tuple[str, float]]) -> dict
             }
         ]
     }
+    manifest["datasets"][0]["settings"]["type.donut.isRenderCenterLabel"] = False
+    manifest["datasets"][0]["settings"]["type.donut.centerLabel"] = "none"
+    return manifest
 
 
 def fetch_bls_series(start_year: int, end_year: int) -> list[tuple[int, int, float]]:

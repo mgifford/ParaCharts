@@ -54,7 +54,9 @@
         "source": "inline"
       },
       "settings": {
-        "controlPanel.isControlPanelDefaultOpen": true
+        "controlPanel.isControlPanelDefaultOpen": true,
+        "type.donut.isRenderCenterLabel": false,
+        "type.donut.centerLabel": "none"
       }
     }
   ]
