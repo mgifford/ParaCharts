@@ -13,6 +13,7 @@ Explore how Old Faithful eruption duration relates to the waiting time before th
 ## Data Source And Refresh
 
 - Source: Old Faithful geyser eruptions sample dataset used in ParaCharts demos.
+- Source URL: https://raw.githubusercontent.com/vincentarelbundock/Rdatasets/master/csv/datasets/faithful.csv (reference dataset).
 - Structure: One scatter series with eruption duration on the x-axis and waiting time on the y-axis.
 - Refresh cadence: Static reference dataset.
 

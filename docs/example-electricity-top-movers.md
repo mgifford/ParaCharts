@@ -14,6 +14,7 @@ Rank U.S. electricity generation sources by how much their monthly output change
 ## Data Source And Refresh
 
 - Source: EIA Monthly Energy Review, Table 7.2A (Net Generation by Energy Source, Monthly).
+- Source URL: https://www.eia.gov/totalenergy/data/browser/csv.php?tbl=T07.02A
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while EIA publishes compatible data.
 

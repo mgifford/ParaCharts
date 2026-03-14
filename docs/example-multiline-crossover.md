@@ -16,6 +16,7 @@ Compare recent-quarter trajectories for U.S. total GDP, Information, and Profess
 ## Data Source And Refresh
 
 - Source: BEA GDP workbook table 14 (public release file).
+- Source URL: https://www.bea.gov/data/gdp/gross-domestic-product (release hub); updater reads Table 14 workbook file https://www.bea.gov/sites/default/files/2026-01/gdp3q25-updated.xlsx.
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while BEA publishes compatible data.
 

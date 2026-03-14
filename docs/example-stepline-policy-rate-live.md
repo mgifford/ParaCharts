@@ -16,6 +16,7 @@ Track the U.S. effective federal funds rate across recent years using a step-lik
 ## Data Source And Refresh
 
 - Source: FRED series `FEDFUNDS`.
+- Source URL: https://fred.stlouisfed.org/series/FEDFUNDS (series viewer) and https://fred.stlouisfed.org/graph/fredgraph.csv?id=FEDFUNDS (CSV endpoint).
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while FRED publishes compatible data.
 

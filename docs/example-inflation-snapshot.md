@@ -14,6 +14,7 @@ Track the U.S. Consumer Price Index year-over-year inflation rate across the mos
 ## Data Source And Refresh
 
 - Source: FRED series `CPIAUCSL` (Consumer Price Index for All Urban Consumers, seasonally adjusted).
+- Source URL: https://fred.stlouisfed.org/series/CPIAUCSL (series viewer) and https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL (CSV endpoint).
 - Derived as year-over-year percentage change (current month vs same month one year prior).
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while FRED publishes compatible data.

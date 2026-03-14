@@ -16,6 +16,8 @@ Summarize hourly temperature observations for the latest complete month to revea
 ## Data Source And Refresh
 
 - Source: Open-Meteo archive API (`temperature_2m`, hourly, UTC) for New York City coordinates.
+- Source URL: https://archive-api.open-meteo.com/v1/archive?latitude=40.7128&longitude=-74.0060&start_date=2025-01-01&end_date=2025-01-31&hourly=temperature_2m&timezone=UTC (representative API request).
+- API docs: https://open-meteo.com/en/docs/historical-weather-api
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while Open-Meteo publishes compatible data.
 

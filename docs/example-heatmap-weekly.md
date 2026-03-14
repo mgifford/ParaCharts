@@ -16,6 +16,7 @@ Track U.S. annual average unemployment rates across the last decade.
 ## Data Source And Refresh
 
 - Source: BLS public API series `LNS14000000` (annualized from monthly values).
+- Source URL: https://data.bls.gov/timeseries/LNS14000000 (series viewer) and https://api.bls.gov/publicAPI/v2/timeseries/data/LNS14000000 (API endpoint).
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while BLS publishes compatible data.
 

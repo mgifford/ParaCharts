@@ -16,6 +16,7 @@ Communicate part-to-whole composition of the top U.S. electricity generation sou
 ## Data Source And Refresh
 
 - Source: EIA data browser CSV table `T07.02A`.
+- Source URL: https://www.eia.gov/totalenergy/data/browser/csv.php?tbl=T07.02A
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while EIA publishes compatible data.
 

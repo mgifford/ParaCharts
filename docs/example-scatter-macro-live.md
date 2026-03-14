@@ -16,6 +16,7 @@ Track the relationship between unemployment and inflation across recent monthly 
 ## Data Source And Refresh
 
 - Sources: BLS series `LNS14000000` and FRED series `CPIAUCSL`.
+- Source URLs: https://data.bls.gov/timeseries/LNS14000000 and https://fred.stlouisfed.org/series/CPIAUCSL
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while BLS and FRED publish compatible data.
 

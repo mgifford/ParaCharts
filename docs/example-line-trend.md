@@ -16,6 +16,7 @@ Track U.S. median age over the most recent ACS 1-year releases.
 ## Data Source And Refresh
 
 - Source: U.S. Census ACS 1-year table `B01002_001E`.
+- Source URL: https://api.census.gov/data/2023/acs/acs1?get=NAME,B01002_001E&for=us:1 (example ACS API query).
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while Census publishes compatible data.
 

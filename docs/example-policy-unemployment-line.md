@@ -14,6 +14,7 @@ Compare the U.S. federal funds rate and the unemployment rate on a shared monthl
 ## Data Source And Refresh
 
 - Sources: FRED series `FEDFUNDS` (effective federal funds rate) and BLS series `LNS14000000` (unemployment rate).
+- Source URLs: https://fred.stlouisfed.org/series/FEDFUNDS and https://data.bls.gov/timeseries/LNS14000000
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while FRED and BLS publish compatible data.
 

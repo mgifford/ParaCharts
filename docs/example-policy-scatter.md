@@ -14,6 +14,7 @@ Plot each monthly observation as a point with unemployment on the x-axis and the
 ## Data Source And Refresh
 
 - Sources: BLS series `LNS14000000` (unemployment rate) and FRED series `FEDFUNDS` (effective federal funds rate).
+- Source URLs: https://data.bls.gov/timeseries/LNS14000000 and https://fred.stlouisfed.org/series/FEDFUNDS
 - Refresh cadence: Monthly via GitHub Actions cache update workflow.
 - Data continuity: This page will continue updating while BLS and FRED publish compatible data.
 
