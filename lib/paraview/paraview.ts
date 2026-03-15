@@ -110,7 +110,7 @@ export class ParaView extends ParaComponent {
         stroke: none;
       }
       #frame.pending {
-        fill: lightgray;
+        fill: var(--pending-color, lightgray);
       }
       #frame.explainer {
         fill: floralwhite;
@@ -120,13 +120,20 @@ export class ParaView extends ParaComponent {
       .darkmode {
         --axis-line-color: ghostwhite;
         --label-color: ghostwhite;
-        --background-color: black;
+        --background-color: hsl(0, 0%, 8%);
+        --tick-grid-color: hsl(270, 60%, 75%);
+        --focus-shadow-color: hsl(210, 100%, 70%);
+        --theme-color: hsl(210, 100%, 65%);
+        --theme-color-light: hsl(210, 100%, 20%);
+        --theme-contrast-color: hsl(0, 0%, 10%);
+        --pending-color: hsl(0, 0%, 25%);
+        --label-bg-color: hsl(0, 0%, 30%);
       }
       #loading-message {
-        fill: black;
+        fill: var(--background-color);
       }
       #loading-message text {
-        fill: white;
+        fill: var(--label-color);
       }
       [role="graphics-document"] {
         cursor: var(--chart-cursor);
@@ -169,7 +176,7 @@ export class ParaView extends ParaComponent {
         stroke: none;
       }
       .label-bg {
-        fill: lightgray;
+        fill: var(--label-bg-color, lightgray);
       }
       .label-highlight {
         stroke: red;
@@ -212,7 +219,7 @@ export class ParaView extends ParaComponent {
         stroke-width: 2;
       }
       .pastry-slice {
-        stroke: white;
+        stroke: var(--background-color);
         stroke-width: 2;
       }
       .label-leader {
@@ -242,7 +249,7 @@ export class ParaView extends ParaComponent {
         stroke-linejoin: round;
       }
       .symbol.outline {
-        fill: white;
+        fill: var(--background-color);
       }
       use.visited-mark {
        pointer-events: none;
@@ -870,10 +877,13 @@ export class ParaView extends ParaComponent {
     if (this._paraState.settings.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
+      style["--background-color"] = `hsl(0, 0%, ${Math.max(0, (100 - contrast) / 5 - 10)}%)`;
+      style["--tick-grid-color"] = `hsl(270, 60%, ${50 + contrast * 0.5}%)`;
+      style["--selected-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
     } else {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--tick-grid-color"] = `hsl(270, 50%, ${50 - contrast * 0.3}%)`;
     }
     return style;
   }

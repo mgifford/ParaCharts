@@ -1014,15 +1014,43 @@ export class Colors {
     const colors = this._colorMap
       ? this._colorMap.map(i => this.palette.colors[i])
       : this.palette.colors;
+    let value: string;
     if (index === -1) {
       // visit
-      return colors.at(-1)!.value;
+      value = colors.at(-1)!.value;
     } else if (index === -2) {
       // highlight
-      return colors.at(-2)!.value;
+      value = colors.at(-2)!.value;
+    } else {
+      // Never use 'visit' for any series/datapoint color
+      value = colors[index % (colors.length - 1)].value;
     }
-    // Never use 'visit' for any series/datapoint color
-    return colors[index % (colors.length - 1)].value;
+    if (this._paraState.settings.color.isDarkModeEnabled && typeof value === 'string') {
+      return this._ensureMinLightnessForDarkMode(value);
+    }
+    return value;
+  }
+
+  /**
+   * Ensure a color has sufficient lightness for dark mode to meet WCAG 2.2 SC 1.4.11
+   * (3:1 non-text contrast against a near-black dark background).
+   * Only adjusts HSL color strings; other formats are returned unchanged.
+   *
+   * The default 50% threshold is a conservative target that provides roughly 4–5:1
+   * contrast against the near-black dark background (`hsl(0, 0%, 8%)`), comfortably
+   * exceeding the 3:1 minimum for non-text chart elements.  Highly saturated hues
+   * can appear perceptually dark even at 50% lightness, so this value errs on the
+   * accessible side.
+   */
+  private _ensureMinLightnessForDarkMode(color: string, minLightness: number = 50): string {
+    if (!color.startsWith('hsl(')) {
+      return color;
+    }
+    const hsl = this.getHslComponents(color);
+    if (hsl.lightness < minLightness) {
+      return `hsl(${hsl.hue}, ${hsl.saturation}%, ${minLightness}%)`;
+    }
+    return color;
   }
 
   patternValueAt(index: number) {
