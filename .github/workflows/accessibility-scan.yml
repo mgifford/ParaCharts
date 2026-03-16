@@ -42,8 +42,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           if [ -z "${GH_TOKEN}" ]; then
-            echo "::error::Missing GH_TOKEN secret. Add a fine-grained PAT with actions/content/issues/pull-request write access for this repository."
-            exit 1
+            echo "::notice::GH_TOKEN secret is not set; falling back to the built-in GITHUB_TOKEN. To use a fine-grained PAT with elevated access, add a GH_TOKEN secret with actions/content/issues/pull-request write access for this repository."
+          else
+            echo "GH_TOKEN secret is configured."
           fi
 
       - name: Select URL set
@@ -87,7 +88,7 @@ jobs:
         with:
           urls: ${{ steps.urls.outputs.urls }}
           repository: ${{ github.repository }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN || github.token }}
           cache_key: ${{ steps.urls.outputs.cache_key }}
           skip_copilot_assignment: true
           include_screenshots: false
