@@ -140,3 +140,23 @@ The AI-enhanced version is currently internal.
 	- `ai.vite.config.ts`
 
 The primary open package build remains `dist/`.
+
+## AI Disclosure
+
+ParaCharts is committed to transparency about how artificial intelligence is used in this project. This section documents all known AI and LLM usage.
+
+### AI Used to Build the Project
+
+- **GitHub Copilot** — Used as a development assistant throughout this repository. Copilot helps contributors with code generation, code review, pull request review, and issue analysis. The underlying models include GPT-4 and Claude variants provided by GitHub. See the [Working With Copilot On GitHub](#working-with-copilot-on-github) section for how Copilot is used in this project.
+
+### AI Used When Running the Program
+
+- **`para-chart-ai` element (`dist-ai/`)** — The optional AI-enhanced build of ParaCharts includes AI-powered chart analysis via the `@fizz/paramodel` (`AiSeriesPairMetadataAnalyzer`) and `@fizz/series-analyzer` (`SeriesAnalyzer`) packages. These packages generate richer chart descriptions, alt text, and JSON Interaction Metadata (JIM) to improve accessibility. This AI runs at build time or in a server-side/headless pipeline context. The specific LLM backing these private `@fizz` packages is not disclosed in this public repository; maintainers should update this section if that changes.
+
+### Browser-Based AI
+
+No browser-based AI is currently used in any aspect of this application. There is no use of Chrome Built-in AI (`window.ai`), WebLLM, or similar on-device or in-browser LLM APIs at this time.
+
+### Keeping This Section Current
+
+If you introduce a new AI tool, LLM, or AI-assisted workflow to this project, update this section to document it. Include: what the tool is, which LLM it uses (if known), and whether it is used at build time, at runtime, in the browser, or only as a development assistant.
