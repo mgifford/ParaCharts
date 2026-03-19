@@ -37,14 +37,33 @@ jobs:
       (github.event.action == 'labeled' && github.event.label.name == 'a11y-scan')
     runs-on: ubuntu-latest
     steps:
-      - name: Validate scanner token
+      - name: Validate scanner prerequisites
+        id: prereqs
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           if [ -z "${GH_TOKEN}" ]; then
-            echo "::notice::GH_TOKEN secret is not set; falling back to the built-in GITHUB_TOKEN. To use a fine-grained PAT with elevated access, add a GH_TOKEN secret with actions/content/issues/pull-request write access for this repository."
+            echo "::notice::GH_TOKEN secret is not set. The accessibility scanner requires a fine-grained PAT with actions:write, contents:write, issues:write, pull-requests:write, and metadata:read access. Add a GH_TOKEN repository secret to enable issue filing. Falling back to built-in GITHUB_TOKEN, which cannot file issues."
           else
             echo "GH_TOKEN secret is configured."
+          fi
+
+          # Check whether Issues are enabled — the scanner requires Issues to file findings.
+          token="${GH_TOKEN:-$GITHUB_TOKEN}"
+          api_response=$(curl -sf -H "Authorization: Bearer ${token}" \
+            "https://api.github.com/repos/${{ github.repository }}" 2>&1)
+          if [ $? -ne 0 ]; then
+            echo "::warning::Could not reach GitHub API to check if Issues is enabled (network error or invalid token). Assuming Issues is disabled and skipping scan to be safe."
+            echo "can_scan=false" >> "$GITHUB_OUTPUT"
+          else
+            has_issues=$(echo "${api_response}" \
+              | python3 -c "import json,sys; print(json.load(sys.stdin).get('has_issues', False))" 2>/dev/null || echo "False")
+            if [ "${has_issues}" != "True" ]; then
+              echo "::notice::GitHub Issues is disabled in this repository. The accessibility scanner requires Issues to be enabled in order to file findings. Enable Issues under Settings > General > Features, then re-run this workflow."
+              echo "can_scan=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "can_scan=true" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Select URL set
@@ -84,6 +103,7 @@ jobs:
           fi
 
       - name: Run accessibility scanner
+        if: steps.prereqs.outputs.can_scan == 'true'
         uses: github/accessibility-scanner@v2
         with:
           urls: ${{ steps.urls.outputs.urls }}
