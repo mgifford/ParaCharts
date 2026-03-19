@@ -124,6 +124,7 @@ AI usage policy:
 - Avoid repeated large-context prompts when a smaller context works.
 - Disclose non-trivial AI usage in PR notes.
 - Do not add always-on AI steps in CI without explicit maintainer approval.
+- When a new AI tool, LLM, or AI-assisted workflow is introduced to this project (for building, running, or operating the application), update the **AI Disclosure** section in `README.md` to document it. Include: what the tool is, which LLM it uses (if known), and how it is used (build-time, runtime, browser-based, or development assistant).
 
 ## Testing and validation expectations
 
