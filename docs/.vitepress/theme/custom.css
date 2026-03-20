@@ -25,6 +25,16 @@
   text-underline-offset: 0.15em;
 }
 
+/* Ensure inline content links are distinguishable without relying on color alone.
+   This fixes axe rule: link-in-text-block (WCAG 1.4.1).
+   Note: .vp-doc (lowercase) is the Markdown prose wrapper; .VPDoc (PascalCase) is the
+   outer layout component — using .vp-doc here is intentional and correct. */
+.vp-doc a:not(.header-anchor):not(.VPButton):not(.vp-social-link) {
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.15em;
+}
+
 .theme-mode-toggle {
   display: inline-flex;
   align-items: center;
