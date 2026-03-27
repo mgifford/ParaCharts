@@ -52,6 +52,35 @@ describe('docs landmark structure', () => {
       .toBe(true);
   });
 
+  /**
+   * Regression test for axe rule link-in-text-block (WCAG 1.4.1).
+   * Violation originally reported on /ParaCharts/accessibility.html:
+   * <a href="/ParaCharts/example-bar-comparison.html"> had insufficient color
+   * contrast (2.7:1) with surrounding text and no non-color distinguisher.
+   * Fix: .vp-doc a rule in custom.css sets text-decoration-line: underline.
+   */
+  it('VitePress custom.css applies underline to inline content links (link-in-text-block fix)', () => {
+    const css = readFileSync(
+      resolve(DOCS_DIR, '.vitepress/theme/custom.css'),
+      'utf-8',
+    );
+
+    // The selector must target inline links inside the .vp-doc prose wrapper,
+    // excluding navigation anchors, buttons, and social icons.
+    expect(css).toContain(
+      '.vp-doc a:not(.header-anchor):not(.VPButton):not(.vp-social-link)',
+    );
+
+    // The rule block must set text-decoration-line: underline so links are
+    // distinguishable without relying on color alone.
+    const selectorIndex = css.indexOf(
+      '.vp-doc a:not(.header-anchor):not(.VPButton):not(.vp-social-link)',
+    );
+    const blockEnd = css.indexOf('}', selectorIndex);
+    const ruleBlock = css.slice(selectorIndex, blockEnd + 1);
+    expect(ruleBlock).toContain('text-decoration-line: underline');
+  });
+
   it('VitePress transformHtml adds complementary role to aside elements', () => {
     // Mirror the transformHtml replacements from docs/.vitepress/config.ts so that
     // any regression in those patterns is caught here.
