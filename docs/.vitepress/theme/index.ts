@@ -2,6 +2,8 @@ import DefaultTheme from 'vitepress/theme'
 import { defineComponent, h, nextTick, onMounted, watch } from 'vue'
 import { useRoute } from 'vitepress'
 import ThemeModeToggle from './components/ThemeModeToggle.vue'
+import HapticsLab from './components/HapticsLab.vue'
+import HapticsSupportAlert from './components/HapticsSupportAlert.vue'
 import './custom.css'
 
 /**
@@ -57,4 +59,8 @@ const Layout = defineComponent({
 export default {
 	extends: DefaultTheme,
 	Layout,
+	enhanceApp({ app }: { app: import('vue').App }) {
+		app.component('HapticsLab', HapticsLab)
+		app.component('HapticsSupportAlert', HapticsSupportAlert)
+	},
 }
