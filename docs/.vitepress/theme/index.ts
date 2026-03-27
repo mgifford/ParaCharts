@@ -28,6 +28,13 @@ function fixLandmarks() {
 	if (sidebar) {
 		sidebar.setAttribute('aria-label', 'Site navigation')
 	}
+
+	// Local (breadcrumb) nav bar — rendered as a plain <div> outside any landmark.
+	const localNav = document.querySelector('.VPLocalNav') as HTMLElement | null
+	if (localNav && !localNav.getAttribute('role')) {
+		localNav.setAttribute('role', 'navigation')
+		localNav.setAttribute('aria-label', 'Page navigation')
+	}
 }
 
 const Layout = defineComponent({

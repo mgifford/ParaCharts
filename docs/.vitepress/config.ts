@@ -16,6 +16,9 @@ export default defineConfig({
       // VitePress also renders the left navigation sidebar without an aria-label; add one to
       // disambiguate when multiple complementary landmarks are present on the same page.
       .replace(/<aside class="VPSidebar"/g, '<aside class="VPSidebar" aria-label="Site navigation"')
+      // VitePress renders the local (breadcrumb) nav bar as a plain <div> outside any landmark.
+      // Give it a navigation role so all visible content is contained by a landmark.
+      .replace(/<div class="VPLocalNav"/g, '<div class="VPLocalNav" role="navigation" aria-label="Page navigation"')
   },
   vue: {
     template: {
