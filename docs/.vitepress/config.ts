@@ -20,7 +20,8 @@ export default defineConfig({
       { text: 'Getting Started', link: '/gettingStarted' },
       { text: 'Implement & Test', link: '/implementationAndTesting' },
       { text: 'Examples', link: '/exampleGallery' },
-      { text: 'API', link: '/chartTypes' }
+      { text: 'API', link: '/chartTypes' },
+      { text: '🎮 Haptics Lab', link: '/haptics' }
     ],
     sidebar: {
       '/': [
