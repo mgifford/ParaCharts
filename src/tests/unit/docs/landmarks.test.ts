@@ -42,6 +42,16 @@ describe('docs landmark structure', () => {
       .toBe(true);
   });
 
+  it('accessibility.md has YAML front matter so Jekyll applies the default layout', () => {
+    const content = readFileSync(resolve(DOCS_DIR, 'accessibility.md'), 'utf-8');
+    // YAML front matter must start at the very beginning of the file.
+    // Without front matter, jekyll-optional-front-matter and jekyll-default-layout
+    // may not reliably assign layout: default, leaving the page outside any landmark.
+    // Violation originally reported on /ParaCharts/accessibility.html.
+    expect(content.startsWith('---'), 'accessibility.md must begin with YAML front matter (---)')
+      .toBe(true);
+  });
+
   it('VitePress transformHtml adds complementary role to aside elements', () => {
     // Mirror the transformHtml replacements from docs/.vitepress/config.ts so that
     // any regression in those patterns is caught here.
