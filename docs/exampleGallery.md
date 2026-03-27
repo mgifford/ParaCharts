@@ -1,3 +1,7 @@
+---
+title: Example Gallery
+---
+
 # Example Gallery
 
 This gallery provides ten concrete examples designed for GitHub Pages documentation.
