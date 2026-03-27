@@ -22,6 +22,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+    outputs:
+      skip: ${{ steps.validate.outputs.skip }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -37,20 +39,23 @@ jobs:
           cache: 'npm'
 
       - name: Validate npm auth token
+        id: validate
         run: |
           if [ -z "${NPM_AUTH_TOKEN}" ]; then
-            echo "::error::Missing NPM_AUTH_TOKEN secret. Set repository secret NPM_AUTH_TOKEN with read access to https://npm.fizz.studio."
-            exit 1
-          fi
-          if ! npm --userconfig .npmrc whoami --registry=https://npm.fizz.studio >/dev/null 2>&1; then
+            echo "::warning::NPM_AUTH_TOKEN secret is not configured. Docs build requires access to https://npm.fizz.studio. Set repository secret NPM_AUTH_TOKEN with read access to that registry to enable docs deployment."
+            echo "SKIP_BUILD=true" >> $GITHUB_ENV
+            echo "skip=true" >> $GITHUB_OUTPUT
+          elif ! npm --userconfig .npmrc whoami --registry=https://npm.fizz.studio >/dev/null 2>&1; then
             echo "::error::Invalid NPM_AUTH_TOKEN for https://npm.fizz.studio. Update repository secret NPM_AUTH_TOKEN."
             exit 1
           fi
 
       - name: Setup Pages
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: actions/configure-pages@v5
 
       - name: Install dependencies
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: nick-fields/retry@v3
         with:
           timeout_minutes: 15
@@ -59,9 +64,11 @@ jobs:
           command: npm ci
 
       - name: Build docs
+        if: ${{ env.SKIP_BUILD != 'true' }}
         run: npm run docs:build
 
       - name: Upload artifact
+        if: ${{ env.SKIP_BUILD != 'true' }}
         uses: actions/upload-pages-artifact@v4
         with:
           path: docs/.vitepress/dist
@@ -71,6 +78,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     needs: build
+    if: ${{ needs.build.outputs.skip != 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to GitHub Pages
