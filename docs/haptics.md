@@ -12,6 +12,11 @@ The Haptics Lab is an exploratory page for evaluating how tactile feedback (hapt
 
 Haptics is treated as a **progressive enhancement**: the page works fully as an audio-only experience on all devices, and adds vibration on devices that support the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API). No chart rendering or accessibility features are changed by this experiment.
 
+::: tip 🎮 Ready to feel the data? Jump to the interactive labs
+- **[Multi-Modal Lab](#multi-modal-lab)** — use a slider to manually probe haptic intensity levels (single tick → double pulse → triple buzz)
+- **[Chart Navigation Lab](#chart-navigation-lab)** — navigate real charts with the keyboard; every data point fires both a tone and a vibration whose strength reflects the value
+:::
+
 ## Browser and Device Support
 
 | Feature | Chrome (Android) | Firefox (Android) | Safari (iOS) | Desktop |
