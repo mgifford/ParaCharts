@@ -1,5 +1,6 @@
 <script setup>
 import HapticsLab from './.vitepress/theme/components/HapticsLab.vue'
+import HapticsCharts from './.vitepress/theme/components/HapticsCharts.vue'
 </script>
 
 # Haptics Lab
@@ -27,6 +28,12 @@ Key constraints:
 Press **Initialize Audio Engine** first, then use the Manual Probe or run a pattern test. If you are on a supported Android device over HTTPS, the vibration motor will fire at the same time as each audio tone.
 
 <HapticsLab />
+
+## Chart Navigation Lab
+
+The charts below are fully integrated with haptic and audio feedback. Navigate into a chart with the keyboard and move between data points with arrow keys — each point fires both a tone and a vibration whose intensity reflects the data value.
+
+<HapticsCharts />
 
 ## Perceptual Zones
 
@@ -132,4 +139,6 @@ The haptic trigger is synchronous so it fires at the same timestamp as the `Audi
 
 ## Status
 
-This page is **experimental**. Haptic integration with ParaCharts chart rendering is not yet implemented. The lab exists to evaluate perceptual effectiveness before wiring the `HapticFeedbackManager` into the main interaction model.
+The **Chart Navigation Lab** above wires the `HapticFeedbackManager` directly into ParaCharts keyboard navigation: every datapoint focus change triggers both an audio tone and a vibration pattern. The **Multi-Modal Lab** above remains useful for isolated testing of individual haptic patterns.
+
+Future work: add a haptics toggle to the Control Panel and expose haptic intensity settings.
