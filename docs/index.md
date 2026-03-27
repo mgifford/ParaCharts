@@ -31,3 +31,7 @@ ParaCharts exists to close a persistent accessibility gap in online data visuali
 - [Custom Elements](customElements.md): the `para-chart` and `para-chart-ai` elements.
 - [Manifest](manifest.md): a description of the manifest format used by ParaCharts.
 - [Settings object](settingsObj.md): the settings property of a ParaChart element.
+
+## Experimental
+
+- [Haptics Lab](haptics.md): exploratory page for evaluating tactile feedback (Web Vibration API) as a complement to chart sonification.

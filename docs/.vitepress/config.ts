@@ -42,6 +42,12 @@ export default defineConfig({
             { text: 'Manifest', link: '/manifest' },
             { text: 'Settings Object', link: '/settingsObj' }
           ]
+        },
+        {
+          text: 'Experimental',
+          items: [
+            { text: 'Haptics Lab', link: '/haptics' }
+          ]
         }
       ]
     }
