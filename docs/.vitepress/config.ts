@@ -2,6 +2,14 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   base: '/ParaCharts/',
+  vue: {
+    template: {
+      compilerOptions: {
+        // Treat any hyphenated tag starting with "para-" as a native custom element
+        isCustomElement: (tag) => tag.startsWith('para-'),
+      },
+    },
+  },
   title: 'ParaCharts',
   description: 'ParaCharts user and developer documentation',
   appearance: false,
