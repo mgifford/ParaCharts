@@ -21,7 +21,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 permissions:
-  contents: read
+  contents: write
   issues: write
   pull-requests: write
 
@@ -108,7 +108,7 @@ jobs:
         with:
           urls: ${{ steps.urls.outputs.urls }}
           repository: ${{ github.repository }}
-          token: ${{ secrets.GH_TOKEN || github.token }}
+          token: ${{ github.token }}
           cache_key: ${{ steps.urls.outputs.cache_key }}
           skip_copilot_assignment: true
           include_screenshots: false
