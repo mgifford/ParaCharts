@@ -1,3 +1,7 @@
+---
+title: Accessibility Features
+---
+
 # Accessibility Features
 
 ParaCharts is designed to provide equivalent insight across multiple interaction modes. This page explains the core disability-related affordances, how each one helps, and how to test that it is functioning.
