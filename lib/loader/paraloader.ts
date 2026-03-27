@@ -206,11 +206,28 @@ async function loadManifest(
 }
 
 /**
- * Apply optional overrides to manifest.
- * @param manifest - Manifest to modify
- * @param chartType - Optional chart type override
- * @param description - Optional description override
+ * Normalize inline manifest record values to strings.
+ * CSV-based data sources always produce string values, but inline JSON
+ * manifests may contain numeric y (and occasionally x) values.
+ * Coerce them to strings so downstream processing (which calls .replace()
+ * and similar string methods) never receives a non-string.
  */
+function normalizeManifestRecords(manifest: Manifest): void {
+  for (const dataset of manifest.datasets) {
+    for (const series of dataset.series ?? []) {
+      for (const record of series.records ?? []) {
+        const r = record as Record<string, unknown>;
+        for (const key of ['x', 'y'] as const) {
+          if (r[key] !== undefined && typeof r[key] !== 'string') {
+            r[key] = String(r[key]);
+          }
+        }
+      }
+    }
+  }
+}
+
+
 function applyManifestOverrides(
   manifest: Manifest,
   chartType?: ChartType,
@@ -245,6 +262,7 @@ export async function load(
   description?: string
 ): Promise<LoadedData> {
   const manifest = await loadManifest(kind, manifestInput);
+  normalizeManifestRecords(manifest);
   let data: AllSeriesData | undefined = undefined;
 
   if (manifest.datasets[0].data.source === 'external') {

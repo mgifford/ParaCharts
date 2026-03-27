@@ -9,19 +9,19 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
  * "Mountain Peak" audio test pattern from the Haptics Lab above.
  */
 const MOUNTAIN_RECORDS = [
-  { x: '1', y: 8 },
-  { x: '2', y: 18 },
-  { x: '3', y: 32 },
-  { x: '4', y: 48 },
-  { x: '5', y: 65 },
-  { x: '6', y: 82 },
-  { x: '7', y: 100 },
-  { x: '8', y: 82 },
-  { x: '9', y: 65 },
-  { x: '10', y: 48 },
-  { x: '11', y: 32 },
-  { x: '12', y: 18 },
-  { x: '13', y: 8 },
+  { x: '1', y: '8' },
+  { x: '2', y: '18' },
+  { x: '3', y: '32' },
+  { x: '4', y: '48' },
+  { x: '5', y: '65' },
+  { x: '6', y: '82' },
+  { x: '7', y: '100' },
+  { x: '8', y: '82' },
+  { x: '9', y: '65' },
+  { x: '10', y: '48' },
+  { x: '11', y: '32' },
+  { x: '12', y: '18' },
+  { x: '13', y: '8' },
 ]
 
 /**
@@ -29,18 +29,18 @@ const MOUNTAIN_RECORDS = [
  * three points per step, matching the "Staircase" audio test pattern.
  */
 const STAIRCASE_RECORDS = [
-  { x: 'A1', y: 20 },
-  { x: 'A2', y: 20 },
-  { x: 'A3', y: 20 },
-  { x: 'B1', y: 50 },
-  { x: 'B2', y: 50 },
-  { x: 'B3', y: 50 },
-  { x: 'C1', y: 80 },
-  { x: 'C2', y: 80 },
-  { x: 'C3', y: 80 },
-  { x: 'D1', y: 100 },
-  { x: 'D2', y: 100 },
-  { x: 'D3', y: 100 },
+  { x: 'A1', y: '20' },
+  { x: 'A2', y: '20' },
+  { x: 'A3', y: '20' },
+  { x: 'B1', y: '50' },
+  { x: 'B2', y: '50' },
+  { x: 'B3', y: '50' },
+  { x: 'C1', y: '80' },
+  { x: 'C2', y: '80' },
+  { x: 'C3', y: '80' },
+  { x: 'D1', y: '100' },
+  { x: 'D2', y: '100' },
+  { x: 'D3', y: '100' },
 ]
 
 // Build inline manifests (manifestType="content")
@@ -49,7 +49,7 @@ function makeManifest(
   title: string,
   yLabel: string,
   seriesKey: string,
-  records: { x: string; y: number }[],
+  records: { x: string; y: string }[],
 ) {
   return JSON.stringify({
     datasets: [
@@ -101,10 +101,10 @@ const staircaseManifest = makeManifest(
 
 // Build lookup maps: seriesKey → [y values] for each chart
 const mountainLookup: Record<string, number[]> = {
-  Intensity: MOUNTAIN_RECORDS.map((r) => r.y),
+  Intensity: MOUNTAIN_RECORDS.map((r) => Number(r.y)),
 }
 const staircaseLookup: Record<string, number[]> = {
-  Level: STAIRCASE_RECORDS.map((r) => r.y),
+  Level: STAIRCASE_RECORDS.map((r) => Number(r.y)),
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
