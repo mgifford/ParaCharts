@@ -1,11 +1,14 @@
 <script setup>
 import HapticsLab from './.vitepress/theme/components/HapticsLab.vue'
 import HapticsCharts from './.vitepress/theme/components/HapticsCharts.vue'
+import HapticsSupportAlert from './.vitepress/theme/components/HapticsSupportAlert.vue'
 </script>
 
 # Haptics Lab
 
 The Haptics Lab is an exploratory page for evaluating how tactile feedback (haptics) can complement chart sonification in ParaCharts.
+
+<HapticsSupportAlert />
 
 Haptics is treated as a **progressive enhancement**: the page works fully as an audio-only experience on all devices, and adds vibration on devices that support the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API). No chart rendering or accessibility features are changed by this experiment.
 

@@ -200,8 +200,8 @@ function stopAll() {
         <span
           class="hl-badge"
           :class="isHapticSupported ? 'hl-badge--ok' : 'hl-badge--warn'"
-          aria-label="Haptics support"
         >
+          <span aria-hidden="true">{{ isHapticSupported ? '✚' : '⛔' }}</span>
           Haptics: {{ isHapticSupported ? 'Supported' : 'Not supported' }}
         </span>
         <span
@@ -363,15 +363,15 @@ function stopAll() {
 }
 
 .hl-badge--warn {
-  background: #fef3c7;
-  border-color: #d97706;
-  color: #78350f;
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #7f1d1d;
 }
 
 .dark .hl-badge--warn {
-  background: #451a03;
-  border-color: #fbbf24;
-  color: #fde68a;
+  background: #450a0a;
+  border-color: #f87171;
+  color: #fecaca;
 }
 
 /* ── Support message ──────────────────────────────────────────────────────────*/

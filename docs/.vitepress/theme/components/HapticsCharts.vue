@@ -256,7 +256,10 @@ const freqDisplay = computed(() => {
         <span
           class="hc-badge"
           :class="isHapticSupported ? 'hc-badge--ok' : 'hc-badge--warn'"
-        >Haptics: {{ isHapticSupported ? 'Supported' : 'Not supported' }}</span>
+        >
+          <span aria-hidden="true">{{ isHapticSupported ? '✚' : '⛔' }}</span>
+          Haptics: {{ isHapticSupported ? 'Supported' : 'Not supported' }}
+        </span>
       </div>
 
       <p class="hc-msg" aria-live="polite">{{ supportMsg }}</p>
@@ -402,15 +405,15 @@ const freqDisplay = computed(() => {
 }
 
 .hc-badge--warn {
-  background: #fef3c7;
-  border-color: #d97706;
-  color: #78350f;
+  background: #fee2e2;
+  border-color: #dc2626;
+  color: #7f1d1d;
 }
 
 .dark .hc-badge--warn {
-  background: #451a03;
-  border-color: #fbbf24;
-  color: #fde68a;
+  background: #450a0a;
+  border-color: #f87171;
+  color: #fecaca;
 }
 
 /* ── Messages ─────────────────────────────────────────────────────────────── */
