@@ -82,6 +82,27 @@ describe('docs landmark structure', () => {
 });
 
 /**
+ * Regression test for WCAG 2.1 SC 1.4.1 / axe "link-in-text-block" rule:
+ * links must be distinguishable from surrounding text without relying on color alone.
+ *
+ * Violation originally reported on /ParaCharts/ (Jekyll-rendered index page):
+ * the default Primer link color (#0366d6) has only 2.7:1 contrast against
+ * surrounding text (#24292e), below the required 3:1 minimum.
+ */
+describe('docs link accessibility', () => {
+  it('Jekyll default layout includes CSS to underline inline links in markdown-body', () => {
+    const layout = readFileSync(resolve(DOCS_DIR, '_layouts/default.html'), 'utf-8');
+
+    // The layout must have a CSS rule targeting inline links in .markdown-body.
+    expect(layout).toMatch(/\.markdown-body\s+a/);
+
+    // The rule must set text-decoration-line: underline so links are visually
+    // distinguishable from surrounding text without relying on color.
+    expect(layout).toMatch(/text-decoration-line\s*:\s*underline/);
+  });
+});
+
+/**
  * Reconstructs the transformHtml logic from docs/.vitepress/config.ts.
  *
  * Keeping this in sync with the config is intentional: if the config changes
