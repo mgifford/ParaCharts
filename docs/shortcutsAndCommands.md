@@ -34,7 +34,8 @@ For full page coverage, start at [Example Gallery](exampleGallery.md).
 | **Ctrl+control** | Stop playing |
 | **home, ;** | Go to first point in series |
 | **end, '** | Go to last point in series |
-| **Shift+ ** | Reset the chart |
+| **space** | Play or pause audio |
+| **Shift+space** | Reset the chart |
 | **enter** | Select a datapoint |
 | **Shift+enter** | Extend the datapoint selection |
 | **[** | Go to the series minimum |

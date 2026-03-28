@@ -58,6 +58,19 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <h3 id="hc-feedback-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Current Point</h3>
 <div id="hc-current"><p style="margin:0;font-size:0.875rem">Navigate into a chart with the keyboard to see point details here.</p></div>
 </section>
+<section id="hc-debug-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-debug-heading">
+<h3 id="hc-debug-heading" style="margin:0 0 0.5rem;font-size:1rem;font-weight:700">Haptics Debug Log</h3>
+<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">Use this on mobile when the browser console is not available. It logs vibration support checks, skipped calls, API return values, and runtime chart events.</p>
+<details id="hc-debug-details">
+<summary id="hc-debug-summary" style="cursor:pointer;font-weight:600">Show debug log (0 entries)</summary>
+<div style="margin-top:0.6rem">
+<button id="hc-debug-clear" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">Clear log</button>
+</div>
+<ol id="hc-debug-log" style="margin:0.75rem 0 0;padding-left:1.25rem;font-size:0.75rem;line-height:1.45;display:grid;gap:0.25rem;max-height:14rem;overflow:auto">
+<li>Waiting for events...</li>
+</ol>
+</details>
+</section>
 <section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-mountain-heading">
 <h3 id="hc-mountain-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Chart 1: Mountain Peak</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart whose values rise from 8 to 100 then fall back to 8 — a symmetric bell curve. Navigate left to right to feel intensity climb then descend. The peak (point 7) is value 100: the longest triple buzz and the highest tone.</p>
@@ -77,8 +90,59 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const CHART_NAMES = { 'hc-mountain': 'Mountain Peak', 'hc-staircase': 'Staircase' };
   const isHapticSupported = 'vibrate' in navigator;
   const isHttps = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  const MAX_DEBUG_ENTRIES = 80;
+
+  const debugDetails = document.getElementById('hc-debug-details');
+  const debugSummary = document.getElementById('hc-debug-summary');
+  const debugLog = document.getElementById('hc-debug-log');
+  const debugClearBtn = document.getElementById('hc-debug-clear');
+
+  function nowStamp() {
+    return new Date().toLocaleTimeString([], { hour12: false });
+  }
+
+  function updateDebugSummary() {
+    if (!debugSummary || !debugLog) return;
+    const count = debugLog.children.length;
+    debugSummary.textContent = 'Show debug log (' + count + ' entr' + (count === 1 ? 'y' : 'ies') + ')';
+  }
+
+  function appendDebug(level, message) {
+    if (!debugLog) return;
+    if (debugLog.children.length === 1 && debugLog.firstElementChild && debugLog.firstElementChild.textContent === 'Waiting for events...') {
+      debugLog.replaceChildren();
+    }
+    const item = document.createElement('li');
+    const levelUpper = level.toUpperCase();
+    item.textContent = '[' + nowStamp() + '] [' + levelUpper + '] ' + message;
+    if (level === 'warn') item.style.color = '#92400e';
+    if (level === 'error') item.style.color = '#991b1b';
+    debugLog.prepend(item);
+    while (debugLog.children.length > MAX_DEBUG_ENTRIES) {
+      debugLog.removeChild(debugLog.lastElementChild);
+    }
+    if (debugDetails && (level === 'warn' || level === 'error')) {
+      debugDetails.open = true;
+    }
+    updateDebugSummary();
+  }
+
+  function setupDebugPanel() {
+    if (!debugClearBtn || !debugLog) {
+      return;
+    }
+    debugClearBtn.addEventListener('click', () => {
+      debugLog.replaceChildren();
+      const resetItem = document.createElement('li');
+      resetItem.textContent = 'Waiting for events...';
+      debugLog.appendChild(resetItem);
+      updateDebugSummary();
+    });
+    updateDebugSummary();
+  }
 
   console.log('[HapticsPage] init — Vibration API:', isHapticSupported ? 'present' : 'absent', '| HTTPS:', isHttps ? 'yes' : 'no', '| UA:', navigator.userAgent);
+  appendDebug('info', 'Initialized. Vibration API: ' + (isHapticSupported ? 'present' : 'absent') + '. HTTPS: ' + (isHttps ? 'yes' : 'no') + '.');
 
   function initStatus() {
     const badgeRow = document.getElementById('hc-badge-row');
@@ -112,10 +176,13 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     if (msg) {
       if (!isHapticSupported) {
         msg.textContent = 'Haptics (Web Vibration API) not supported on this device/browser. For haptics, try Chrome on Android over HTTPS. Audio will still play.';
+        appendDebug('warn', 'Haptics unavailable: Web Vibration API not supported on this browser/device.');
       } else if (!isHttps) {
         msg.textContent = 'Vibration API detected but haptics require HTTPS. This page appears to be served over plain HTTP \u2014 reload over HTTPS to enable haptic feedback. Audio will still play.';
+        appendDebug('warn', 'Haptics unavailable: page is not served over HTTPS.');
       } else {
         msg.textContent = 'Haptic support detected. Navigate the charts below with the keyboard to feel the data.';
+        appendDebug('info', 'Haptics supported and HTTPS is enabled.');
       }
     }
   }
@@ -123,15 +190,18 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   function vibrate(value) {
     if (!isHapticSupported) {
       console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 Vibration API not supported');
+      appendDebug('warn', 'vibrate(' + value + ') skipped: Vibration API not supported.');
       return;
     }
     if (!isHttps) {
       console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 HTTPS required for haptics');
+      appendDebug('warn', 'vibrate(' + value + ') skipped: HTTPS required for haptics.');
       return;
     }
     const now = Date.now();
     if (now - lastHapticTime < 50) {
       console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< 50 ms since last)');
+      appendDebug('info', 'vibrate(' + value + ') skipped: throttled (< 50 ms since last event).');
       return;
     }
     lastHapticTime = now;
@@ -143,9 +213,22 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     if (val < 40) { pattern = duration; zone = 'single-tick'; }
     else if (val < 80) { pattern = [duration, gap, duration]; zone = 'double-pulse'; }
     else { pattern = [duration, gap, duration, gap, duration]; zone = 'triple-buzz'; }
-    const result = navigator.vibrate(pattern);
+    let result = false;
+    try {
+      result = navigator.vibrate(pattern);
+    } catch (err) {
+      const errMessage = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
+      console.error('[HapticsPage] vibrate(' + val + ') failed \u2014 ' + errMessage);
+      appendDebug('error', 'vibrate(' + val + ') failed: ' + errMessage);
+      return;
+    }
     const patternStr = Array.isArray(pattern) ? '[' + pattern.join(',') + ']' : String(pattern);
     console.log('[HapticsPage] vibrate(' + val + ') \u2014 zone: ' + zone + ' | pattern: ' + patternStr + 'ms | result: ' + result);
+    if (!result) {
+      appendDebug('warn', 'vibrate(' + val + ') returned false. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
+      return;
+    }
+    appendDebug('info', 'vibrate(' + val + ') sent. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
   }
   function hapticZoneLabel(val) {
     if (val < 40) return 'Single tick (< 40)';
@@ -170,10 +253,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const key = detail.key;
     const value = detail.value;
     console.debug('[HapticsPage] paranotice \u2014 key: ' + key);
+    appendDebug('info', 'paranotice key=' + key + '.');
     if (['move', 'goSeriesMinMax', 'goChartMinMax', 'goFirst', 'goLast'].indexOf(key) === -1) return;
     const options = value && value.options;
     if (!options || options.seriesKey === null || options.seriesKey === undefined || options.index === null || options.index === undefined) {
       console.warn('[HapticsPage] paranotice(' + key + ') \u2014 missing options.seriesKey or options.index', value);
+      appendDebug('warn', 'paranotice(' + key + ') missing options.seriesKey or options.index.');
       return;
     }
     const seriesKey = options.seriesKey;
@@ -181,21 +266,25 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const target = e.target;
     if (!target || !target.id) {
       console.warn('[HapticsPage] paranotice(' + key + ') \u2014 no target id');
+      appendDebug('warn', 'paranotice(' + key + ') ignored: missing target id.');
       return;
     }
     const lookup = DATA_LOOKUP[target.id];
     if (!lookup) {
       console.debug('[HapticsPage] paranotice(' + key + ') \u2014 target id "' + target.id + '" not in DATA_LOOKUP; ignoring');
+      appendDebug('info', 'paranotice(' + key + ') ignored: target id ' + target.id + ' not in DATA_LOOKUP.');
       return;
     }
     const seriesData = lookup[seriesKey];
     if (!seriesData || index < 0 || index >= seriesData.length) {
       console.warn('[HapticsPage] paranotice(' + key + ') \u2014 seriesKey "' + seriesKey + '" not found or index ' + index + ' out of range for "' + target.id + '"');
+      appendDebug('warn', 'paranotice(' + key + ') invalid series/index: seriesKey=' + seriesKey + ', index=' + index + '.');
       return;
     }
     const val = seriesData[index];
     const chartName = CHART_NAMES[target.id] || target.id;
     console.log('[HapticsPage] point focus \u2014 chart: ' + chartName + ' | seriesKey: ' + seriesKey + ' | index: ' + index + ' | value: ' + val);
+    appendDebug('info', 'Point focus: ' + chartName + ', series=' + seriesKey + ', index=' + index + ', value=' + val + '.');
     const currentEl = document.getElementById('hc-current');
     if (currentEl) {
       const freq = (150 + val * 7.5).toFixed(0) + ' Hz';
@@ -210,6 +299,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
     vibrate(val);
   }
+  setupDebugPanel();
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initStatus); } else { initStatus(); }
   document.addEventListener('paranotice', handleParanotice);
 }());

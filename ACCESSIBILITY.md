@@ -53,9 +53,11 @@ Every interactive chart behavior available by pointer must be operable by keyboa
 |---|---|
 | Navigate between data points | Arrow keys |
 | Navigate between series | Tab or documented shortcut |
-| Activate popup / detail | Enter or Space |
-| Dismiss popup | Escape |
-| Return to chart overview | Home |
+| Select current data point | Enter |
+| Open query/detail output | Q |
+| Play or pause audio (when available) | Space |
+| Stop speaking (self-voicing mode) | Ctrl or Escape |
+| Return to chart overview / first point in series | Home |
 | Zoom in / out (when applicable) | + / − or labeled controls |
 
 Keyboard shortcuts must be documented in `docs/shortcutsAndCommands.md` and kept in sync with runtime behavior. Undocumented shortcuts are not acceptable.

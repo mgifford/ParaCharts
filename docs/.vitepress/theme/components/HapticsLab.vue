@@ -22,6 +22,10 @@ function addLog(msg: string) {
   hapticLog.value = [`[${ts}] ${msg}`, ...hapticLog.value].slice(0, MAX_LOG)
 }
 
+function clearLog() {
+  hapticLog.value = []
+}
+
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(() => {
@@ -35,6 +39,7 @@ onMounted(() => {
   const apiStatus = isHapticSupported.value ? 'Vibration API present' : 'Vibration API absent'
   const httpsStatus = isHttps.value ? 'HTTPS ✓' : 'HTTP (haptics may be blocked)'
   console.log(`[HapticsLab] init — ${apiStatus} | ${httpsStatus} | UA: ${navigator.userAgent}`)
+  addLog(`Initialized: ${apiStatus} | ${httpsStatus}`)
 
   if (!isHapticSupported.value) {
     supportMsg.value =
@@ -66,6 +71,7 @@ function initAudio() {
     ? 'System online. Both audio and haptics are active.'
     : 'Audio engine active. Haptics unavailable on this device/browser.'
   console.log(`[HapticsLab] AudioContext created — state: ${audioCtx.value.state}`)
+    addLog(`AudioContext created — state: ${audioCtx.value.state}`)
 }
 
 /**
@@ -132,7 +138,16 @@ function vibrate(value: number) {
     zone = 'triple-buzz'
   }
 
-  const result = navigator.vibrate(pattern)
+  let result = false
+  try {
+    result = navigator.vibrate(pattern)
+  } catch (err) {
+    const errMessage = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+    const msg = `vibrate(${value}) failed — ${errMessage}`
+    console.error(`[HapticsLab] ${msg}`)
+    addLog(msg)
+    return
+  }
   const patternStr = Array.isArray(pattern) ? `[${pattern.join(',')}]` : String(pattern)
   const msg = `vibrate(${value}) — zone: ${zone} | pattern: ${patternStr}ms | result: ${result}`
   console.log(`[HapticsLab] ${msg}`)
@@ -235,6 +250,7 @@ function stopAll() {
   if (isHapticSupported.value) {
     navigator.vibrate(0)
     console.log('[HapticsLab] stopAll — vibrate(0) sent to cancel any active vibration')
+    addLog('stopAll — vibrate(0) sent to cancel active vibration')
   }
   isRunning.value = false
   updateUI(0, 'Stopped.')
@@ -373,26 +389,38 @@ function stopAll() {
         <code>result: true</code> means the vibration was accepted by the browser;
         <code>result: false</code> or a <em>skipped</em> entry means the vibration did not fire.
       </p>
-      <div
-        class="hl-debug-log"
-        role="log"
-        aria-label="Haptic debug log"
-        aria-live="polite"
-        aria-atomic="false"
-      >
-        <p v-if="hapticLog.length === 0" class="hl-debug-empty">No haptic events yet. Trigger audio + haptic above to see entries.</p>
-        <div v-else>
-          <div
-            v-for="(entry, i) in hapticLog"
-            :key="i"
-            class="hl-debug-entry"
-            :class="{
-              'hl-debug-entry--warn': entry.includes('skipped'),
-              'hl-debug-entry--false': entry.includes('result: false'),
-            }"
-          >{{ entry }}</div>
+      <details>
+        <summary class="hl-debug-summary">Show debug log ({{ hapticLog.length }} {{ hapticLog.length === 1 ? 'entry' : 'entries' }})</summary>
+        <div class="hl-debug-toolbar">
+          <button
+            class="hl-btn hl-btn--secondary hl-btn--sm"
+            type="button"
+            @click="clearLog"
+          >
+            Clear log
+          </button>
         </div>
-      </div>
+        <div
+          class="hl-debug-log"
+          role="log"
+          aria-label="Haptic debug log"
+          aria-live="polite"
+          aria-atomic="false"
+        >
+          <p v-if="hapticLog.length === 0" class="hl-debug-empty">No haptic events yet. Trigger audio + haptic above to see entries.</p>
+          <div v-else>
+            <div
+              v-for="(entry, i) in hapticLog"
+              :key="i"
+              class="hl-debug-entry"
+              :class="{
+                'hl-debug-entry--warn': entry.includes('skipped') || entry.includes('failed'),
+                'hl-debug-entry--false': entry.includes('result: false'),
+              }"
+            >{{ entry }}</div>
+          </div>
+        </div>
+      </details>
     </section>
   </div>
 </template>
@@ -514,6 +542,11 @@ function stopAll() {
   background: var(--vp-c-brand-soft, rgba(15, 118, 110, 0.08));
 }
 
+.hl-btn--sm {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+}
+
 .hl-btn--stop {
   background: #dc2626;
   color: #fff;
@@ -594,6 +627,19 @@ function stopAll() {
   min-height: 4rem;
   max-height: 14rem;
   overflow-y: auto;
+}
+
+.hl-debug-summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--vp-c-text-1);
+}
+
+.hl-debug-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
 }
 
 .hl-debug-empty {
