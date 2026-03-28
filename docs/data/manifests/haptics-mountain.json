@@ -51,7 +51,6 @@
       "settings": {
         "chart.size.width": 640,
         "chart.size.height": 400,
-        "chart.title.isDrawTitle": false,
         "sonification.isSoniEnabled": true,
         "controlPanel.isControlPanelDefaultOpen": false,
         "animation.isAnimationEnabled": false
