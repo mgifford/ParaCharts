@@ -8,8 +8,8 @@ The Haptics Lab is an exploratory page for evaluating how tactile feedback (hapt
 Haptics is treated as a **progressive enhancement**: the page works fully as an audio-only experience on all devices, and adds vibration on devices that support the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API). No chart rendering or accessibility features are changed by this experiment.
 
 ::: tip 🎮 Ready to feel the data? Jump to the interactive labs
-- **[Multi-Modal Lab](#multi-modal-lab)** — use a slider to manually probe haptic intensity levels (single tick → double pulse → triple buzz)
-- **[Chart Navigation Lab](#chart-navigation-lab)** — navigate real charts with the keyboard; every data point fires both a tone and a vibration whose strength reflects the value
+- **[Multi-Modal Lab](#multi-modal-lab)** — use a slider to manually probe haptic intensity levels
+- **[Chart Navigation Lab](#chart-navigation-lab)** — navigate real charts with arrow keys; every data point fires a vibration that strengthens with higher values
 :::
 
 ## Browser and Device Support
@@ -126,39 +126,18 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <li>Tab into one of the charts below to focus it.</li>
 <li>Press <kbd>Enter</kbd> or <kbd>↓</kbd> to enter the data layer.</li>
 <li>Use <kbd>←</kbd> / <kbd>→</kbd> to move between data points.</li>
-<li>Each point plays a tone (via the chart's built-in sonification) and — on supported Android devices over HTTPS — fires a vibration whose intensity reflects the data value.</li>
+<li>Each point fires a vibration (on Android over HTTPS) whose intensity reflects the data value, plus an audio tone from the chart's built-in sonification.</li>
 <li>Press <kbd>Escape</kbd> to return to the chart top level.</li>
 <li>Press <kbd>q</kbd> while on a data point to hear a spoken summary.</li>
-<li>On touch devices, drag your finger horizontally across a chart to scrub through points with shorter audio+haptic feedback that follows trend progression.</li>
 </ol>
 </section>
 <section id="hc-prefs-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-prefs-heading">
-<h3 id="hc-prefs-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Touch Feedback Preferences</h3>
-<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">These preferences apply to touch-scrub interaction and are saved on this device.</p>
+<h3 id="hc-prefs-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Haptics Settings</h3>
+<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">These settings are saved on this device.</p>
 <div style="display:grid;gap:0.75rem;max-width:28rem">
 <label style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;line-height:1.4">
-<input id="hc-pref-scrub-enabled" type="checkbox" checked style="margin-top:0.15rem" />
-<span>Enable touch scrub across chart values</span>
-</label>
-<label style="display:grid;gap:0.3rem;font-size:0.875rem">
-<span>Scrub feedback mode</span>
-<select id="hc-pref-feedback-mode" style="padding:0.35rem;border-radius:0.35rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">
-<option value="both">Audio + haptics</option>
-<option value="audio">Audio only</option>
-<option value="haptic">Haptics only</option>
-</select>
-</label>
-<label style="display:grid;gap:0.3rem;font-size:0.875rem">
-<span>Scrub sensitivity</span>
-<select id="hc-pref-scrub-sensitivity" style="padding:0.35rem;border-radius:0.35rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">
-<option value="low">Low (slower updates)</option>
-<option value="normal">Normal</option>
-<option value="high">High (faster updates)</option>
-</select>
-</label>
-<label style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;line-height:1.4">
-<input id="hc-pref-diagnostic-boost" type="checkbox" style="margin-top:0.15rem" />
-<span>Boost chart haptics (diagnostic)</span>
+<input id="hc-pref-haptics-enabled" type="checkbox" checked style="margin-top:0.15rem" />
+<span>Enable haptics on data point navigation</span>
 </label>
 </div>
 <p id="hc-pref-status" style="margin:0.75rem 0 0;font-size:0.75rem" aria-live="polite"></p>
@@ -185,12 +164,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 </section>
 <section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-mountain-heading">
 <h3 id="hc-mountain-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Chart 1: Mountain Peak</h3>
-<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart whose values rise from 8 to 100 then fall back to 8 — a symmetric bell curve. Navigate left to right to feel intensity climb then descend. The peak (point 7) is value 100: the longest triple buzz and the highest tone.</p>
+<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart with values rising from 8 to 100 then falling back to 8. Use arrow keys to navigate left to right and feel intensity climb then descend. Higher values produce longer vibrations. The peak (point 7, value 100) vibrates longest.</p>
 <para-chart id="hc-mountain" manifest='{"datasets":[{"type":"column","title":"Mountain Peak (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Intensity (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Intensity","records":[{"x":"1","y":"8"},{"x":"2","y":"18"},{"x":"3","y":"32"},{"x":"4","y":"48"},{"x":"5","y":"65"},{"x":"6","y":"82"},{"x":"7","y":"100"},{"x":"8","y":"82"},{"x":"9","y":"65"},{"x":"10","y":"48"},{"x":"11","y":"32"},{"x":"12","y":"18"},{"x":"13","y":"8"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block;width:100%;max-width:48rem;aspect-ratio:4/3;margin:0.5rem 0" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
 </section>
 <section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-staircase-heading">
 <h3 id="hc-staircase-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Chart 2: Staircase</h3>
-<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A line chart with four distinct steps at values 20, 50, 80, and 100 (three points each). Navigate through it to feel the four distinct haptic zones — single tick (20), double pulse (50), triple buzz (80 and 100). Each step repeats three times so you can feel the difference between zones.</p>
+<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A line chart with four distinct steps at values 20, 50, 80, and 100 (three points each). Use arrow keys to navigate through and feel the four distinct haptic zones increase in intensity. Each step repeats three times so you can feel consistent vibration at each level.</p>
 <para-chart id="hc-staircase" manifest='{"datasets":[{"type":"line","title":"Staircase (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Level (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Level","records":[{"x":"A1","y":"20"},{"x":"A2","y":"20"},{"x":"A3","y":"20"},{"x":"B1","y":"50"},{"x":"B2","y":"50"},{"x":"B3","y":"50"},{"x":"C1","y":"80"},{"x":"C2","y":"80"},{"x":"C3","y":"80"},{"x":"D1","y":"100"},{"x":"D2","y":"100"},{"x":"D3","y":"100"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block;width:100%;max-width:48rem;aspect-ratio:4/3;margin:0.5rem 0" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
 </section>
 </div>
@@ -202,20 +181,11 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const CHART_NAMES = { 'hc-mountain': 'Mountain Peak', 'hc-staircase': 'Staircase' };
   const isHapticSupported = 'vibrate' in navigator;
   const isHttps = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  const PREF_STORAGE_KEY = 'paracharts-haptics-touch-prefs-v1';
+  const PREF_STORAGE_KEY = 'paracharts-haptics-nav-prefs-v1';
   const MAX_DEBUG_ENTRIES = 80;
 
-  let scrubAudioCtx = null;
   const prefs = {
-    scrubEnabled: true,
-    feedbackMode: 'both',
-    scrubSensitivity: 'normal',
-    diagnosticBoost: false,
-  };
-
-  const scrubState = {
-    'hc-mountain': { active: false, lastIndex: -1, lastTime: 0, pointerId: null, startX: 0, startY: 0, hasMoved: false, suppressSelectUntil: 0 },
-    'hc-staircase': { active: false, lastIndex: -1, lastTime: 0, pointerId: null, startX: 0, startY: 0, hasMoved: false, suppressSelectUntil: 0 },
+    hapticsEnabled: true,
   };
 
   const debugDetails = document.getElementById('hc-debug-details');
@@ -225,10 +195,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const debugCopyBtn = document.getElementById('hc-debug-copy');
   const debugCopyJsonBtn = document.getElementById('hc-debug-copy-json');
   const debugCopyStatus = document.getElementById('hc-debug-copy-status');
-  const prefScrubEnabled = document.getElementById('hc-pref-scrub-enabled');
-  const prefFeedbackMode = document.getElementById('hc-pref-feedback-mode');
-  const prefScrubSensitivity = document.getElementById('hc-pref-scrub-sensitivity');
-  const prefDiagnosticBoost = document.getElementById('hc-pref-diagnostic-boost');
+  const prefHapticsEnabled = document.getElementById('hc-pref-haptics-enabled');
   const prefStatus = document.getElementById('hc-pref-status');
   const selfTestBtn = document.getElementById('hc-self-test-btn');
   const selfTestStatus = document.getElementById('hc-self-test-status');
@@ -316,14 +283,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   function updatePrefStatus() {
     if (!prefStatus) return;
-    const modeLabel = prefs.feedbackMode === 'both'
-      ? 'audio + haptics'
-      : (prefs.feedbackMode === 'audio' ? 'audio only' : 'haptics only');
-    prefStatus.textContent = 'Touch scrub: '
-      + (prefs.scrubEnabled ? 'enabled' : 'disabled')
-      + '. Mode: ' + modeLabel
-      + '. Sensitivity: ' + prefs.scrubSensitivity
-      + '. Diagnostic boost: ' + (prefs.diagnosticBoost ? 'on' : 'off') + '.';
+    prefStatus.textContent = 'Haptics: ' + (prefs.hapticsEnabled ? 'enabled' : 'disabled') + '.';
   }
 
   function buildDebugMetadata() {
@@ -344,19 +304,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         isHttps,
       },
       preferences: {
-        scrubEnabled: !!prefs.scrubEnabled,
-        feedbackMode: prefs.feedbackMode,
-        scrubSensitivity: prefs.scrubSensitivity,
-        diagnosticBoost: !!prefs.diagnosticBoost,
+        hapticsEnabled: !!prefs.hapticsEnabled,
       },
-      runtime: {
-        scrubEventMinMs: getScrubEventMinMs(),
-        scrubHapticMinMs: getScrubHapticMinMs(),
-        scrubIntensityScale: getScrubIntensityScale(),
-        diagnosticBoostMultiplier: prefs.diagnosticBoost ? 1.8 : 1,
-        debugEntryCount: debugEntries.length,
-      },
-        selfTest: selfTestResult,
+      selfTest: selfTestResult,
     };
   }
 
@@ -452,7 +402,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     try {
       localStorage.setItem(PREF_STORAGE_KEY, JSON.stringify(prefs));
     } catch (_err) {
-      appendDebug('warn', 'Failed to save touch preferences to localStorage.');
+      appendDebug('warn', 'Failed to save haptics preferences to localStorage.');
     }
   }
 
@@ -461,63 +411,30 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       const raw = localStorage.getItem(PREF_STORAGE_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw);
-      if (typeof parsed.scrubEnabled === 'boolean') prefs.scrubEnabled = parsed.scrubEnabled;
-      if (parsed.feedbackMode === 'both' || parsed.feedbackMode === 'audio' || parsed.feedbackMode === 'haptic') {
-        prefs.feedbackMode = parsed.feedbackMode;
-      }
-      if (parsed.scrubSensitivity === 'low' || parsed.scrubSensitivity === 'normal' || parsed.scrubSensitivity === 'high') {
-        prefs.scrubSensitivity = parsed.scrubSensitivity;
-      }
-      if (typeof parsed.diagnosticBoost === 'boolean') {
-        prefs.diagnosticBoost = parsed.diagnosticBoost;
-      }
+      if (typeof parsed.hapticsEnabled === 'boolean') prefs.hapticsEnabled = parsed.hapticsEnabled;
     } catch (_err) {
-      appendDebug('warn', 'Failed to load touch preferences from localStorage.');
+      appendDebug('warn', 'Failed to load haptics preferences from localStorage.');
     }
   }
 
   function syncPrefControls() {
-    if (prefScrubEnabled) prefScrubEnabled.checked = !!prefs.scrubEnabled;
-    if (prefFeedbackMode) prefFeedbackMode.value = prefs.feedbackMode;
-    if (prefScrubSensitivity) prefScrubSensitivity.value = prefs.scrubSensitivity;
-    if (prefDiagnosticBoost) prefDiagnosticBoost.checked = !!prefs.diagnosticBoost;
+    if (prefHapticsEnabled) prefHapticsEnabled.checked = !!prefs.hapticsEnabled;
     updatePrefStatus();
   }
 
   function setupPreferencePanel() {
     loadPrefs();
     syncPrefControls();
-    if (!prefScrubEnabled || !prefFeedbackMode || !prefScrubSensitivity || !prefDiagnosticBoost) {
+    if (!prefHapticsEnabled) {
       appendDebug('warn', 'Preference controls not found; using defaults.');
       return;
     }
 
-    prefScrubEnabled.addEventListener('change', () => {
-      prefs.scrubEnabled = !!prefScrubEnabled.checked;
+    prefHapticsEnabled.addEventListener('change', () => {
+      prefs.hapticsEnabled = !!prefHapticsEnabled.checked;
       savePrefs();
       updatePrefStatus();
-      appendDebug('info', 'Preference changed: touch scrub ' + (prefs.scrubEnabled ? 'enabled' : 'disabled') + '.');
-    });
-
-    prefFeedbackMode.addEventListener('change', () => {
-      prefs.feedbackMode = prefFeedbackMode.value;
-      savePrefs();
-      updatePrefStatus();
-      appendDebug('info', 'Preference changed: feedback mode=' + prefs.feedbackMode + '.');
-    });
-
-    prefScrubSensitivity.addEventListener('change', () => {
-      prefs.scrubSensitivity = prefScrubSensitivity.value;
-      savePrefs();
-      updatePrefStatus();
-      appendDebug('info', 'Preference changed: scrub sensitivity=' + prefs.scrubSensitivity + '.');
-    });
-
-    prefDiagnosticBoost.addEventListener('change', () => {
-      prefs.diagnosticBoost = !!prefDiagnosticBoost.checked;
-      savePrefs();
-      updatePrefStatus();
-      appendDebug('info', 'Preference changed: diagnostic boost ' + (prefs.diagnosticBoost ? 'enabled' : 'disabled') + '.');
+      appendDebug('info', 'Preference changed: haptics ' + (prefs.hapticsEnabled ? 'enabled' : 'disabled') + '.');
     });
   }
 
@@ -618,43 +535,6 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     updateDebugSummary();
   }
 
-  function ensureScrubAudio() {
-    if (scrubAudioCtx) return scrubAudioCtx;
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) {
-      appendDebug('warn', 'AudioContext unavailable for touch-scrub tones.');
-      return null;
-    }
-    try {
-      scrubAudioCtx = new Ctx();
-      appendDebug('info', 'Touch-scrub audio context initialized.');
-      return scrubAudioCtx;
-    } catch (err) {
-      const errMessage = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
-      appendDebug('error', 'Failed to initialize touch-scrub audio context: ' + errMessage);
-      return null;
-    }
-  }
-
-  function playScrubTone(value) {
-    if (prefs.feedbackMode === 'haptic') return;
-    const ctx = ensureScrubAudio();
-    if (!ctx) return;
-    const val = Math.max(1, Math.min(100, value));
-    const freq = 150 + val * 7.5;
-    const start = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, start);
-    gain.gain.setValueAtTime(0.06, start);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.08);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(start);
-    osc.stop(start + 0.08);
-  }
-
   console.log('[HapticsPage] init — Vibration API:', isHapticSupported ? 'present' : 'absent', '| HTTPS:', isHttps ? 'yes' : 'no', '| UA:', navigator.userAgent);
   appendDebug('info', 'Initialized. Vibration API: ' + (isHapticSupported ? 'present' : 'absent') + '. HTTPS: ' + (isHttps ? 'yes' : 'no') + '.');
 
@@ -700,14 +580,11 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       }
     }
   }
-  let lastHapticTimeNav = 0;
-  let lastHapticTimeScrub = 0;
-  let scrubThrottleSkipCount = 0;
-  let lastScrubThrottleLogTime = 0;
-  function vibrate(value, mode) {
-    const isScrubMode = mode === 'scrub';
-    if (isScrubMode && prefs.feedbackMode === 'audio') {
-      appendDebug('info', 'vibrate(' + value + ') skipped: scrub mode is set to audio only.');
+  let lastHapticTime = 0;
+
+  function vibrate(value) {
+    if (!prefs.hapticsEnabled) {
+      console.debug('[HapticsPage] vibrate(' + value + ') skipped: haptics disabled');
       return;
     }
     if (!isHapticSupported) {
@@ -720,88 +597,39 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       appendDebug('warn', 'vibrate(' + value + ') skipped: HTTPS required for haptics.');
       return;
     }
+
     const now = Date.now();
-    const hapticMinMs = isScrubMode
-      ? (getScrubHapticMinMs() + (prefs.diagnosticBoost ? 35 : 0))
-      : 50;
-    const lastHapticTime = isScrubMode ? lastHapticTimeScrub : lastHapticTimeNav;
-    if (now - lastHapticTime < hapticMinMs) {
-      console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< ' + hapticMinMs + ' ms since last)');
-      if (isScrubMode) {
-        scrubThrottleSkipCount += 1;
-        if (now - lastScrubThrottleLogTime > 300) {
-          appendDebug('info', 'vibrate scrub throttled ' + scrubThrottleSkipCount + ' time(s) in the last ~300ms.');
-          scrubThrottleSkipCount = 0;
-          lastScrubThrottleLogTime = now;
-        }
-      } else {
-        appendDebug('info', 'vibrate(' + value + ') skipped: throttled (< ' + hapticMinMs + ' ms since last event).');
-      }
+    if (now - lastHapticTime < 50) {
+      console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< 50ms since last)');
       return;
     }
-    if (isScrubMode) {
-      lastHapticTimeScrub = now;
-      scrubThrottleSkipCount = 0;
-    } else {
-      lastHapticTimeNav = now;
-    }
-    const val = Math.max(1, Math.min(100, value));
-    const scrubScale = getScrubIntensityScale();
-    const baseDuration = isScrubMode ? (10 + val * 0.9) : (12 + val * 1.35);
-    const baseGap = isScrubMode ? (190 - val * 1.3) : (480 - val * 4.2);
-    const modeScale = isScrubMode ? scrubScale : 1;
-    const hapticOnlyBoost = prefs.feedbackMode === 'haptic' ? 1.15 : 1;
-    const diagnosticBoost = prefs.diagnosticBoost ? 1.8 : 1;
-    const combinedScale = modeScale * hapticOnlyBoost * diagnosticBoost;
-    const duration = Math.max(8, Math.round(baseDuration * combinedScale));
-    const gap = Math.max(18, Math.round(baseGap / Math.max(1, modeScale)));
+    lastHapticTime = now;
+
+    const val = Math.max(0, Math.min(100, value));
     let pattern;
     let zone;
-    if (isScrubMode && prefs.diagnosticBoost) {
-      if (val < 40) {
-        pattern = 110;
-        zone = 'diagnostic-hold-low';
-      } else if (val < 80) {
-        pattern = [95, 55, 95];
-        zone = 'diagnostic-double-medium';
-      } else {
-        pattern = [125, 45, 125];
-        zone = 'diagnostic-double-high';
-      }
-    } else if (isScrubMode) {
-      if (val < 40) {
-        pattern = 45;
-        zone = 'scrub-low';
-      } else if (val < 80) {
-        pattern = [55, 55, 55];
-        zone = 'scrub-medium';
-      } else {
-        pattern = [70, 45, 70];
-        zone = 'scrub-high';
-      }
-    } else if (prefs.diagnosticBoost) {
-      const strongDuration = Math.max(duration, 120);
-      const strongGap = Math.max(gap, 90);
-      if (val < 40) {
-        pattern = [strongDuration, strongGap, strongDuration];
-        zone = 'diagnostic-double';
-      } else if (val < 80) {
-        pattern = [strongDuration, strongGap, strongDuration, strongGap, strongDuration];
-        zone = 'diagnostic-triple';
-      } else {
-        pattern = [strongDuration, strongGap, strongDuration, strongGap, strongDuration, strongGap, strongDuration];
-        zone = 'diagnostic-quad';
-      }
-    } else if (val < 40) {
-      pattern = duration;
-      zone = 'single-tick';
-    } else if (val < 80) {
-      pattern = [duration, gap, duration];
-      zone = 'double-pulse';
+
+    // Value-based vibration zones: sensory intensity increases with data value
+    if (val === 0) {
+      pattern = 10;
+      zone = 'zero-tick';
+    } else if (val < 26) {
+      pattern = 50;
+      zone = 'low-tick';
+    } else if (val < 51) {
+      pattern = [100, 50, 100];
+      zone = 'medium-double';
+    } else if (val < 76) {
+      pattern = [150, 75, 150];
+      zone = 'strong-double';
+    } else if (val < 100) {
+      pattern = [200, 100, 200];
+      zone = 'intense-double';
     } else {
-      pattern = [duration, gap, duration, gap, duration];
-      zone = 'triple-buzz';
+      pattern = [250, 150, 250];
+      zone = 'peak-triple';
     }
+
     let result = false;
     try {
       result = navigator.vibrate(pattern);
@@ -811,19 +639,25 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       appendDebug('error', 'vibrate(' + val + ') failed: ' + errMessage);
       return;
     }
+
     const patternStr = Array.isArray(pattern) ? '[' + pattern.join(',') + ']' : String(pattern);
     console.log('[HapticsPage] vibrate(' + val + ') \u2014 zone: ' + zone + ' | pattern: ' + patternStr + 'ms | result: ' + result);
     if (!result) {
       appendDebug('warn', 'vibrate(' + val + ') returned false. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
       return;
     }
-    appendDebug('info', 'vibrate(' + val + ') sent. Pattern=' + patternStr + 'ms; zone=' + zone + '; mode=' + (isScrubMode ? 'scrub' : 'nav') + '.');
+    appendDebug('info', 'vibrate(' + val + ') sent. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
   }
+
   function hapticZoneLabel(val) {
-    if (val < 40) return 'Single tick (< 40)';
-    if (val < 80) return 'Double pulse (40\u201379)';
-    return 'Triple buzz (\u2265 80)';
+    if (val === 0) return 'Zero (confirm presence)';
+    if (val < 26) return 'Low (1–25)';
+    if (val < 51) return 'Medium (26–50)';
+    if (val < 76) return 'Strong (51–75)';
+    if (val < 100) return 'Intense (76–99)';
+    return 'Peak (100)';
   }
+
   function makeRow(label, valueText) {
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;gap:0.5rem';
@@ -867,117 +701,11 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const chartName = CHART_NAMES[chartId] || chartId;
     appendDebug('info', source + ': point focus chart=' + chartName + ', series=' + seriesKey + ', index=' + index + ', value=' + val + '.');
     renderCurrentPoint(chartName, index, seriesData.length, val, source);
-    if (source === 'touch-scrub') {
-      playScrubTone(val);
-      vibrate(val, 'scrub');
-    } else {
-      vibrate(val, 'nav');
-    }
+    vibrate(val);
   }
 
   function setupTouchScrub(chartId, seriesKey) {
-    const chartEl = document.getElementById(chartId);
-    if (!chartEl) {
-      appendDebug('warn', 'Touch scrub setup skipped: chart element ' + chartId + ' not found.');
-      return;
-    }
-    const state = scrubState[chartId];
-    const series = DATA_LOOKUP[chartId] && DATA_LOOKUP[chartId][seriesKey];
-    if (!state || !series || series.length < 2) {
-      appendDebug('warn', 'Touch scrub setup skipped: missing data for chart=' + chartId + ', series=' + seriesKey + '.');
-      return;
-    }
-
-    function clientXToIndex(clientX) {
-      const rect = chartEl.getBoundingClientRect();
-      if (!rect.width) return 0;
-      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      return Math.round(ratio * (series.length - 1));
-    }
-
-    function handleScrubMove(clientX) {
-      if (!state.active) return;
-      const now = Date.now();
-      if (now - state.lastTime < getScrubEventMinMs()) return;
-      const idx = clientXToIndex(clientX);
-      if (idx === state.lastIndex) return;
-      state.lastTime = now;
-      state.lastIndex = idx;
-      handleDataPoint(chartId, seriesKey, idx, 'touch-scrub');
-    }
-
-    chartEl.addEventListener('pointerdown', (ev) => {
-      if (ev.pointerType === 'mouse') return;
-      if (!prefs.scrubEnabled) {
-        appendDebug('info', 'Touch scrub ignored on ' + (CHART_NAMES[chartId] || chartId) + ': disabled by preference.');
-        return;
-      }
-      state.active = false;
-      state.lastIndex = -1;
-      state.lastTime = 0;
-      state.pointerId = ev.pointerId;
-      state.startX = ev.clientX;
-      state.startY = ev.clientY;
-      state.hasMoved = false;
-      state.suppressSelectUntil = Date.now() + 500;
-      if (chartEl.setPointerCapture) {
-        try {
-          chartEl.setPointerCapture(ev.pointerId);
-        } catch (_err) {
-          appendDebug('warn', 'Pointer capture failed on ' + (CHART_NAMES[chartId] || chartId) + '.');
-        }
-      }
-    });
-
-    chartEl.addEventListener('pointermove', (ev) => {
-      if (ev.pointerType === 'mouse') return;
-      if (state.pointerId !== ev.pointerId) return;
-      const dx = ev.clientX - state.startX;
-      const dy = ev.clientY - state.startY;
-      if (!state.active) {
-        if (Math.abs(dx) < getScrubStartThresholdPx()) return;
-        if (Math.abs(dy) > Math.abs(dx) * 1.6 && Math.abs(dy) > 14) {
-          appendDebug('info', 'Touch scrub ignored on ' + (CHART_NAMES[chartId] || chartId) + ': vertical movement dominated.');
-          return;
-        }
-        state.active = true;
-        state.hasMoved = true;
-        ensureScrubAudio();
-        appendDebug('info', 'Touch scrub started on ' + (CHART_NAMES[chartId] || chartId) + '.');
-        handleScrubMove(ev.clientX);
-      }
-      ev.preventDefault();
-      handleScrubMove(ev.clientX);
-    });
-
-    chartEl.addEventListener('pointerup', (ev) => {
-      if (state.pointerId !== ev.pointerId) return;
-      if (state.active) {
-        appendDebug('info', 'Touch scrub ended on ' + (CHART_NAMES[chartId] || chartId) + '.');
-      }
-      if (chartEl.releasePointerCapture) {
-        try {
-          chartEl.releasePointerCapture(ev.pointerId);
-        } catch (_err) {
-          // Ignore capture release failures.
-        }
-      }
-      state.active = false;
-      state.pointerId = null;
-      state.hasMoved = false;
-    });
-
-    chartEl.addEventListener('pointercancel', (ev) => {
-      if (state.pointerId !== ev.pointerId) return;
-      if (state.active) {
-        appendDebug('info', 'Touch scrub canceled on ' + (CHART_NAMES[chartId] || chartId) + '.');
-      }
-      state.active = false;
-      state.pointerId = null;
-      state.hasMoved = false;
-    });
-
-    chartEl.style.touchAction = 'pan-y pinch-zoom';
+    // Touch scrub is disabled. Keyboard navigation is the primary interaction model.
   }
   function handleParanotice(e) {
     const detail = e.detail || {};
@@ -1028,15 +756,18 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
 ## Perceptual Zones
 
-Haptic patterns are divided into three perceptual zones based on value (1–100):
+Haptic intensity increases with data value through six distinct sensory zones:
 
-| Value range | Sensation | Pulse pattern | Duration | Gap (decreases as value rises) |
-| :--- | :--- | :--- | :--- | :--- |
-| 1–39 | Single tick | `[duration]` | 10–61 ms | — |
-| 40–79 | Double pulse | `[duration, gap, duration]` | 62–113 ms | ~308–121 ms |
-| 80–100 | Triple rapid buzz | `[duration, gap, duration, gap, duration]` | 114–140 ms | ~116–20 ms |
+| Value | Sensation | Pattern | Duration |
+| :--- | :--- | :--- | :--- |
+| 0 | Minimal tick (presence confirmation) | Single short | 10 ms |
+| 1–25 | Weak tick | Single tick | 50 ms |
+| 26–50 | Medium double | Double pulse | [100, 50, 100] ms |
+| 51–75 | Strong double | Strong pulse | [150, 75, 150] ms |
+| 76–99 | Very intense | Intense double | [200, 100, 200] ms |
+| 100 | Peak sensation | Triple strong | [250, 150, 250] ms |
 
-Because the human hand can distinguish roughly 8–12 distinct tactile levels (not 100), the perceptual zones and the shrinking gap between pulses at higher values are what give the user a sense of "hotter" data — mimicking the way a higher-pitched sound feels more urgent.
+The perceptual zones map linearly to data values. Users can distinguish these zones through haptic perception alone, enabling data exploration by touch feedback. The value 0 is acknowledged with a minimal vibration to confirm its presence without confusion with "no value."
 
 ## Frequency Mapping
 
@@ -1123,13 +854,16 @@ The haptic trigger is synchronous so it fires at the same timestamp as the `Audi
 
 ## What To Notice During Testing
 
-- **Sensory binding:** Does the high-pitched tone feel like it belongs with the fast buzz? Sound and touch within ~50 ms are typically fused by the brain into a single event.
-- **Resolution (Mountain Peak):** Can you identify roughly where the 50% mark falls using feel and sound alone?
-- **Threshold detection (Staircase):** Close your eyes and see if you can identify which of the four steps is playing.
-- **Throttle behavior (Heartbeat):** If vibrations blur into a single continuous buzz, the gap interval may need widening for that value range.
+- **Value discrimination (Staircase):** Use arrow keys to navigate through the four steps (20, 50, 80, 100). Can you clearly distinguish each haptic zone by feel alone?
+- **Trend detection (Mountain Peak):** Navigate left to right through the bell curve. Does the increasing then decreasing vibration intensity help you sense the peak?
+- **Zero handling:** Notice the weak tick at value 0 — it confirms the value exists without creating a false rhythm.
+- **Sensory binding:** Sound and touch within ~50 ms are typically fused by the brain. Do the audio tone and vibration feel unified?
+- **Eyes-closed navigation:** Try closing your eyes while navigating to rely fully on haptic + audio feedback.
 
 ## Status
 
-The **Chart Navigation Lab** above wires the `HapticFeedbackManager` directly into ParaCharts keyboard navigation: every datapoint focus change triggers both an audio tone and a vibration pattern. The **Multi-Modal Lab** above remains useful for isolated testing of individual haptic patterns.
+The **Chart Navigation Lab** above implements point-based haptics: keyboard navigation (arrow keys) on every data point triggers both an audio tone and a vibration pattern whose intensity reflects the data value. 
 
-Future work: add a haptics toggle to the Control Panel and expose haptic intensity settings.
+Touch scrub (continuous drag) has been disabled in favor of deliberate, discrete point interaction — reducing overload and allowing accurate value sensing.
+
+Haptics can be toggled on/off via the "Haptics Settings" panel and are saved to your device. The debug log tracks all vibration calls for troubleshooting.
