@@ -934,6 +934,27 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 - **Sensory binding:** Sound and touch within ~50 ms are typically fused by the brain. Do the audio tone and vibration feel unified?
 - **Eyes-closed navigation:** Try closing your eyes while navigating to rely fully on haptic + audio feedback.
 
+## Resources
+
+If you want to go deeper into haptics, accessibility, and tactile communication, these are good starting points.
+
+### Getting started on the web
+
+- [MDN: Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API) — the core browser API used for simple vibration patterns on supported devices.
+- [MDN: Progressive web apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) — useful background on PWAs, installability, and offline behavior. A PWA is **not required** for basic vibration support, but this explains the broader app model.
+
+### Accessibility and design context
+
+- [Beyond the fingertips: imagining haptic technologies for a deafblind future](https://mh.bmj.com/content/50/4/610) — open-access research on haptics, social-haptic communication, and why touch should usually augment, not replace, other channels.
+- [Nagish: Deafblind communication devices and apps](https://nagish.com/post/deaf-blind-communication-devices-and-apps) — a practical overview of communication methods and apps that combine haptics, text, speech, and assistive workflows.
+
+### Ideas worth carrying into product design
+
+- Prefer **multimodal experiences** over haptics alone.
+- Use haptics to **support orientation, emphasis, and confirmation**, not to overload the user with constant motion.
+- Design for **real-time interaction** and **user control** so people can explore at their own pace.
+- Expect people to combine tools: haptics, audio, text, braille, interpreters, and device settings often work best together.
+
 ## Learn More
 
 <details style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--vp-c-divider, #ddd); border-radius: 0.5rem; background: var(--vp-c-bg-soft, #f9f9f9)">
