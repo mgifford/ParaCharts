@@ -79,7 +79,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   border: 1px solid var(--vp-c-divider, #e2e2e2);
   background: var(--vp-c-bg-soft, #f9f9f9);
   min-width: 0;
-  overflow: clip;
+  overflow: visible;
 }
 
 #hc-root p,
@@ -104,9 +104,10 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   box-sizing: border-box !important;
   width: 100% !important;
   max-width: 100% !important;
-  aspect-ratio: 16 / 10 !important;
-  max-height: 44vh !important;
-  min-height: 11.5rem !important;
+  height: clamp(14.5rem, 70vw, 21rem) !important;
+  max-height: none !important;
+  min-height: 14.5rem !important;
+  aspect-ratio: auto !important;
   margin: 0.5rem 0 !important;
 }
 
@@ -123,8 +124,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
 
   #hc-root para-chart {
-    aspect-ratio: 16 / 10 !important;
-    max-height: 50vh !important;
+    height: clamp(17rem, 58vw, 25rem) !important;
+    max-height: none !important;
     max-width: 100% !important;
   }
 }
@@ -142,8 +143,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   #hc-root para-chart {
     max-width: 100%;
-    aspect-ratio: 16 / 10 !important;
-    max-height: 30rem !important;
+    height: clamp(20rem, 42vw, 30rem) !important;
+    max-height: none !important;
+    aspect-ratio: auto !important;
   }
 }
 </style>
