@@ -65,6 +65,51 @@ Press **Initialize Audio Engine** first, then use the Manual Probe or run a patt
 The charts below are fully integrated with haptic and audio feedback. Navigate into a chart with the keyboard and move between data points with arrow keys — each point fires both a tone and a vibration whose intensity reflects the data value.
 
 <script type="module" src="assets/paracharts-loader.js"></script>
+<style>
+#hc-root {
+  gap: 1rem !important;
+}
+
+#hc-root > section {
+  padding: 1rem !important;
+}
+
+#hc-root p,
+#hc-root li,
+#hc-root label,
+#hc-root select,
+#hc-root button,
+#hc-root summary,
+#hc-root dd,
+#hc-root dt {
+  font-size: 0.98rem !important;
+}
+
+#hc-root h3 {
+  font-size: 1.08rem !important;
+}
+
+#hc-root para-chart {
+  width: 100% !important;
+  max-width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+}
+
+@media (min-width: 768px) {
+  #hc-root {
+    gap: 1.25rem !important;
+  }
+
+  #hc-root > section {
+    padding: 1.25rem 1.5rem !important;
+  }
+
+  #hc-root para-chart {
+    max-width: 48rem !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+}
+</style>
 <div id="hc-root" style="display:flex;flex-direction:column;gap:1.25rem;margin:1.5rem 0">
 <section id="hc-status-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-status-heading">
 <h3 id="hc-status-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">System Status</h3>
@@ -246,9 +291,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
 
   function getScrubEventMinMs() {
-    if (prefs.scrubSensitivity === 'low') return 55;
-    if (prefs.scrubSensitivity === 'high') return 20;
-    return 35;
+    if (prefs.scrubSensitivity === 'low') return 70;
+    if (prefs.scrubSensitivity === 'high') return 35;
+    return 50;
+  }
+
+  function getScrubHapticMinMs() {
+    if (prefs.scrubSensitivity === 'low') return 150;
+    if (prefs.scrubSensitivity === 'high') return 90;
+    return 120;
   }
 
   function getScrubStartThresholdPx() {
@@ -300,6 +351,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       },
       runtime: {
         scrubEventMinMs: getScrubEventMinMs(),
+        scrubHapticMinMs: getScrubHapticMinMs(),
         scrubIntensityScale: getScrubIntensityScale(),
         diagnosticBoostMultiplier: prefs.diagnosticBoost ? 1.8 : 1,
         debugEntryCount: debugEntries.length,
@@ -669,7 +721,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       return;
     }
     const now = Date.now();
-    const hapticMinMs = isScrubMode ? 28 : 50;
+    const hapticMinMs = isScrubMode
+      ? (getScrubHapticMinMs() + (prefs.diagnosticBoost ? 35 : 0))
+      : 50;
     const lastHapticTime = isScrubMode ? lastHapticTimeScrub : lastHapticTimeNav;
     if (now - lastHapticTime < hapticMinMs) {
       console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< ' + hapticMinMs + ' ms since last)');
@@ -703,7 +757,29 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const gap = Math.max(18, Math.round(baseGap / Math.max(1, modeScale)));
     let pattern;
     let zone;
-    if (prefs.diagnosticBoost) {
+    if (isScrubMode && prefs.diagnosticBoost) {
+      if (val < 40) {
+        pattern = 110;
+        zone = 'diagnostic-hold-low';
+      } else if (val < 80) {
+        pattern = [95, 55, 95];
+        zone = 'diagnostic-double-medium';
+      } else {
+        pattern = [125, 45, 125];
+        zone = 'diagnostic-double-high';
+      }
+    } else if (isScrubMode) {
+      if (val < 40) {
+        pattern = 45;
+        zone = 'scrub-low';
+      } else if (val < 80) {
+        pattern = [55, 55, 55];
+        zone = 'scrub-medium';
+      } else {
+        pattern = [70, 45, 70];
+        zone = 'scrub-high';
+      }
+    } else if (prefs.diagnosticBoost) {
       const strongDuration = Math.max(duration, 120);
       const strongGap = Math.max(gap, 90);
       if (val < 40) {
@@ -860,7 +936,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       const dy = ev.clientY - state.startY;
       if (!state.active) {
         if (Math.abs(dx) < getScrubStartThresholdPx()) return;
-        if (Math.abs(dx) < Math.abs(dy)) {
+        if (Math.abs(dy) > Math.abs(dx) * 1.6 && Math.abs(dy) > 14) {
           appendDebug('info', 'Touch scrub ignored on ' + (CHART_NAMES[chartId] || chartId) + ': vertical movement dominated.');
           return;
         }
@@ -868,6 +944,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         state.hasMoved = true;
         ensureScrubAudio();
         appendDebug('info', 'Touch scrub started on ' + (CHART_NAMES[chartId] || chartId) + '.');
+        handleScrubMove(ev.clientX);
       }
       ev.preventDefault();
       handleScrubMove(ev.clientX);
@@ -900,7 +977,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       state.hasMoved = false;
     });
 
-    chartEl.style.touchAction = 'pan-y';
+    chartEl.style.touchAction = 'pan-y pinch-zoom';
   }
   function handleParanotice(e) {
     const detail = e.detail || {};
