@@ -789,24 +789,42 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     });
   }
 
-  function hydrateChartsFromContentManifest() {
-    ['hc-mountain', 'hc-staircase'].forEach(function (chartId) {
+  async function hydrateChartsFromContentManifest() {
+    if (window.customElements && typeof window.customElements.whenDefined === 'function') {
+      await window.customElements.whenDefined('para-chart');
+    }
+
+    for (const chartId of ['hc-mountain', 'hc-staircase']) {
       const chartEl = document.getElementById(chartId);
       if (!chartEl) {
         appendDebug('warn', 'Chart hydration skipped: element ' + chartId + ' not found.');
-        return;
+        continue;
       }
       const manifest = buildResponsiveManifest(chartId, CHART_RENDER_MAX_WIDTH);
       if (!manifest) {
         appendDebug('warn', 'Chart hydration skipped: failed to build manifest for ' + chartId + '.');
-        return;
+        continue;
       }
+
       chartEl.manifestType = 'content';
       chartEl.manifest = manifest;
       chartEl.setAttribute('manifestType', 'content');
       chartEl.setAttribute('manifest', manifest);
       appendDebug('info', 'Chart manifest hydrated from content for ' + (CHART_NAMES[chartId] || chartId) + '.');
-    });
+
+      // Force an explicit load path so we can avoid property timing races across browsers.
+      if (typeof chartEl.runLoader === 'function') {
+        try {
+          await chartEl.runLoader(manifest, 'content');
+          appendDebug('info', 'Chart runLoader success for ' + (CHART_NAMES[chartId] || chartId) + '.');
+        } catch (err) {
+          const errMsg = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
+          appendDebug('error', 'Chart runLoader failed for ' + (CHART_NAMES[chartId] || chartId) + ': ' + errMsg + '.');
+        }
+      } else {
+        appendDebug('warn', 'Chart runLoader unavailable on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      }
+    }
   }
 
   function applyResponsiveManifest(chartId) {
@@ -1020,25 +1038,32 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       : 'keyboard-nav';
     handleDataPoint(chartId, seriesKey, index, source);
   }
-  setupDebugPanel();
-  setupPreferencePanel();
-  setupSelfTestButton();
-  hydrateChartsFromContentManifest();
-  // Keep static inline manifests as the source of truth to avoid runtime re-render failures.
-  // setupResponsiveCharts();
-  setupDirectPointFallback('hc-mountain', 'Intensity');
-  setupDirectPointFallback('hc-staircase', 'Level');
-  
-  // Add comprehensive paranotice listener for debugging
-  document.addEventListener('paranotice', function(e) {
-    const detail = e.detail || {};
-    const targetId = e.target ? e.target.id : 'null';
-    appendDebug('debug', '[RAW paranotice] key=' + detail.key + ', target=' + targetId + ', has options=' + (!!(detail.value && detail.value.options)) + '.');
-  }, { passive: true, capture: true });
-  
-  appendDebug('info', 'Event listeners registered: paranotice (raw capture) + handleParanotice (main handler).');
-  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initStatus); } else { initStatus(); }
-  document.addEventListener('paranotice', handleParanotice);
+  async function bootstrap() {
+    setupDebugPanel();
+    setupPreferencePanel();
+    setupSelfTestButton();
+    await hydrateChartsFromContentManifest();
+    // Keep static inline manifests as the source of truth to avoid runtime re-render failures.
+    // setupResponsiveCharts();
+    setupDirectPointFallback('hc-mountain', 'Intensity');
+    setupDirectPointFallback('hc-staircase', 'Level');
+
+    // Add comprehensive paranotice listener for debugging
+    document.addEventListener('paranotice', function(e) {
+      const detail = e.detail || {};
+      const targetId = e.target ? e.target.id : 'null';
+      appendDebug('debug', '[RAW paranotice] key=' + detail.key + ', target=' + targetId + ', has options=' + (!!(detail.value && detail.value.options)) + '.');
+    }, { passive: true, capture: true });
+
+    appendDebug('info', 'Event listeners registered: paranotice (raw capture) + handleParanotice (main handler).');
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initStatus); } else { initStatus(); }
+    document.addEventListener('paranotice', handleParanotice);
+  }
+
+  bootstrap().catch(function (err) {
+    const errMsg = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
+    appendDebug('error', 'Bootstrap failed: ' + errMsg + '.');
+  });
 }());
 </script>
 
