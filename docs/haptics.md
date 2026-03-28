@@ -69,6 +69,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 #hc-root {
   gap: 0.75rem;
   margin: 1rem 0;
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 #hc-root > section {
@@ -76,6 +78,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   border-radius: 0.5rem;
   border: 1px solid var(--vp-c-divider, #e2e2e2);
   background: var(--vp-c-bg-soft, #f9f9f9);
+  min-width: 0;
+  overflow: clip;
 }
 
 #hc-root p,
@@ -96,6 +100,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 }
 
 #hc-root para-chart {
+  display: block !important;
+  box-sizing: border-box !important;
   width: 100% !important;
   max-width: 100% !important;
   aspect-ratio: 16 / 10 !important;
@@ -241,6 +247,10 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     lastChartId: null,
     lastIndex: null,
     lastTime: 0,
+  };
+  const lastPointerByChart = {
+    'hc-mountain': { ts: 0, type: null },
+    'hc-staircase': { ts: 0, type: null },
   };
   const keyboardFallbackIndex = {
     'hc-mountain': 0,
@@ -817,11 +827,16 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       return Math.round(ratio * (series.length - 1));
     }
 
+    chartEl.addEventListener('pointerdown', (ev) => {
+      lastPointerByChart[chartId] = { ts: Date.now(), type: ev.pointerType || 'unknown' };
+    }, { passive: true });
+
     chartEl.addEventListener('pointerup', (ev) => {
-      if (ev.pointerType === 'mouse') return;
+      lastPointerByChart[chartId] = { ts: Date.now(), type: ev.pointerType || 'unknown' };
       const idx = clientXToIndex(ev.clientX);
       keyboardFallbackIndex[chartId] = idx;
-      handleDataPoint(chartId, seriesKey, idx, 'touch-tap');
+      const source = ev.pointerType === 'mouse' ? 'pointer-click' : 'pointer-tap';
+      handleDataPoint(chartId, seriesKey, idx, source);
     }, { passive: true });
 
     chartEl.addEventListener('keydown', (ev) => {
@@ -883,7 +898,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
     appendDebug('info', 'paranotice -> handleDataPoint: chart=' + chartId + ', series=' + seriesKey + ', index=' + index + '.');
     keyboardFallbackIndex[chartId] = index;
-    handleDataPoint(chartId, seriesKey, index, 'keyboard-nav');
+    const pointerMeta = lastPointerByChart[chartId] || { ts: 0, type: null };
+    const viaRecentPointer = (Date.now() - pointerMeta.ts) < 900;
+    const source = viaRecentPointer
+      ? (pointerMeta.type === 'mouse' ? 'pointer-select' : 'touch-select')
+      : 'keyboard-nav';
+    handleDataPoint(chartId, seriesKey, index, source);
   }
   setupDebugPanel();
   setupPreferencePanel();
