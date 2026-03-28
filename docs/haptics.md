@@ -229,6 +229,36 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       + '. Sensitivity: ' + prefs.scrubSensitivity + '.';
   }
 
+  function buildDebugMetadata() {
+    const nav = navigator;
+    return {
+      environment: {
+        href: location.href,
+        userAgent: nav.userAgent,
+        platform: nav.platform,
+        language: nav.language,
+        maxTouchPoints: typeof nav.maxTouchPoints === 'number' ? nav.maxTouchPoints : null,
+        isSecureContext: typeof window.isSecureContext === 'boolean' ? window.isSecureContext : null,
+        pageVisibility: typeof document.visibilityState === 'string' ? document.visibilityState : null,
+      },
+      haptics: {
+        hasVibrateFunction: typeof nav.vibrate === 'function',
+        isHapticSupported,
+        isHttps,
+      },
+      preferences: {
+        scrubEnabled: !!prefs.scrubEnabled,
+        feedbackMode: prefs.feedbackMode,
+        scrubSensitivity: prefs.scrubSensitivity,
+      },
+      runtime: {
+        scrubEventMinMs: getScrubEventMinMs(),
+        scrubIntensityScale: getScrubIntensityScale(),
+        debugEntryCount: debugEntries.length,
+      },
+    };
+  }
+
   function savePrefs() {
     try {
       localStorage.setItem(PREF_STORAGE_KEY, JSON.stringify(prefs));
@@ -356,6 +386,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         const payload = JSON.stringify({
           exportedAt: new Date().toISOString(),
           page: location.href,
+          metadata: buildDebugMetadata(),
           entries: debugEntries,
         }, null, 2);
         try {
