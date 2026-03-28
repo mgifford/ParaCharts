@@ -165,18 +165,16 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 </section>
 <section id="hc-prefs-card" aria-labelledby="hc-prefs-heading">
 <h3 id="hc-prefs-heading">Haptics Settings</h3>
-<p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">These settings are saved on this device.</p>
-<div style="display:grid;gap:0.75rem;max-width:28rem">
 <label style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;line-height:1.4">
 <input id="hc-pref-haptics-enabled" type="checkbox" checked style="margin-top:0.15rem" />
 <span>Enable haptics on data point navigation</span>
 </label>
-</div>
-<p id="hc-pref-status" style="margin:0.75rem 0 0;font-size:0.75rem" aria-live="polite"></p>
 </section>
-<section id="hc-feedback-card" aria-labelledby="hc-feedback-heading" aria-live="polite" aria-atomic="true">
-<h3 id="hc-feedback-heading">Current Point</h3>
-<div id="hc-current"><p style="margin:0;font-size:0.875rem">Navigate into a chart with the keyboard to see point details here.</p></div>
+<section id="hc-feedback-card">
+<details id="hc-feedback-details">
+<summary id="hc-feedback-heading" style="cursor:pointer;font-weight:600;user-select:none">Current Point</summary>
+<div id="hc-current" style="margin-top:0.75rem" aria-live="polite" aria-atomic="true"><p style="margin:0;font-size:0.875rem">Navigate into a chart with the keyboard to see point details here. This section displays the current data point's values, index, and any haptic/audio feedback information.</p></div>
+</details>
 </section>
 <section id="hc-debug-card" aria-labelledby="hc-debug-heading">
 <h3 id="hc-debug-heading">Haptics Debug Log</h3>
@@ -255,7 +253,6 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const debugCopyJsonBtn = document.getElementById('hc-debug-copy-json');
   const debugCopyStatus = document.getElementById('hc-debug-copy-status');
   const prefHapticsEnabled = document.getElementById('hc-pref-haptics-enabled');
-  const prefStatus = document.getElementById('hc-pref-status');
   const selfTestBtn = document.getElementById('hc-self-test-btn');
   const selfTestStatus = document.getElementById('hc-self-test-status');
   const debugEntries = [];
@@ -329,34 +326,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     updateDebugSummary();
   }
 
-  function getScrubEventMinMs() {
-    if (prefs.scrubSensitivity === 'low') return 70;
-    if (prefs.scrubSensitivity === 'high') return 35;
-    return 50;
-  }
 
-  function getScrubHapticMinMs() {
-    if (prefs.scrubSensitivity === 'low') return 150;
-    if (prefs.scrubSensitivity === 'high') return 90;
-    return 120;
-  }
-
-  function getScrubStartThresholdPx() {
-    if (prefs.scrubSensitivity === 'low') return 18;
-    if (prefs.scrubSensitivity === 'high') return 8;
-    return 12;
-  }
-
-  function getScrubIntensityScale() {
-    if (prefs.scrubSensitivity === 'low') return 1;
-    if (prefs.scrubSensitivity === 'high') return 1.35;
-    return 1.15;
-  }
-
-  function updatePrefStatus() {
-    if (!prefStatus) return;
-    prefStatus.textContent = 'Haptics: ' + (prefs.hapticsEnabled ? 'enabled' : 'disabled') + '.';
-  }
 
   function buildDebugMetadata() {
     const nav = navigator;
@@ -499,7 +469,6 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   function syncPrefControls() {
     if (prefHapticsEnabled) prefHapticsEnabled.checked = !!prefs.hapticsEnabled;
-    updatePrefStatus();
   }
 
   function setupPreferencePanel() {
@@ -513,7 +482,6 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     prefHapticsEnabled.addEventListener('change', () => {
       prefs.hapticsEnabled = !!prefHapticsEnabled.checked;
       savePrefs();
-      updatePrefStatus();
       appendDebug('info', 'Preference changed: haptics ' + (prefs.hapticsEnabled ? 'enabled' : 'disabled') + '.');
     });
   }
