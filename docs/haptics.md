@@ -93,7 +93,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <summary id="hc-debug-summary" style="cursor:pointer;font-weight:600">Show debug log (0 entries)</summary>
 <div style="margin-top:0.6rem">
 <button id="hc-debug-clear" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">Clear log</button>
+<button id="hc-debug-copy" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem">Copy log</button>
 </div>
+<p id="hc-debug-copy-status" style="margin:0.5rem 0 0;font-size:0.72rem" aria-live="polite"></p>
 <ol id="hc-debug-log" style="margin:0.75rem 0 0;padding-left:1.25rem;font-size:0.75rem;line-height:1.45;display:grid;gap:0.25rem;max-height:14rem;overflow:auto">
 <li>Waiting for events...</li>
 </ol>
@@ -137,6 +139,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const debugSummary = document.getElementById('hc-debug-summary');
   const debugLog = document.getElementById('hc-debug-log');
   const debugClearBtn = document.getElementById('hc-debug-clear');
+  const debugCopyBtn = document.getElementById('hc-debug-copy');
+  const debugCopyStatus = document.getElementById('hc-debug-copy-status');
   const prefScrubEnabled = document.getElementById('hc-pref-scrub-enabled');
   const prefFeedbackMode = document.getElementById('hc-pref-feedback-mode');
   const prefScrubSensitivity = document.getElementById('hc-pref-scrub-sensitivity');
@@ -159,7 +163,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
     const item = document.createElement('li');
     const levelUpper = level.toUpperCase();
-    item.textContent = '[' + nowStamp() + '] [' + levelUpper + '] ' + message;
+    const icon = level === 'error' ? '🛑' : (level === 'warn' ? '⚠️' : '•');
+    const messageLower = message.toLowerCase();
+    const isHapticsSpecific = messageLower.indexOf('vibrate') >= 0
+      || messageLower.indexOf('haptic') >= 0
+      || messageLower.indexOf('vibration api') >= 0;
+    item.textContent = icon + ' [' + nowStamp() + '] [' + levelUpper + '] ' + message;
+    if (isHapticsSpecific) {
+      item.style.fontWeight = '700';
+    }
     if (level === 'warn') item.style.color = '#92400e';
     if (level === 'error') item.style.color = '#991b1b';
     debugLog.prepend(item);
@@ -266,8 +278,49 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       const resetItem = document.createElement('li');
       resetItem.textContent = 'Waiting for events...';
       debugLog.appendChild(resetItem);
+      if (debugCopyStatus) {
+        debugCopyStatus.textContent = '';
+      }
       updateDebugSummary();
     });
+
+    if (debugCopyBtn) {
+      debugCopyBtn.addEventListener('click', async () => {
+        if (!debugLog) return;
+        const lines = Array.from(debugLog.querySelectorAll('li')).map(el => el.textContent || '').filter(Boolean);
+        const payload = lines.join('\n');
+        if (!payload) {
+          if (debugCopyStatus) {
+            debugCopyStatus.textContent = 'Nothing to copy yet.';
+          }
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(payload);
+          if (debugCopyStatus) {
+            debugCopyStatus.textContent = 'Copied ' + lines.length + ' log entr' + (lines.length === 1 ? 'y' : 'ies') + '.';
+          }
+        } catch (_err) {
+          const textArea = document.createElement('textarea');
+          textArea.value = payload;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-9999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            if (debugCopyStatus) {
+              debugCopyStatus.textContent = 'Copied ' + lines.length + ' log entr' + (lines.length === 1 ? 'y' : 'ies') + ' (fallback).';
+            }
+          } catch (_copyErr) {
+            if (debugCopyStatus) {
+              debugCopyStatus.textContent = 'Copy failed. You can long-press and copy manually.';
+            }
+          }
+          document.body.removeChild(textArea);
+        }
+      });
+    }
     updateDebugSummary();
   }
 
