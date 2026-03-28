@@ -469,7 +469,10 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       }
     }
   }
-  let lastHapticTime = 0;
+  let lastHapticTimeNav = 0;
+  let lastHapticTimeScrub = 0;
+  let scrubThrottleSkipCount = 0;
+  let lastScrubThrottleLogTime = 0;
   function vibrate(value, mode) {
     const isScrubMode = mode === 'scrub';
     if (isScrubMode && prefs.feedbackMode === 'audio') {
@@ -487,12 +490,28 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       return;
     }
     const now = Date.now();
-    if (now - lastHapticTime < 50) {
-      console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< 50 ms since last)');
-      appendDebug('info', 'vibrate(' + value + ') skipped: throttled (< 50 ms since last event).');
+    const hapticMinMs = isScrubMode ? 28 : 50;
+    const lastHapticTime = isScrubMode ? lastHapticTimeScrub : lastHapticTimeNav;
+    if (now - lastHapticTime < hapticMinMs) {
+      console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< ' + hapticMinMs + ' ms since last)');
+      if (isScrubMode) {
+        scrubThrottleSkipCount += 1;
+        if (now - lastScrubThrottleLogTime > 300) {
+          appendDebug('info', 'vibrate scrub throttled ' + scrubThrottleSkipCount + ' time(s) in the last ~300ms.');
+          scrubThrottleSkipCount = 0;
+          lastScrubThrottleLogTime = now;
+        }
+      } else {
+        appendDebug('info', 'vibrate(' + value + ') skipped: throttled (< ' + hapticMinMs + ' ms since last event).');
+      }
       return;
     }
-    lastHapticTime = now;
+    if (isScrubMode) {
+      lastHapticTimeScrub = now;
+      scrubThrottleSkipCount = 0;
+    } else {
+      lastHapticTimeNav = now;
+    }
     const val = Math.max(1, Math.min(100, value));
     const scrubScale = getScrubIntensityScale();
     const baseDuration = isScrubMode ? (6 + val * 0.7) : (10 + val * 1.3);
