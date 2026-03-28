@@ -76,37 +76,76 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const DATA_LOOKUP = { 'hc-mountain': { Intensity: MOUNTAIN_VALUES }, 'hc-staircase': { Level: STAIRCASE_VALUES } };
   const CHART_NAMES = { 'hc-mountain': 'Mountain Peak', 'hc-staircase': 'Staircase' };
   const isHapticSupported = 'vibrate' in navigator;
+  const isHttps = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+  console.log('[HapticsPage] init — Vibration API:', isHapticSupported ? 'present' : 'absent', '| HTTPS:', isHttps ? 'yes' : 'no', '| UA:', navigator.userAgent);
+
   function initStatus() {
     const badgeRow = document.getElementById('hc-badge-row');
     const msg = document.getElementById('hc-support-msg');
     if (badgeRow) {
+      // Haptics API badge
+      const hapticsOk = isHapticSupported && isHttps;
       const badge = document.createElement('span');
-      badge.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.78rem;font-weight:600;border:1px solid;' + (isHapticSupported ? 'background:#d1fae5;border-color:#059669;color:#065f46' : 'background:#fee2e2;border-color:#dc2626;color:#7f1d1d');
+      badge.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.78rem;font-weight:600;border:1px solid;' + (hapticsOk ? 'background:#d1fae5;border-color:#059669;color:#065f46' : 'background:#fee2e2;border-color:#dc2626;color:#7f1d1d');
       const icon = document.createElement('span');
       icon.setAttribute('aria-hidden', 'true');
-      icon.textContent = isHapticSupported ? '\u271a' : '\u26d4';
+      icon.textContent = hapticsOk ? '\u271a' : '\u26d4';
       const label = document.createElement('span');
-      label.textContent = 'Haptics: ' + (isHapticSupported ? 'Supported' : 'Not supported');
+      label.textContent = 'Haptics API: ' + (isHapticSupported ? 'Supported' : 'Not supported');
       badge.appendChild(icon);
       badge.appendChild(label);
       badgeRow.appendChild(badge);
+
+      // HTTPS badge
+      const httpsBadge = document.createElement('span');
+      httpsBadge.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;padding:0.25rem 0.6rem;border-radius:999px;font-size:0.78rem;font-weight:600;border:1px solid;' + (isHttps ? 'background:#d1fae5;border-color:#059669;color:#065f46' : 'background:#fee2e2;border-color:#dc2626;color:#7f1d1d');
+      const httpsIcon = document.createElement('span');
+      httpsIcon.setAttribute('aria-hidden', 'true');
+      httpsIcon.textContent = isHttps ? '\uD83D\uDD12' : '\u26A0\uFE0F';
+      const httpsLabel = document.createElement('span');
+      httpsLabel.textContent = 'HTTPS: ' + (isHttps ? 'Yes' : 'No (haptics may be blocked)');
+      httpsBadge.appendChild(httpsIcon);
+      httpsBadge.appendChild(httpsLabel);
+      badgeRow.appendChild(httpsBadge);
     }
     if (msg) {
-      msg.textContent = isHapticSupported ? 'Haptic support detected. Navigate the charts below with the keyboard to feel the data.' : 'Haptics (Web Vibration API) not supported on this device/browser. For haptics, try Chrome on Android over HTTPS. Audio will still play.';
+      if (!isHapticSupported) {
+        msg.textContent = 'Haptics (Web Vibration API) not supported on this device/browser. For haptics, try Chrome on Android over HTTPS. Audio will still play.';
+      } else if (!isHttps) {
+        msg.textContent = 'Vibration API detected but haptics require HTTPS. This page appears to be served over plain HTTP \u2014 reload over HTTPS to enable haptic feedback. Audio will still play.';
+      } else {
+        msg.textContent = 'Haptic support detected. Navigate the charts below with the keyboard to feel the data.';
+      }
     }
   }
   let lastHapticTime = 0;
   function vibrate(value) {
-    if (!isHapticSupported) return;
+    if (!isHapticSupported) {
+      console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 Vibration API not supported');
+      return;
+    }
+    if (!isHttps) {
+      console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 HTTPS required for haptics');
+      return;
+    }
     const now = Date.now();
-    if (now - lastHapticTime < 50) return;
+    if (now - lastHapticTime < 50) {
+      console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< 50 ms since last)');
+      return;
+    }
     lastHapticTime = now;
     const val = Math.max(1, Math.min(100, value));
     const duration = Math.round(10 + val * 1.3);
     const gap = Math.round(500 - val * 4.8);
-    if (val < 40) { navigator.vibrate(duration); }
-    else if (val < 80) { navigator.vibrate([duration, gap, duration]); }
-    else { navigator.vibrate([duration, gap, duration, gap, duration]); }
+    let pattern;
+    let zone;
+    if (val < 40) { pattern = duration; zone = 'single-tick'; }
+    else if (val < 80) { pattern = [duration, gap, duration]; zone = 'double-pulse'; }
+    else { pattern = [duration, gap, duration, gap, duration]; zone = 'triple-buzz'; }
+    const result = navigator.vibrate(pattern);
+    const patternStr = Array.isArray(pattern) ? '[' + pattern.join(',') + ']' : String(pattern);
+    console.log('[HapticsPage] vibrate(' + val + ') \u2014 zone: ' + zone + ' | pattern: ' + patternStr + 'ms | result: ' + result);
   }
   function hapticZoneLabel(val) {
     if (val < 40) return 'Single tick (< 40)';
@@ -130,21 +169,35 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const detail = e.detail || {};
     const key = detail.key;
     const value = detail.value;
+    console.debug('[HapticsPage] paranotice \u2014 key: ' + key);
     if (['move', 'goSeriesMinMax', 'goChartMinMax', 'goFirst', 'goLast'].indexOf(key) === -1) return;
     const options = value && value.options;
-    if (!options || options.seriesKey === null || options.seriesKey === undefined || options.index === null || options.index === undefined) return;
+    if (!options || options.seriesKey === null || options.seriesKey === undefined || options.index === null || options.index === undefined) {
+      console.warn('[HapticsPage] paranotice(' + key + ') \u2014 missing options.seriesKey or options.index', value);
+      return;
+    }
     const seriesKey = options.seriesKey;
     const index = options.index;
     const target = e.target;
-    if (!target || !target.id) return;
+    if (!target || !target.id) {
+      console.warn('[HapticsPage] paranotice(' + key + ') \u2014 no target id');
+      return;
+    }
     const lookup = DATA_LOOKUP[target.id];
-    if (!lookup) return;
+    if (!lookup) {
+      console.debug('[HapticsPage] paranotice(' + key + ') \u2014 target id "' + target.id + '" not in DATA_LOOKUP; ignoring');
+      return;
+    }
     const seriesData = lookup[seriesKey];
-    if (!seriesData || index < 0 || index >= seriesData.length) return;
+    if (!seriesData || index < 0 || index >= seriesData.length) {
+      console.warn('[HapticsPage] paranotice(' + key + ') \u2014 seriesKey "' + seriesKey + '" not found or index ' + index + ' out of range for "' + target.id + '"');
+      return;
+    }
     const val = seriesData[index];
+    const chartName = CHART_NAMES[target.id] || target.id;
+    console.log('[HapticsPage] point focus \u2014 chart: ' + chartName + ' | seriesKey: ' + seriesKey + ' | index: ' + index + ' | value: ' + val);
     const currentEl = document.getElementById('hc-current');
     if (currentEl) {
-      const chartName = CHART_NAMES[target.id] || target.id;
       const freq = (150 + val * 7.5).toFixed(0) + ' Hz';
       const dl = document.createElement('dl');
       dl.style.cssText = 'margin:0;display:grid;gap:0.25rem';

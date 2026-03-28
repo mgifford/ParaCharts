@@ -5,6 +5,7 @@ import { ref, onMounted } from 'vue'
 
 const audioCtx = ref<AudioContext | null>(null)
 const isHapticSupported = ref(false)
+const isHttps = ref(false)
 const isAudioInitialized = ref(false)
 const sliderValue = ref(50)
 const progressWidth = ref(0)
@@ -12,14 +13,38 @@ const patternStatus = ref('Awaiting interaction…')
 const supportMsg = ref('Audio/Haptics Idle…')
 const isRunning = ref(false)
 
+/** Capped ring-buffer of the last 20 haptic debug log entries */
+const hapticLog = ref<string[]>([])
+const MAX_LOG = 20
+
+function addLog(msg: string) {
+  const ts = new Date().toISOString().slice(11, 23) // HH:MM:SS.mmm
+  hapticLog.value = [`[${ts}] ${msg}`, ...hapticLog.value].slice(0, MAX_LOG)
+}
+
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
 onMounted(() => {
   isHapticSupported.value = 'vibrate' in navigator
+  isHttps.value =
+    typeof location !== 'undefined' &&
+    (location.protocol === 'https:' ||
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1')
+
+  const apiStatus = isHapticSupported.value ? 'Vibration API present' : 'Vibration API absent'
+  const httpsStatus = isHttps.value ? 'HTTPS ✓' : 'HTTP (haptics may be blocked)'
+  console.log(`[HapticsLab] init — ${apiStatus} | ${httpsStatus} | UA: ${navigator.userAgent}`)
+
   if (!isHapticSupported.value) {
     supportMsg.value =
       'Haptics (Web Vibration API) not supported on this device or browser. ' +
       'Audio-only mode is available. For haptics, try Chrome on Android over HTTPS.'
+  } else if (!isHttps.value) {
+    supportMsg.value =
+      'Vibration API detected but haptics require HTTPS. ' +
+      'This page appears to be served over plain HTTP — reload over HTTPS to enable haptic feedback. ' +
+      'Audio-only mode is available.'
   } else {
     supportMsg.value =
       'Haptic support detected. Press "Initialize Audio Engine" to enable audio.'
@@ -36,9 +61,11 @@ function initAudio() {
     (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
   audioCtx.value = new Ctx()
   isAudioInitialized.value = true
-  supportMsg.value = isHapticSupported.value
+  const hapticReady = isHapticSupported.value && isHttps.value
+  supportMsg.value = hapticReady
     ? 'System online. Both audio and haptics are active.'
     : 'Audio engine active. Haptics unavailable on this device/browser.'
+  console.log(`[HapticsLab] AudioContext created — state: ${audioCtx.value.state}`)
 }
 
 /**
@@ -76,17 +103,40 @@ function playTone(value: number) {
  *   ≥ 80  → triple rapid buzz
  */
 function vibrate(value: number) {
-  if (!isHapticSupported.value) return
+  if (!isHapticSupported.value) {
+    const msg = `vibrate(${value}) skipped — Vibration API not supported`
+    console.warn(`[HapticsLab] ${msg}`)
+    addLog(msg)
+    return
+  }
+  if (!isHttps.value) {
+    const msg = `vibrate(${value}) skipped — HTTPS required for haptics`
+    console.warn(`[HapticsLab] ${msg}`)
+    addLog(msg)
+    return
+  }
+
   const duration = Math.round(10 + value * 1.3)
   const gap = Math.round(500 - value * 4.8)
 
+  let pattern: number | number[]
+  let zone: string
   if (value < 40) {
-    navigator.vibrate(duration)
+    pattern = duration
+    zone = 'single-tick'
   } else if (value < 80) {
-    navigator.vibrate([duration, gap, duration])
+    pattern = [duration, gap, duration]
+    zone = 'double-pulse'
   } else {
-    navigator.vibrate([duration, gap, duration, gap, duration])
+    pattern = [duration, gap, duration, gap, duration]
+    zone = 'triple-buzz'
   }
+
+  const result = navigator.vibrate(pattern)
+  const patternStr = Array.isArray(pattern) ? `[${pattern.join(',')}]` : String(pattern)
+  const msg = `vibrate(${value}) — zone: ${zone} | pattern: ${patternStr}ms | result: ${result}`
+  console.log(`[HapticsLab] ${msg}`)
+  addLog(msg)
 }
 
 // ─── Combined trigger ─────────────────────────────────────────────────────────
@@ -184,6 +234,7 @@ async function testHeartbeat() {
 function stopAll() {
   if (isHapticSupported.value) {
     navigator.vibrate(0)
+    console.log('[HapticsLab] stopAll — vibrate(0) sent to cancel any active vibration')
   }
   isRunning.value = false
   updateUI(0, 'Stopped.')
@@ -202,7 +253,15 @@ function stopAll() {
           :class="isHapticSupported ? 'hl-badge--ok' : 'hl-badge--warn'"
         >
           <span aria-hidden="true">{{ isHapticSupported ? '✚' : '⛔' }}</span>
-          Haptics: {{ isHapticSupported ? 'Supported' : 'Not supported' }}
+          Haptics API: {{ isHapticSupported ? 'Supported' : 'Not supported' }}
+        </span>
+        <span
+          class="hl-badge"
+          :class="isHttps ? 'hl-badge--ok' : 'hl-badge--warn'"
+          aria-label="HTTPS status"
+        >
+          <span aria-hidden="true">{{ isHttps ? '🔒' : '⚠️' }}</span>
+          HTTPS: {{ isHttps ? 'Yes' : 'No (haptics may be blocked)' }}
         </span>
         <span
           class="hl-badge"
@@ -303,6 +362,37 @@ function stopAll() {
 
       <!-- Live status -->
       <div class="hl-status-box" aria-live="polite" aria-atomic="true">{{ patternStatus }}</div>
+    </section>
+
+    <!-- ── Haptic Debug Log ───────────────────────────────────────────── -->
+    <section class="hl-card" aria-labelledby="hl-debug-heading">
+      <h3 id="hl-debug-heading" class="hl-card-title">Haptic Debug Log</h3>
+      <p class="hl-hint">
+        Each haptic trigger attempt is logged here (most recent first).
+        Check the browser console for full output including device info.
+        <code>result: true</code> means the vibration was accepted by the browser;
+        <code>result: false</code> or a <em>skipped</em> entry means the vibration did not fire.
+      </p>
+      <div
+        class="hl-debug-log"
+        role="log"
+        aria-label="Haptic debug log"
+        aria-live="polite"
+        aria-atomic="false"
+      >
+        <p v-if="hapticLog.length === 0" class="hl-debug-empty">No haptic events yet. Trigger audio + haptic above to see entries.</p>
+        <div v-else>
+          <div
+            v-for="(entry, i) in hapticLog"
+            :key="i"
+            class="hl-debug-entry"
+            :class="{
+              'hl-debug-entry--warn': entry.includes('skipped'),
+              'hl-debug-entry--false': entry.includes('result: false'),
+            }"
+          >{{ entry }}</div>
+        </div>
+      </div>
     </section>
   </div>
 </template>
@@ -490,5 +580,53 @@ function stopAll() {
   font-size: 0.8rem;
   color: var(--vp-c-text-2);
   line-height: 1.5;
+}
+
+/* ── Debug log ────────────────────────────────────────────────────────────────*/
+.hl-debug-log {
+  font-family: var(--vp-font-family-mono, monospace);
+  background: var(--vp-c-bg-mute);
+  border: 1px solid var(--vp-c-divider);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  min-height: 4rem;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.hl-debug-empty {
+  margin: 0;
+  color: var(--vp-c-text-3, #aaa);
+  font-style: italic;
+}
+
+.hl-debug-entry {
+  padding: 0.1rem 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--vp-c-text-1);
+}
+
+.hl-debug-entry:last-child {
+  border-bottom: none;
+}
+
+.hl-debug-entry--warn {
+  color: #b45309;
+}
+
+.dark .hl-debug-entry--warn {
+  color: #fcd34d;
+}
+
+.hl-debug-entry--false {
+  color: #dc2626;
+}
+
+.dark .hl-debug-entry--false {
+  color: #f87171;
 }
 </style>

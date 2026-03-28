@@ -110,6 +110,7 @@ const staircaseLookup: Record<string, number[]> = {
 // ─── State ────────────────────────────────────────────────────────────────────
 
 const isHapticSupported = ref(false)
+const isHttps = ref(false)
 const supportMsg = ref('Initializing…')
 
 /** Info about the last navigated datapoint */
@@ -117,6 +118,15 @@ const currentChart = ref<string>('')
 const currentLabel = ref<string>('')
 const currentValue = ref<number | null>(null)
 const hapticZone = ref<string>('')
+
+/** Capped ring-buffer of the last 20 haptic debug log entries */
+const hapticLog = ref<string[]>([])
+const MAX_LOG = 20
+
+function addLog(msg: string) {
+  const ts = new Date().toISOString().slice(11, 23)
+  hapticLog.value = [`[${ts}] ${msg}`, ...hapticLog.value].slice(0, MAX_LOG)
+}
 
 // Refs to the chart DOM elements so we can identify which chart fired
 const mountainChartRef = ref<HTMLElement | null>(null)
@@ -126,9 +136,26 @@ const staircaseChartRef = ref<HTMLElement | null>(null)
 
 onMounted(() => {
   isHapticSupported.value = 'vibrate' in navigator
-  supportMsg.value = isHapticSupported.value
-    ? 'Haptic support detected. Navigate the charts below with the keyboard to feel the data.'
-    : 'Haptics (Web Vibration API) not supported on this device/browser. For haptics, try Chrome on Android over HTTPS. Audio will still play.'
+  isHttps.value =
+    typeof location !== 'undefined' &&
+    (location.protocol === 'https:' ||
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1')
+
+  const apiStatus = isHapticSupported.value ? 'Vibration API present' : 'Vibration API absent'
+  const httpsStatus = isHttps.value ? 'HTTPS ✓' : 'HTTP (haptics may be blocked)'
+  console.log(`[HapticsCharts] init — ${apiStatus} | ${httpsStatus} | UA: ${navigator.userAgent}`)
+
+  if (!isHapticSupported.value) {
+    supportMsg.value =
+      'Haptics (Web Vibration API) not supported on this device/browser. For haptics, try Chrome on Android over HTTPS. Audio will still play.'
+  } else if (!isHttps.value) {
+    supportMsg.value =
+      'Vibration API detected but haptics require HTTPS. This page appears to be served over plain HTTP — reload over HTTPS to enable haptic feedback. Audio will still play.'
+  } else {
+    supportMsg.value =
+      'Haptic support detected. Navigate the charts below with the keyboard to feel the data.'
+  }
 
   // Dynamically load the ParaCharts runtime if not already present
   if (!document.querySelector('script[data-paracharts-loader]')
@@ -164,28 +191,54 @@ let _lastHapticTime = 0
  * this function only fires the haptic layer.
  */
 function vibrate(value: number) {
-  if (!isHapticSupported.value) return
+  if (!isHapticSupported.value) {
+    const msg = `vibrate(${value}) skipped — Vibration API not supported`
+    console.warn(`[HapticsCharts] ${msg}`)
+    addLog(msg)
+    return
+  }
+  if (!isHttps.value) {
+    const msg = `vibrate(${value}) skipped — HTTPS required for haptics`
+    console.warn(`[HapticsCharts] ${msg}`)
+    addLog(msg)
+    return
+  }
   const now = Date.now()
-  if (now - _lastHapticTime < 50) return // throttle — same as HapticsLab
+  if (now - _lastHapticTime < 50) {
+    console.debug(`[HapticsCharts] vibrate(${value}) skipped — throttled (< 50 ms since last)`)
+    return // throttle — same as HapticsLab
+  }
   _lastHapticTime = now
 
   const val = Math.max(1, Math.min(100, value))
   const duration = Math.round(10 + val * 1.3)
   const gap = Math.round(500 - val * 4.8)
 
+  let pattern: number | number[]
+  let zone: string
   if (val < 40) {
-    navigator.vibrate(duration)
+    pattern = duration
+    zone = 'single-tick'
   } else if (val < 80) {
-    navigator.vibrate([duration, gap, duration])
+    pattern = [duration, gap, duration]
+    zone = 'double-pulse'
   } else {
-    navigator.vibrate([duration, gap, duration, gap, duration])
+    pattern = [duration, gap, duration, gap, duration]
+    zone = 'triple-buzz'
   }
+
+  const result = navigator.vibrate(pattern)
+  const patternStr = Array.isArray(pattern) ? `[${pattern.join(',')}]` : String(pattern)
+  const msg = `vibrate(${val}) — zone: ${zone} | pattern: ${patternStr}ms | result: ${result}`
+  console.log(`[HapticsCharts] ${msg}`)
+  addLog(msg)
 }
 
 // ─── paranotice handler ───────────────────────────────────────────────────────
 
 function handleParanotice(e: CustomEvent<{ key: string; value: unknown }>) {
   const { key, value } = e.detail ?? {}
+  console.debug(`[HapticsCharts] paranotice — key: ${key}`)
   // Only respond to datapoint navigation events
   if (
     key !== 'move' &&
@@ -196,7 +249,10 @@ function handleParanotice(e: CustomEvent<{ key: string; value: unknown }>) {
   ) return
 
   const options = (value as { options?: { seriesKey?: string; index?: number } })?.options
-  if (!options || options.seriesKey == null || options.index == null) return
+  if (!options || options.seriesKey == null || options.index == null) {
+    console.warn(`[HapticsCharts] paranotice(${key}) — missing options.seriesKey or options.index`, value)
+    return
+  }
 
   const { seriesKey, index } = options
 
@@ -214,13 +270,18 @@ function handleParanotice(e: CustomEvent<{ key: string; value: unknown }>) {
     lookup = staircaseLookup
     chartName = 'Staircase'
   } else {
+    console.debug(`[HapticsCharts] paranotice(${key}) — event target not matched to a managed chart; ignoring`, target)
     return // event from a different chart on the page — ignore
   }
 
   const seriesData = lookup[seriesKey]
-  if (!seriesData || index < 0 || index >= seriesData.length) return
+  if (!seriesData || index < 0 || index >= seriesData.length) {
+    console.warn(`[HapticsCharts] paranotice(${key}) — seriesKey "${seriesKey}" not found or index ${index} out of range for chart "${chartName}"`)
+    return
+  }
 
   const val = seriesData[index]
+  console.log(`[HapticsCharts] point focus — chart: ${chartName} | seriesKey: ${seriesKey} | index: ${index} | value: ${val}`)
 
   // Update status display
   currentChart.value = chartName
@@ -258,7 +319,15 @@ const freqDisplay = computed(() => {
           :class="isHapticSupported ? 'hc-badge--ok' : 'hc-badge--warn'"
         >
           <span aria-hidden="true">{{ isHapticSupported ? '✚' : '⛔' }}</span>
-          Haptics: {{ isHapticSupported ? 'Supported' : 'Not supported' }}
+          Haptics API: {{ isHapticSupported ? 'Supported' : 'Not supported' }}
+        </span>
+        <span
+          class="hc-badge"
+          :class="isHttps ? 'hc-badge--ok' : 'hc-badge--warn'"
+          aria-label="HTTPS status"
+        >
+          <span aria-hidden="true">{{ isHttps ? '🔒' : '⚠️' }}</span>
+          HTTPS: {{ isHttps ? 'Yes' : 'No (haptics may be blocked)' }}
         </span>
       </div>
 
@@ -345,6 +414,37 @@ const freqDisplay = computed(() => {
         style="display:block; width:100%; max-width:48rem; aspect-ratio:4/3; margin:0.5rem 0;"
         aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"
       ></para-chart>
+    </section>
+
+    <!-- ── Haptic Debug Log ───────────────────────────────────────────── -->
+    <section class="hc-card" aria-labelledby="hc-debug-heading">
+      <h3 id="hc-debug-heading" class="hc-card-title">Haptic Debug Log</h3>
+      <p class="hc-hint">
+        Each haptic trigger attempt from chart navigation is logged here (most recent first).
+        Check the browser console (<kbd>F12</kbd>) for full detail including device info.
+        <code>result: true</code> means the vibration was accepted by the browser;
+        <code>result: false</code> or a <em>skipped</em> entry means it did not fire.
+      </p>
+      <div
+        class="hc-debug-log"
+        role="log"
+        aria-label="Haptic debug log"
+        aria-live="polite"
+        aria-atomic="false"
+      >
+        <p v-if="hapticLog.length === 0" class="hc-debug-empty">No haptic events yet. Navigate a chart above with the keyboard to see entries.</p>
+        <div v-else>
+          <div
+            v-for="(entry, i) in hapticLog"
+            :key="i"
+            class="hc-debug-entry"
+            :class="{
+              'hc-debug-entry--warn': entry.includes('skipped'),
+              'hc-debug-entry--false': entry.includes('result: false'),
+            }"
+          >{{ entry }}</div>
+        </div>
+      </div>
     </section>
 
   </div>
@@ -473,5 +573,53 @@ const freqDisplay = computed(() => {
   font-size: 0.8rem;
   color: var(--vp-c-text-2);
   line-height: 1.5;
+}
+
+/* ── Debug log ────────────────────────────────────────────────────────────── */
+.hc-debug-log {
+  font-family: var(--vp-font-family-mono, monospace);
+  background: var(--vp-c-bg-mute);
+  border: 1px solid var(--vp-c-divider);
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--vp-c-text-2);
+  min-height: 4rem;
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.hc-debug-empty {
+  margin: 0;
+  color: var(--vp-c-text-3, #aaa);
+  font-style: italic;
+}
+
+.hc-debug-entry {
+  padding: 0.1rem 0;
+  border-bottom: 1px solid var(--vp-c-divider);
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: var(--vp-c-text-1);
+}
+
+.hc-debug-entry:last-child {
+  border-bottom: none;
+}
+
+.hc-debug-entry--warn {
+  color: #b45309;
+}
+
+.dark .hc-debug-entry--warn {
+  color: #fcd34d;
+}
+
+.hc-debug-entry--false {
+  color: #dc2626;
+}
+
+.dark .hc-debug-entry--false {
+  color: #f87171;
 }
 </style>
