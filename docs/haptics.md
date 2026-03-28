@@ -132,8 +132,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   };
 
   const scrubState = {
-    'hc-mountain': { active: false, lastIndex: -1, lastTime: 0 },
-    'hc-staircase': { active: false, lastIndex: -1, lastTime: 0 },
+    'hc-mountain': { active: false, lastIndex: -1, lastTime: 0, pointerId: null, startX: 0, startY: 0, hasMoved: false, suppressSelectUntil: 0 },
+    'hc-staircase': { active: false, lastIndex: -1, lastTime: 0, pointerId: null, startX: 0, startY: 0, hasMoved: false, suppressSelectUntil: 0 },
   };
 
   const debugDetails = document.getElementById('hc-debug-details');
@@ -204,6 +204,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     if (prefs.scrubSensitivity === 'low') return 55;
     if (prefs.scrubSensitivity === 'high') return 20;
     return 35;
+  }
+
+  function getScrubStartThresholdPx() {
+    if (prefs.scrubSensitivity === 'low') return 18;
+    if (prefs.scrubSensitivity === 'high') return 8;
+    return 12;
   }
 
   function getScrubIntensityScale() {
@@ -608,28 +614,68 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         appendDebug('info', 'Touch scrub ignored on ' + (CHART_NAMES[chartId] || chartId) + ': disabled by preference.');
         return;
       }
-      state.active = true;
+      state.active = false;
       state.lastIndex = -1;
       state.lastTime = 0;
-      ensureScrubAudio();
-      appendDebug('info', 'Touch scrub started on ' + (CHART_NAMES[chartId] || chartId) + '.');
-      handleScrubMove(ev.clientX);
+      state.pointerId = ev.pointerId;
+      state.startX = ev.clientX;
+      state.startY = ev.clientY;
+      state.hasMoved = false;
+      state.suppressSelectUntil = Date.now() + 500;
+      if (chartEl.setPointerCapture) {
+        try {
+          chartEl.setPointerCapture(ev.pointerId);
+        } catch (_err) {
+          appendDebug('warn', 'Pointer capture failed on ' + (CHART_NAMES[chartId] || chartId) + '.');
+        }
+      }
     });
 
     chartEl.addEventListener('pointermove', (ev) => {
       if (ev.pointerType === 'mouse') return;
+      if (state.pointerId !== ev.pointerId) return;
+      const dx = ev.clientX - state.startX;
+      const dy = ev.clientY - state.startY;
+      if (!state.active) {
+        if (Math.abs(dx) < getScrubStartThresholdPx()) return;
+        if (Math.abs(dx) < Math.abs(dy)) {
+          appendDebug('info', 'Touch scrub ignored on ' + (CHART_NAMES[chartId] || chartId) + ': vertical movement dominated.');
+          return;
+        }
+        state.active = true;
+        state.hasMoved = true;
+        ensureScrubAudio();
+        appendDebug('info', 'Touch scrub started on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      }
+      ev.preventDefault();
       handleScrubMove(ev.clientX);
     });
 
-    chartEl.addEventListener('pointerup', () => {
-      if (!state.active) return;
+    chartEl.addEventListener('pointerup', (ev) => {
+      if (state.pointerId !== ev.pointerId) return;
+      if (state.active) {
+        appendDebug('info', 'Touch scrub ended on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      }
+      if (chartEl.releasePointerCapture) {
+        try {
+          chartEl.releasePointerCapture(ev.pointerId);
+        } catch (_err) {
+          // Ignore capture release failures.
+        }
+      }
       state.active = false;
-      appendDebug('info', 'Touch scrub ended on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      state.pointerId = null;
+      state.hasMoved = false;
     });
 
-    chartEl.addEventListener('pointercancel', () => {
+    chartEl.addEventListener('pointercancel', (ev) => {
+      if (state.pointerId !== ev.pointerId) return;
+      if (state.active) {
+        appendDebug('info', 'Touch scrub canceled on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      }
       state.active = false;
-      appendDebug('info', 'Touch scrub canceled on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      state.pointerId = null;
+      state.hasMoved = false;
     });
 
     chartEl.style.touchAction = 'pan-y';
@@ -638,6 +684,11 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const detail = e.detail || {};
     const key = detail.key;
     const value = detail.value;
+    const now = Date.now();
+    const isScrubSuppressingSelect = Object.values(scrubState).some(state => state.active || state.suppressSelectUntil > now);
+    if (key === 'select' && isScrubSuppressingSelect) {
+      return;
+    }
     console.debug('[HapticsPage] paranotice \u2014 key: ' + key);
     appendDebug('info', 'paranotice key=' + key + '.');
     if (['move', 'goSeriesMinMax', 'goChartMinMax', 'goFirst', 'goLast'].indexOf(key) === -1) return;
