@@ -94,6 +94,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <div style="margin-top:0.6rem">
 <button id="hc-debug-clear" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">Clear log</button>
 <button id="hc-debug-copy" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem">Copy log</button>
+<button id="hc-debug-copy-json" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem">Copy as JSON</button>
 </div>
 <p id="hc-debug-copy-status" style="margin:0.5rem 0 0;font-size:0.72rem" aria-live="polite"></p>
 <ol id="hc-debug-log" style="margin:0.75rem 0 0;padding-left:1.25rem;font-size:0.75rem;line-height:1.45;display:grid;gap:0.25rem;max-height:14rem;overflow:auto">
@@ -140,11 +141,13 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const debugLog = document.getElementById('hc-debug-log');
   const debugClearBtn = document.getElementById('hc-debug-clear');
   const debugCopyBtn = document.getElementById('hc-debug-copy');
+  const debugCopyJsonBtn = document.getElementById('hc-debug-copy-json');
   const debugCopyStatus = document.getElementById('hc-debug-copy-status');
   const prefScrubEnabled = document.getElementById('hc-pref-scrub-enabled');
   const prefFeedbackMode = document.getElementById('hc-pref-feedback-mode');
   const prefScrubSensitivity = document.getElementById('hc-pref-scrub-sensitivity');
   const prefStatus = document.getElementById('hc-pref-status');
+  const debugEntries = [];
 
   function nowStamp() {
     return new Date().toLocaleTimeString([], { hour12: false });
@@ -169,12 +172,25 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       || messageLower.indexOf('haptic') >= 0
       || messageLower.indexOf('vibration api') >= 0;
     item.textContent = icon + ' [' + nowStamp() + '] [' + levelUpper + '] ' + message;
+    item.dataset.level = level;
+    item.dataset.message = message;
+    item.dataset.ts = new Date().toISOString();
     if (isHapticsSpecific) {
       item.style.fontWeight = '700';
+      item.dataset.haptics = 'true';
     }
     if (level === 'warn') item.style.color = '#92400e';
     if (level === 'error') item.style.color = '#991b1b';
     debugLog.prepend(item);
+    debugEntries.unshift({
+      ts: item.dataset.ts,
+      level,
+      message,
+      hapticsSpecific: !!isHapticsSpecific,
+    });
+    while (debugEntries.length > MAX_DEBUG_ENTRIES) {
+      debugEntries.pop();
+    }
     while (debugLog.children.length > MAX_DEBUG_ENTRIES) {
       debugLog.removeChild(debugLog.lastElementChild);
     }
@@ -278,6 +294,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       const resetItem = document.createElement('li');
       resetItem.textContent = 'Waiting for events...';
       debugLog.appendChild(resetItem);
+      debugEntries.splice(0, debugEntries.length);
       if (debugCopyStatus) {
         debugCopyStatus.textContent = '';
       }
@@ -315,6 +332,46 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
           } catch (_copyErr) {
             if (debugCopyStatus) {
               debugCopyStatus.textContent = 'Copy failed. You can long-press and copy manually.';
+            }
+          }
+          document.body.removeChild(textArea);
+        }
+      });
+    }
+
+    if (debugCopyJsonBtn) {
+      debugCopyJsonBtn.addEventListener('click', async () => {
+        if (debugEntries.length === 0) {
+          if (debugCopyStatus) {
+            debugCopyStatus.textContent = 'No structured entries to copy yet.';
+          }
+          return;
+        }
+        const payload = JSON.stringify({
+          exportedAt: new Date().toISOString(),
+          page: location.href,
+          entries: debugEntries,
+        }, null, 2);
+        try {
+          await navigator.clipboard.writeText(payload);
+          if (debugCopyStatus) {
+            debugCopyStatus.textContent = 'Copied JSON with ' + debugEntries.length + ' entr' + (debugEntries.length === 1 ? 'y' : 'ies') + '.';
+          }
+        } catch (_err) {
+          const textArea = document.createElement('textarea');
+          textArea.value = payload;
+          textArea.style.position = 'fixed';
+          textArea.style.left = '-9999px';
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand('copy');
+            if (debugCopyStatus) {
+              debugCopyStatus.textContent = 'Copied JSON (fallback).';
+            }
+          } catch (_copyErr) {
+            if (debugCopyStatus) {
+              debugCopyStatus.textContent = 'JSON copy failed. You can copy from browser dev tools.';
             }
           }
           document.body.removeChild(textArea);
