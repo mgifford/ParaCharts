@@ -52,6 +52,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <li>Each point plays a tone (via the chart's built-in sonification) and — on supported Android devices over HTTPS — fires a vibration whose intensity reflects the data value.</li>
 <li>Press <kbd>Escape</kbd> to return to the chart top level.</li>
 <li>Press <kbd>q</kbd> while on a data point to hear a spoken summary.</li>
+<li>On touch devices, drag your finger horizontally across a chart to scrub through points with shorter audio+haptic feedback that follows trend progression.</li>
 </ol>
 </section>
 <section id="hc-feedback-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-feedback-heading" aria-live="polite" aria-atomic="true">
@@ -91,6 +92,13 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const isHapticSupported = 'vibrate' in navigator;
   const isHttps = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
   const MAX_DEBUG_ENTRIES = 80;
+  const SCRUB_EVENT_MIN_MS = 35;
+
+  let scrubAudioCtx = null;
+  const scrubState = {
+    'hc-mountain': { active: false, lastIndex: -1, lastTime: 0 },
+    'hc-staircase': { active: false, lastIndex: -1, lastTime: 0 },
+  };
 
   const debugDetails = document.getElementById('hc-debug-details');
   const debugSummary = document.getElementById('hc-debug-summary');
@@ -141,6 +149,42 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     updateDebugSummary();
   }
 
+  function ensureScrubAudio() {
+    if (scrubAudioCtx) return scrubAudioCtx;
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) {
+      appendDebug('warn', 'AudioContext unavailable for touch-scrub tones.');
+      return null;
+    }
+    try {
+      scrubAudioCtx = new Ctx();
+      appendDebug('info', 'Touch-scrub audio context initialized.');
+      return scrubAudioCtx;
+    } catch (err) {
+      const errMessage = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
+      appendDebug('error', 'Failed to initialize touch-scrub audio context: ' + errMessage);
+      return null;
+    }
+  }
+
+  function playScrubTone(value) {
+    const ctx = ensureScrubAudio();
+    if (!ctx) return;
+    const val = Math.max(1, Math.min(100, value));
+    const freq = 150 + val * 7.5;
+    const start = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(0.06, start);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.08);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(start);
+    osc.stop(start + 0.08);
+  }
+
   console.log('[HapticsPage] init — Vibration API:', isHapticSupported ? 'present' : 'absent', '| HTTPS:', isHttps ? 'yes' : 'no', '| UA:', navigator.userAgent);
   appendDebug('info', 'Initialized. Vibration API: ' + (isHapticSupported ? 'present' : 'absent') + '. HTTPS: ' + (isHttps ? 'yes' : 'no') + '.');
 
@@ -187,7 +231,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
   }
   let lastHapticTime = 0;
-  function vibrate(value) {
+  function vibrate(value, mode) {
+    const isScrubMode = mode === 'scrub';
     if (!isHapticSupported) {
       console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 Vibration API not supported');
       appendDebug('warn', 'vibrate(' + value + ') skipped: Vibration API not supported.');
@@ -206,8 +251,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
     lastHapticTime = now;
     const val = Math.max(1, Math.min(100, value));
-    const duration = Math.round(10 + val * 1.3);
-    const gap = Math.round(500 - val * 4.8);
+    const duration = isScrubMode ? Math.round(6 + val * 0.7) : Math.round(10 + val * 1.3);
+    const gap = isScrubMode ? Math.round(220 - val * 2.0) : Math.round(500 - val * 4.8);
     let pattern;
     let zone;
     if (val < 40) { pattern = duration; zone = 'single-tick'; }
@@ -228,7 +273,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       appendDebug('warn', 'vibrate(' + val + ') returned false. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
       return;
     }
-    appendDebug('info', 'vibrate(' + val + ') sent. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
+    appendDebug('info', 'vibrate(' + val + ') sent. Pattern=' + patternStr + 'ms; zone=' + zone + '; mode=' + (isScrubMode ? 'scrub' : 'nav') + '.');
   }
   function hapticZoneLabel(val) {
     if (val < 40) return 'Single tick (< 40)';
@@ -247,6 +292,101 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     row.appendChild(dt);
     row.appendChild(dd);
     return row;
+  }
+  function renderCurrentPoint(chartName, index, total, val, source) {
+    const currentEl = document.getElementById('hc-current');
+    if (!currentEl) return;
+    const freq = (150 + val * 7.5).toFixed(0) + ' Hz';
+    const dl = document.createElement('dl');
+    dl.style.cssText = 'margin:0;display:grid;gap:0.25rem';
+    dl.appendChild(makeRow('Chart', chartName));
+    dl.appendChild(makeRow('Position', 'Point ' + (index + 1) + ' of ' + total));
+    dl.appendChild(makeRow('Value', String(val)));
+    dl.appendChild(makeRow('Audio tone', freq));
+    dl.appendChild(makeRow('Haptic pattern', hapticZoneLabel(val)));
+    dl.appendChild(makeRow('Interaction', source));
+    currentEl.replaceChildren(dl);
+  }
+
+  function handleDataPoint(chartId, seriesKey, index, source) {
+    const lookup = DATA_LOOKUP[chartId];
+    if (!lookup) {
+      appendDebug('warn', source + ': chart id ' + chartId + ' not found in DATA_LOOKUP.');
+      return;
+    }
+    const seriesData = lookup[seriesKey];
+    if (!seriesData || index < 0 || index >= seriesData.length) {
+      appendDebug('warn', source + ': invalid series/index. series=' + seriesKey + ', index=' + index + '.');
+      return;
+    }
+    const val = seriesData[index];
+    const chartName = CHART_NAMES[chartId] || chartId;
+    appendDebug('info', source + ': point focus chart=' + chartName + ', series=' + seriesKey + ', index=' + index + ', value=' + val + '.');
+    renderCurrentPoint(chartName, index, seriesData.length, val, source);
+    if (source === 'touch-scrub') {
+      playScrubTone(val);
+      vibrate(val, 'scrub');
+    } else {
+      vibrate(val, 'nav');
+    }
+  }
+
+  function setupTouchScrub(chartId, seriesKey) {
+    const chartEl = document.getElementById(chartId);
+    if (!chartEl) {
+      appendDebug('warn', 'Touch scrub setup skipped: chart element ' + chartId + ' not found.');
+      return;
+    }
+    const state = scrubState[chartId];
+    const series = DATA_LOOKUP[chartId] && DATA_LOOKUP[chartId][seriesKey];
+    if (!state || !series || series.length < 2) {
+      appendDebug('warn', 'Touch scrub setup skipped: missing data for chart=' + chartId + ', series=' + seriesKey + '.');
+      return;
+    }
+
+    function clientXToIndex(clientX) {
+      const rect = chartEl.getBoundingClientRect();
+      if (!rect.width) return 0;
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.round(ratio * (series.length - 1));
+    }
+
+    function handleScrubMove(clientX) {
+      if (!state.active) return;
+      const now = Date.now();
+      if (now - state.lastTime < SCRUB_EVENT_MIN_MS) return;
+      const idx = clientXToIndex(clientX);
+      if (idx === state.lastIndex) return;
+      state.lastTime = now;
+      state.lastIndex = idx;
+      handleDataPoint(chartId, seriesKey, idx, 'touch-scrub');
+    }
+
+    chartEl.addEventListener('pointerdown', (ev) => {
+      if (ev.pointerType === 'mouse') return;
+      state.active = true;
+      state.lastIndex = -1;
+      state.lastTime = 0;
+      ensureScrubAudio();
+      appendDebug('info', 'Touch scrub started on ' + (CHART_NAMES[chartId] || chartId) + '.');
+      handleScrubMove(ev.clientX);
+    });
+
+    chartEl.addEventListener('pointermove', (ev) => {
+      if (ev.pointerType === 'mouse') return;
+      handleScrubMove(ev.clientX);
+    });
+
+    chartEl.addEventListener('pointerup', () => {
+      if (!state.active) return;
+      state.active = false;
+      appendDebug('info', 'Touch scrub ended on ' + (CHART_NAMES[chartId] || chartId) + '.');
+    });
+
+    chartEl.addEventListener('pointercancel', () => {
+      state.active = false;
+      appendDebug('info', 'Touch scrub canceled on ' + (CHART_NAMES[chartId] || chartId) + '.');
+    });
   }
   function handleParanotice(e) {
     const detail = e.detail || {};
@@ -275,31 +415,11 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       appendDebug('info', 'paranotice(' + key + ') ignored: target id ' + target.id + ' not in DATA_LOOKUP.');
       return;
     }
-    const seriesData = lookup[seriesKey];
-    if (!seriesData || index < 0 || index >= seriesData.length) {
-      console.warn('[HapticsPage] paranotice(' + key + ') \u2014 seriesKey "' + seriesKey + '" not found or index ' + index + ' out of range for "' + target.id + '"');
-      appendDebug('warn', 'paranotice(' + key + ') invalid series/index: seriesKey=' + seriesKey + ', index=' + index + '.');
-      return;
-    }
-    const val = seriesData[index];
-    const chartName = CHART_NAMES[target.id] || target.id;
-    console.log('[HapticsPage] point focus \u2014 chart: ' + chartName + ' | seriesKey: ' + seriesKey + ' | index: ' + index + ' | value: ' + val);
-    appendDebug('info', 'Point focus: ' + chartName + ', series=' + seriesKey + ', index=' + index + ', value=' + val + '.');
-    const currentEl = document.getElementById('hc-current');
-    if (currentEl) {
-      const freq = (150 + val * 7.5).toFixed(0) + ' Hz';
-      const dl = document.createElement('dl');
-      dl.style.cssText = 'margin:0;display:grid;gap:0.25rem';
-      dl.appendChild(makeRow('Chart', chartName));
-      dl.appendChild(makeRow('Position', 'Point ' + (index + 1) + ' of ' + seriesData.length));
-      dl.appendChild(makeRow('Value', String(val)));
-      dl.appendChild(makeRow('Audio tone', freq));
-      dl.appendChild(makeRow('Haptic pattern', hapticZoneLabel(val)));
-      currentEl.replaceChildren(dl);
-    }
-    vibrate(val);
+    handleDataPoint(target.id, seriesKey, index, 'keyboard-nav');
   }
   setupDebugPanel();
+  setupTouchScrub('hc-mountain', 'Intensity');
+  setupTouchScrub('hc-staircase', 'Level');
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initStatus); } else { initStatus(); }
   document.addEventListener('paranotice', handleParanotice);
 }());
