@@ -42,6 +42,10 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <h3 id="hc-status-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">System Status</h3>
 <div id="hc-badge-row" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem"></div>
 <p id="hc-support-msg" style="margin:0;font-size:0.875rem" aria-live="polite">Initializing…</p>
+<div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+<button id="hc-self-test-btn" type="button" style="font-size:0.75rem;padding:0.35rem 0.6rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">Run Vibration Self-Test</button>
+<p id="hc-self-test-status" style="margin:0;font-size:0.75rem" aria-live="polite">Self-test not run yet.</p>
+</div>
 </section>
 <section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-how-heading">
 <h3 id="hc-how-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">How to Navigate</h3>
@@ -147,7 +151,14 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const prefFeedbackMode = document.getElementById('hc-pref-feedback-mode');
   const prefScrubSensitivity = document.getElementById('hc-pref-scrub-sensitivity');
   const prefStatus = document.getElementById('hc-pref-status');
+  const selfTestBtn = document.getElementById('hc-self-test-btn');
+  const selfTestStatus = document.getElementById('hc-self-test-status');
   const debugEntries = [];
+  const selfTestResult = {
+    ranAt: null,
+    passed: null,
+    steps: [],
+  };
 
   function nowStamp() {
     return new Date().toLocaleTimeString([], { hour12: false });
@@ -256,7 +267,95 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         scrubIntensityScale: getScrubIntensityScale(),
         debugEntryCount: debugEntries.length,
       },
+        selfTest: selfTestResult,
     };
+  }
+
+  async function waitMs(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function runVibrationSelfTest() {
+    selfTestResult.ranAt = new Date().toISOString();
+    selfTestResult.passed = null;
+    selfTestResult.steps = [];
+
+    if (selfTestStatus) {
+      selfTestStatus.textContent = 'Running self-test...';
+    }
+    appendDebug('info', 'Self-test started.');
+
+    if (typeof navigator.vibrate !== 'function') {
+      selfTestResult.passed = false;
+      selfTestResult.steps.push({ step: 'capability-check', ok: false, reason: 'navigator.vibrate is not a function' });
+      appendDebug('warn', 'Self-test failed: navigator.vibrate is unavailable.');
+      if (selfTestStatus) {
+        selfTestStatus.textContent = 'Self-test failed: Vibration API unavailable.';
+      }
+      return;
+    }
+
+    const patterns = [
+      { name: 'single-short', pattern: 20 },
+      { name: 'double-pulse', pattern: [30, 80, 30] },
+      { name: 'triple-pulse', pattern: [50, 60, 50, 60, 50] },
+    ];
+
+    let anySuccess = false;
+    for (const test of patterns) {
+      const startedAt = Date.now();
+      let ok = false;
+      let errMessage = null;
+      try {
+        ok = navigator.vibrate(test.pattern);
+      } catch (err) {
+        errMessage = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
+      }
+      const elapsedMs = Date.now() - startedAt;
+      selfTestResult.steps.push({
+        step: test.name,
+        pattern: test.pattern,
+        result: ok,
+        elapsedMs,
+        error: errMessage,
+      });
+
+      if (errMessage) {
+        appendDebug('error', 'Self-test ' + test.name + ' threw: ' + errMessage + '.');
+      } else {
+        appendDebug(ok ? 'info' : 'warn', 'Self-test ' + test.name + ' result=' + ok + '.');
+      }
+      anySuccess = anySuccess || !!ok;
+      await waitMs(250);
+    }
+
+    try {
+      navigator.vibrate(0);
+      selfTestResult.steps.push({ step: 'stop', pattern: 0, result: true });
+    } catch (_err) {
+      selfTestResult.steps.push({ step: 'stop', pattern: 0, result: false });
+    }
+
+    selfTestResult.passed = anySuccess;
+    if (selfTestStatus) {
+      selfTestStatus.textContent = anySuccess
+        ? 'Self-test complete: API accepted at least one pattern. If you still feel nothing, check phone vibration settings/policies.'
+        : 'Self-test complete: API did not accept any pattern. Check browser/device support and permissions.';
+    }
+    appendDebug(anySuccess ? 'info' : 'warn', 'Self-test completed. Any accepted pattern=' + anySuccess + '.');
+  }
+
+  function setupSelfTestButton() {
+    if (!selfTestBtn) return;
+    selfTestBtn.addEventListener('click', async () => {
+      if (selfTestBtn.disabled) return;
+      selfTestBtn.disabled = true;
+      try {
+        await runVibrationSelfTest();
+      } finally {
+        selfTestBtn.disabled = false;
+      }
+    });
   }
 
   function savePrefs() {
@@ -769,6 +868,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
   setupDebugPanel();
   setupPreferencePanel();
+  setupSelfTestButton();
   setupTouchScrub('hc-mountain', 'Intensity');
   setupTouchScrub('hc-staircase', 'Level');
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initStatus); } else { initStatus(); }
