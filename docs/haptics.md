@@ -98,9 +98,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 #hc-root para-chart {
   width: 100% !important;
   max-width: 100% !important;
-  aspect-ratio: 4 / 3 !important;
-  max-height: 52vh !important;
-  min-height: 13.5rem !important;
+  aspect-ratio: 16 / 10 !important;
+  max-height: 44vh !important;
+  min-height: 11.5rem !important;
   margin: 0.5rem 0 !important;
 }
 
@@ -118,7 +118,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   #hc-root para-chart {
     aspect-ratio: 16 / 10 !important;
-    max-height: 56vh !important;
+    max-height: 50vh !important;
     max-width: 100% !important;
   }
 }
@@ -137,7 +137,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   #hc-root para-chart {
     max-width: 100%;
     aspect-ratio: 16 / 10 !important;
-    max-height: 34rem !important;
+    max-height: 30rem !important;
   }
 }
 </style>
@@ -738,6 +738,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     currentEl.replaceChildren(dl);
   }
 
+  function resolveSeriesKey(lookup, seriesKey) {
+    if (!lookup || !seriesKey) return null;
+    if (lookup[seriesKey]) return seriesKey;
+
+    const normalized = String(seriesKey).toLowerCase();
+    const matched = Object.keys(lookup).find((k) => String(k).toLowerCase() === normalized);
+    return matched || null;
+  }
+
   function handleDataPoint(chartId, seriesKey, index, source) {
     const now = Date.now();
     if (pointEventState.lastChartId === chartId && pointEventState.lastIndex === index && (now - pointEventState.lastTime) < 120) {
@@ -750,18 +759,20 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       appendDebug('warn', source + ': chart id ' + chartId + ' not found in DATA_LOOKUP.');
       return;
     }
-    const seriesData = lookup[seriesKey];
-    if (!seriesData || index < 0 || index >= seriesData.length) {
-      appendDebug('warn', source + ': invalid series/index. series=' + seriesKey + ', index=' + index + '.');
+    const resolvedSeriesKey = resolveSeriesKey(lookup, seriesKey);
+    const safeIndex = typeof index === 'number' ? index : parseInt(index, 10);
+    const seriesData = resolvedSeriesKey ? lookup[resolvedSeriesKey] : null;
+    if (!seriesData || Number.isNaN(safeIndex) || safeIndex < 0 || safeIndex >= seriesData.length) {
+      appendDebug('warn', source + ': invalid series/index. series=' + seriesKey + ', resolvedSeries=' + resolvedSeriesKey + ', index=' + index + '.');
       return;
     }
-    const val = seriesData[index];
+    const val = seriesData[safeIndex];
     const chartName = CHART_NAMES[chartId] || chartId;
     pointEventState.lastChartId = chartId;
-    pointEventState.lastIndex = index;
+    pointEventState.lastIndex = safeIndex;
     pointEventState.lastTime = now;
-    appendDebug('info', source + ': point focus chart=' + chartName + ', series=' + seriesKey + ', index=' + index + ', value=' + val + '.');
-    renderCurrentPoint(chartName, index, seriesData.length, val, source);
+    appendDebug('info', source + ': point focus chart=' + chartName + ', series=' + resolvedSeriesKey + ', index=' + safeIndex + ', value=' + val + '.');
+    renderCurrentPoint(chartName, safeIndex, seriesData.length, val, source);
     vibrate(val);
   }
 
