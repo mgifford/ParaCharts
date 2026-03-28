@@ -166,12 +166,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <section class="hc-chart-card" aria-labelledby="hc-mountain-heading">
 <h3 id="hc-mountain-heading">Chart 1: Mountain Peak</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart with values rising from 8 to 100 then falling back to 8. Use arrow keys to navigate left to right and feel intensity climb then descend. Higher values produce longer vibrations. The peak (point 7, value 100) vibrates longest.</p>
-<para-chart id="hc-mountain" manifest="data/manifests/haptics-mountain.json" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
+<para-chart id="hc-mountain" manifestType="content" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
 </section>
 <section class="hc-chart-card" aria-labelledby="hc-staircase-heading">
 <h3 id="hc-staircase-heading">Chart 2: Staircase</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A line chart with four distinct steps at values 20, 50, 80, and 100 (three points each). Use arrow keys to navigate through and feel the four distinct haptic zones increase in intensity. Each step repeats three times so you can feel consistent vibration at each level.</p>
-<para-chart id="hc-staircase" manifest="data/manifests/haptics-staircase.json" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
+<para-chart id="hc-staircase" manifestType="content" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
 </section>
 </div>
 <script type="module">
@@ -789,6 +789,26 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     });
   }
 
+  function hydrateChartsFromContentManifest() {
+    ['hc-mountain', 'hc-staircase'].forEach(function (chartId) {
+      const chartEl = document.getElementById(chartId);
+      if (!chartEl) {
+        appendDebug('warn', 'Chart hydration skipped: element ' + chartId + ' not found.');
+        return;
+      }
+      const manifest = buildResponsiveManifest(chartId, CHART_RENDER_MAX_WIDTH);
+      if (!manifest) {
+        appendDebug('warn', 'Chart hydration skipped: failed to build manifest for ' + chartId + '.');
+        return;
+      }
+      chartEl.manifestType = 'content';
+      chartEl.manifest = manifest;
+      chartEl.setAttribute('manifestType', 'content');
+      chartEl.setAttribute('manifest', manifest);
+      appendDebug('info', 'Chart manifest hydrated from content for ' + (CHART_NAMES[chartId] || chartId) + '.');
+    });
+  }
+
   function applyResponsiveManifest(chartId) {
     const chartEl = document.getElementById(chartId);
     if (!chartEl) {
@@ -1003,6 +1023,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   setupDebugPanel();
   setupPreferencePanel();
   setupSelfTestButton();
+  hydrateChartsFromContentManifest();
   // Keep static inline manifests as the source of truth to avoid runtime re-render failures.
   // setupResponsiveCharts();
   setupDirectPointFallback('hc-mountain', 'Intensity');
