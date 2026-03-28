@@ -1,0 +1,60 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "Staircase (haptic chart)",
+      "facets": {
+        "x": {
+          "label": "Step",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Level (0-100)",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Level",
+          "records": [
+            { "x": "A1", "y": "20" },
+            { "x": "A2", "y": "20" },
+            { "x": "A3", "y": "20" },
+            { "x": "B1", "y": "50" },
+            { "x": "B2", "y": "50" },
+            { "x": "B3", "y": "50" },
+            { "x": "C1", "y": "80" },
+            { "x": "C2", "y": "80" },
+            { "x": "C3", "y": "80" },
+            { "x": "D1", "y": "100" },
+            { "x": "D2", "y": "100" },
+            { "x": "D3", "y": "100" }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "chart.size.width": 640,
+        "chart.size.height": 400,
+        "chart.title.isDrawTitle": false,
+        "sonification.isSoniEnabled": true,
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "animation.isAnimationEnabled": false
+      }
+    }
+  ]
+}

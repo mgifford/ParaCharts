@@ -1,64 +1,11 @@
 
 # Haptics Lab
 
-The Haptics Lab is an exploratory page for evaluating how tactile feedback (haptics) can complement chart sonification in ParaCharts.
+The Haptics Lab is an exploratory page for evaluating how tactile feedback (haptics) can complement chart sonification in ParaCharts. This experience is designed first for mobile testing, where touch, sound, and vibration can be experienced together while moving across real chart data points.
 
 <HapticsSupportAlert />
 
-Haptics is treated as a **progressive enhancement**: the page works fully as an audio-only experience on all devices, and adds vibration on devices that support the [Web Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API). No chart rendering or accessibility features are changed by this experiment.
-
-::: tip 🎮 Ready to feel the data? Jump to the interactive labs
-- **[Multi-Modal Lab](#multi-modal-lab)** — use a slider to manually probe haptic intensity levels
-- **[Chart Navigation Lab](#chart-navigation-lab)** — navigate real charts with arrow keys; every data point fires a vibration that strengthens with higher values
-:::
-
-## Browser and Device Support
-
-| Feature | Chrome (Android) | Firefox (Android) | Safari (iOS) | Desktop |
-| :--- | :---: | :---: | :---: | :---: |
-| Web Vibration API (haptics) | ✅ | ✅ | ❌ | ❌ |
-| Web Audio API (tones) | ✅ | ✅ | ✅ | ✅ |
-
-Key constraints:
-
-- **Haptics require HTTPS.** Vibration is blocked on plain HTTP pages.
-- **iOS (Safari and all iOS browsers) does not support the Web Vibration API** and will silently skip the haptic step.
-- **Desktop browsers** expose no haptic motor; only the audio channel will play.
-- **User gesture required.** The Web Audio API will not start until you press "Initialize Audio Engine."
-
-## Compatibility Policy
-
-- **PWA installation is not required.** This page can vibrate from a regular website tab when browser/device policies allow it.
-- **Support is capability-based, not app-type-based.** The deciding factors are browser support, device hardware, secure context, and user settings.
-- **Treat haptics as progressive enhancement.** Audio, visible UI, and keyboard/screen reader flows remain the primary channels.
-
-### When Logs Say "vibrate(...) sent" But You Feel Nothing
-
-If debug logs show successful `vibrate(...) sent` entries but you do not feel any motor output:
-
-1. Run **Run Vibration Self-Test** in the System Status card first.
-1. If self-test returns accepted patterns but nothing is felt, verify phone settings: vibration/haptics enabled at OS level; Silent/Do Not Disturb/Battery Saver not suppressing haptics; accessibility or per-app vibration controls not disabled.
-1. Retry with a firmer grip-free touch (some motors are easier to feel when the phone is resting on a surface).
-
-The self-test metadata is exported with the debug JSON (`metadata.selfTest`) so field testing can distinguish implementation issues from device-policy suppression.
-
-## Android Troubleshooting Checklist
-
-Use this quick flow when self-test works but chart interactions feel weak:
-
-1. Confirm there is no Chrome-only toggle to enable web vibration on Android; behavior is primarily controlled by OS/device policy.
-1. Run **Run Vibration Self-Test** and confirm `metadata.selfTest.passed` is `true`.
-1. In **Touch Feedback Preferences**, set `Scrub feedback mode` to `haptic` or `audio + haptics`.
-1. Set `Scrub sensitivity` to `high` while testing.
-1. Enable `Boost chart haptics (diagnostic)`.
-1. Touch-scrub across either chart and verify new entries include `mode=scrub` (or navigate with keyboard and check `mode=nav`).
-1. If chart pulses are still hard to feel but self-test remains strong, keep diagnostic boost enabled for your device profile.
-
-## Multi-Modal Lab
-
-Press **Initialize Audio Engine** first, then use the Manual Probe or run a pattern test. If you are on a supported Android device over HTTPS, the vibration motor will fire at the same time as each audio tone.
-
-<HapticsLab />
+Haptics is treated as a **progressive enhancement**: audio and keyboard interaction still work broadly, but tactile output currently works only on supported Android browsers over HTTPS. Do not use desktop or iPhone for this hands-on haptics evaluation yet.
 
 ## Chart Navigation Lab
 
@@ -219,12 +166,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <section class="hc-chart-card" aria-labelledby="hc-mountain-heading">
 <h3 id="hc-mountain-heading">Chart 1: Mountain Peak</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart with values rising from 8 to 100 then falling back to 8. Use arrow keys to navigate left to right and feel intensity climb then descend. Higher values produce longer vibrations. The peak (point 7, value 100) vibrates longest.</p>
-<para-chart id="hc-mountain" manifestType="content" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
+<para-chart id="hc-mountain" manifest="data/manifests/haptics-mountain.json" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
 </section>
 <section class="hc-chart-card" aria-labelledby="hc-staircase-heading">
 <h3 id="hc-staircase-heading">Chart 2: Staircase</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A line chart with four distinct steps at values 20, 50, 80, and 100 (three points each). Use arrow keys to navigate through and feel the four distinct haptic zones increase in intensity. Each step repeats three times so you can feel consistent vibration at each level.</p>
-<para-chart id="hc-staircase" manifestType="content" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
+<para-chart id="hc-staircase" manifest="data/manifests/haptics-staircase.json" style="display:block;width:100%;max-width:52rem;margin:0.75rem 0" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
 </section>
 </div>
 <script type="module">
@@ -1056,7 +1003,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   setupDebugPanel();
   setupPreferencePanel();
   setupSelfTestButton();
-  setupResponsiveCharts();
+  // Keep static inline manifests as the source of truth to avoid runtime re-render failures.
+  // setupResponsiveCharts();
   setupDirectPointFallback('hc-mountain', 'Intensity');
   setupDirectPointFallback('hc-staircase', 'Level');
   
@@ -1080,6 +1028,34 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 - **Zero handling:** Notice the weak tick at value 0 — it confirms the value exists without creating a false rhythm.
 - **Sensory binding:** Sound and touch within ~50 ms are typically fused by the brain. Do the audio tone and vibration feel unified?
 - **Eyes-closed navigation:** Try closing your eyes while navigating to rely fully on haptic + audio feedback.
+
+## Browser and Device Support
+
+| Feature | Chrome (Android) | Firefox (Android) | Safari (iOS) | Desktop |
+| :--- | :---: | :---: | :---: | :---: |
+| Web Vibration API (haptics) | ✅ | ✅ | ❌ | ❌ |
+| Web Audio API (tones) | ✅ | ✅ | ✅ | ✅ |
+
+Key constraints:
+
+- **Haptics require HTTPS.** Vibration is blocked on plain HTTP pages.
+- **iOS (Safari and all iOS browsers) does not support the Web Vibration API** and will silently skip the haptic step.
+- **Desktop browsers** expose no haptic motor; only the audio channel will play.
+
+## Compatibility Policy
+
+- **PWA installation is not required.** This page can vibrate from a regular website tab when browser/device policies allow it.
+- **Support is capability-based, not app-type-based.** The deciding factors are browser support, device hardware, secure context, and user settings.
+- **Treat haptics as progressive enhancement.** Audio, visible UI, and keyboard/screen reader flows remain the primary channels.
+
+## Android Troubleshooting Checklist
+
+Use this quick flow when self-test works but chart interactions feel weak:
+
+1. Run **Run Vibration Self-Test** in the System Status card and confirm `metadata.selfTest.passed` is `true` in exported JSON.
+1. Verify phone settings: vibration/haptics enabled at OS level; Silent/Do Not Disturb/Battery Saver not suppressing haptics.
+1. Navigate points with keyboard arrows and confirm new log entries show `vibrate(...) sent successfully`.
+1. If self-test succeeds but point feedback still feels weak, place the phone on a hard surface and retest.
 
 ## Resources
 
@@ -1111,101 +1087,136 @@ If you want to go deeper into haptics, accessibility, and tactile communication,
 
 ## Learn More
 
-<details style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--vp-c-divider, #ddd); border-radius: 0.5rem; background: var(--vp-c-bg-soft, #f9f9f9)">
+<details open style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--vp-c-divider, #ddd); border-radius: 0.5rem; background: var(--vp-c-bg-soft, #f9f9f9)">
 <summary style="cursor: pointer; font-weight: 600; margin: -1rem -1rem 1rem">✨ Technical Details</summary>
+<h3>Perceptual Zones</h3>
 
-### Perceptual Zones
+<p>Haptic intensity increases with data value through six distinct sensory zones:</p>
 
-Haptic intensity increases with data value through six distinct sensory zones:
+<table>
+  <thead>
+    <tr>
+      <th>Value</th>
+      <th>Sensation</th>
+      <th>Pattern</th>
+      <th>Duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>Minimal tick (presence confirmation)</td>
+      <td>Single short</td>
+      <td>10 ms</td>
+    </tr>
+    <tr>
+      <td>1-25</td>
+      <td>Weak tick</td>
+      <td>Single tick</td>
+      <td>50 ms</td>
+    </tr>
+    <tr>
+      <td>26-50</td>
+      <td>Medium double</td>
+      <td>[100, 50, 100]</td>
+      <td>250 ms total</td>
+    </tr>
+    <tr>
+      <td>51-75</td>
+      <td>Strong double</td>
+      <td>[150, 75, 150]</td>
+      <td>375 ms total</td>
+    </tr>
+    <tr>
+      <td>76-99</td>
+      <td>Very intense</td>
+      <td>[200, 100, 200]</td>
+      <td>500 ms total</td>
+    </tr>
+    <tr>
+      <td>100</td>
+      <td>Peak sensation</td>
+      <td>[250, 150, 250]</td>
+      <td>650 ms total</td>
+    </tr>
+  </tbody>
+</table>
 
-| Value | Sensation | Pattern | Duration |
-| :--- | :--- | :--- | :--- |
-| 0 | Minimal tick (presence confirmation) | Single short | 10 ms |
-| 1–25 | Weak tick | Single tick | 50 ms |
-| 26–50 | Medium double | Double pulse | [100, 50, 100] ms |
-| 51–75 | Strong double | Strong pulse | [150, 75, 150] ms |
-| 76–99 | Very intense | Intense double | [200, 100, 200] ms |
-| 100 | Peak sensation | Triple strong | [250, 150, 250] ms |
+<p>The perceptual zones map linearly to data values. Users can distinguish these zones through haptic perception alone, enabling data exploration by touch feedback. The value 0 is acknowledged with a minimal vibration to confirm its presence without confusion with "no value."</p>
 
-The perceptual zones map linearly to data values. Users can distinguish these zones through haptic perception alone, enabling data exploration by touch feedback. The value 0 is acknowledged with a minimal vibration to confirm its presence without confusion with "no value."
+<h3>Frequency Mapping</h3>
 
-### Frequency Mapping
+<p>Audio frequency maps linearly from <strong>150 Hz</strong> (value 1) to <strong>900 Hz</strong> (value 100):</p>
 
-Audio frequency maps linearly from **150 Hz** (value 1) to **900 Hz** (value 100):
+<pre><code>freq (Hz) = 150 + (value x 7.5)</code></pre>
 
-```
-freq (Hz) = 150 + (value × 7.5)
-```
+<p>This places low-value data in the low-frequency range (rumble/thud) and high-value data in the high-frequency range (beep/tone), reinforcing the haptic intensity signal.</p>
 
-This places low-value data in the low-frequency range (rumble/thud) and high-value data in the high-frequency range (beep/tone), reinforcing the haptic intensity signal.
+<h3>HapticFeedbackManager Reference</h3>
 
-### HapticFeedbackManager Reference
+<p>Below is the standalone <code>HapticFeedbackManager</code> class developed for this evaluation. It can be integrated into ParaCharts as a decoupled module that listens to chart focus events.</p>
 
-Below is the standalone `HapticFeedbackManager` class developed for this evaluation. It can be integrated into ParaCharts as a decoupled module that listens to chart focus events.
-
-```js
-/**
+<pre><code class="language-js">/**
  * HapticFeedbackManager
- * Maps data values (1–100) to Web Vibration API patterns.
+ * Maps data values (1-100) to Web Vibration API patterns.
  * Fails silently on unsupported browsers (iOS, desktop).
  */
 class HapticFeedbackManager {
   constructor(options = {}) {
-    this.isEnabled = options.enabled !== undefined ? options.enabled : true
-    this.isSupported = 'vibrate' in navigator
-    this.lastTriggerTime = 0
-    this.throttleMs = 50 // Prevents motor lag during fast keyboard traversal
+    this.isEnabled = options.enabled !== undefined ? options.enabled : true;
+    this.isSupported = 'vibrate' in navigator;
+    this.lastTriggerTime = 0;
+    this.throttleMs = 50; // Prevents motor lag during fast keyboard traversal
   }
 
   /**
-   * Trigger a vibration for a data value (1–100).
+   * Trigger a vibration for a data value (1-100).
    * @param {number} value
    */
   trigger(value) {
-    if (!this.isEnabled || !this.isSupported) return
+    if (!this.isEnabled || !this.isSupported) return;
 
-    const now = Date.now()
-    if (now - this.lastTriggerTime < this.throttleMs) return
-    this.lastTriggerTime = now
+    const now = Date.now();
+    if (now - this.lastTriggerTime &lt; this.throttleMs) return;
+    this.lastTriggerTime = now;
 
-    const val = Math.max(1, Math.min(100, value))
-    const duration = Math.round(10 + val * 1.3)
-    const gap = Math.round(500 - val * 4.8)
+    const val = Math.max(1, Math.min(100, value));
+    const duration = Math.round(10 + val * 1.3);
+    const gap = Math.round(500 - val * 4.8);
 
-    if (val < 40) {
-      navigator.vibrate(duration)
-    } else if (val < 80) {
-      navigator.vibrate([duration, gap, duration])
+    if (val &lt; 40) {
+      navigator.vibrate(duration);
+    } else if (val &lt; 80) {
+      navigator.vibrate([duration, gap, duration]);
     } else {
-      navigator.vibrate([duration, gap, duration, gap, duration])
+      navigator.vibrate([duration, gap, duration, gap, duration]);
     }
   }
 
   toggle(state) {
-    this.isEnabled = state
+    this.isEnabled = state;
   }
-}
-```
+}</code></pre>
 
-**Throttling:** The 50 ms throttle prevents the device motor from queuing hundreds of commands when a user traverses a dense chart rapidly by keyboard. Without it, the phone may continue buzzing long after the user stops moving.
+<p><strong>Throttling:</strong> The 50 ms throttle prevents the device motor from queuing hundreds of commands when a user traverses a dense chart rapidly by keyboard. Without it, the phone may continue buzzing long after the user stops moving.</p>
 
-**Integration With ParaCharts:** The intended hook is the chart's `pointFocus` or equivalent event:
+<p><strong>Integration With ParaCharts:</strong> The intended hook is the chart's <code>pointFocus</code> or equivalent event:</p>
 
-```js
-const haptics = new HapticFeedbackManager({ enabled: true })
+<pre><code class="language-js">const haptics = new HapticFeedbackManager({ enabled: true });
 
-chart.on('pointFocus', (data) => {
-  playTone(data.value)      // existing sonification
-  haptics.trigger(data.value) // new tactile layer
-})
-```
+chart.on('pointFocus', (data) =&gt; {
+  playTone(data.value);       // existing sonification
+  haptics.trigger(data.value); // new tactile layer
+});</code></pre>
 
-The haptic trigger is synchronous so it fires at the same timestamp as the `AudioContext` note start, which keeps the two sensory channels aligned within the ~50 ms threshold where the brain perceives them as a single event.
+<p>The haptic trigger is synchronous so it fires at the same timestamp as the <code>AudioContext</code> note start, which keeps the two sensory channels aligned within the ~50 ms threshold where the brain perceives them as a single event.</p>
 
-### Accessibility Notes
+<h3>Accessibility Notes</h3>
 
-- **Haptics are never the only channel.** All data is also conveyed through visual labels, keyboard queries (`q`), ARIA live regions, and sonification.
-- **Users must be able to disable haptics** independently of audio. A toggle should be added to the Control Panel before this feature is promoted out of experimental status.
-- **No motor intensity control.** The Web Vibration API only controls timing, not amplitude. This limits resolution to approximately 8–12 distinguishable zones.
+<ul>
+  <li><strong>Haptics are never the only channel.</strong> All data is also conveyed through visual labels, keyboard queries (<code>q</code>), ARIA live regions, and sonification.</li>
+  <li><strong>Users must be able to disable haptics</strong> independently of audio. A toggle should be added to the Control Panel before this feature is promoted out of experimental status.</li>
+  <li><strong>No motor intensity control.</strong> The Web Vibration API only controls timing, not amplitude. This limits resolution to approximately 8-12 distinguishable zones.</li>
+</ul>
 
 </details>

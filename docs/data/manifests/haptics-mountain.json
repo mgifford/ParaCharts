@@ -1,0 +1,61 @@
+{
+  "datasets": [
+    {
+      "type": "column",
+      "title": "Mountain Peak (haptic chart)",
+      "facets": {
+        "x": {
+          "label": "Step",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Intensity (0-100)",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Intensity",
+          "records": [
+            { "x": "1", "y": "8" },
+            { "x": "2", "y": "18" },
+            { "x": "3", "y": "32" },
+            { "x": "4", "y": "48" },
+            { "x": "5", "y": "65" },
+            { "x": "6", "y": "82" },
+            { "x": "7", "y": "100" },
+            { "x": "8", "y": "82" },
+            { "x": "9", "y": "65" },
+            { "x": "10", "y": "48" },
+            { "x": "11", "y": "32" },
+            { "x": "12", "y": "18" },
+            { "x": "13", "y": "8" }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "chart.size.width": 640,
+        "chart.size.height": 400,
+        "chart.title.isDrawTitle": false,
+        "sonification.isSoniEnabled": true,
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "animation.isAnimationEnabled": false
+      }
+    }
+  ]
+}
