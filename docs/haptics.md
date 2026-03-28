@@ -104,10 +104,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   box-sizing: border-box !important;
   width: 100% !important;
   max-width: 100% !important;
-  height: clamp(14.5rem, 70vw, 21rem) !important;
+  height: auto !important;
+  min-height: 0 !important;
   max-height: none !important;
-  min-height: 14.5rem !important;
-  aspect-ratio: auto !important;
   margin: 0.5rem 0 !important;
 }
 
@@ -124,7 +123,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
 
   #hc-root para-chart {
-    height: clamp(17rem, 58vw, 25rem) !important;
+    height: auto !important;
     max-height: none !important;
     max-width: 100% !important;
   }
@@ -143,9 +142,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   #hc-root para-chart {
     max-width: 100%;
-    height: clamp(20rem, 42vw, 30rem) !important;
+    height: auto !important;
     max-height: none !important;
-    aspect-ratio: auto !important;
   }
 }
 </style>
@@ -205,12 +203,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <section style="padding:1rem 1.25rem;border-radius:0.5rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-mountain-heading">
 <h3 id="hc-mountain-heading">Chart 1: Mountain Peak</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart with values rising from 8 to 100 then falling back to 8. Use arrow keys to navigate left to right and feel intensity climb then descend. Higher values produce longer vibrations. The peak (point 7, value 100) vibrates longest.</p>
-<para-chart id="hc-mountain" manifest='{"datasets":[{"type":"column","title":"Mountain Peak (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Intensity (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Intensity","records":[{"x":"1","y":"8"},{"x":"2","y":"18"},{"x":"3","y":"32"},{"x":"4","y":"48"},{"x":"5","y":"65"},{"x":"6","y":"82"},{"x":"7","y":"100"},{"x":"8","y":"82"},{"x":"9","y":"65"},{"x":"10","y":"48"},{"x":"11","y":"32"},{"x":"12","y":"18"},{"x":"13","y":"8"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
+<para-chart id="hc-mountain" manifest='{"datasets":[{"type":"column","title":"Mountain Peak (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Intensity (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Intensity","records":[{"x":"1","y":"8"},{"x":"2","y":"18"},{"x":"3","y":"32"},{"x":"4","y":"48"},{"x":"5","y":"65"},{"x":"6","y":"82"},{"x":"7","y":"100"},{"x":"8","y":"82"},{"x":"9","y":"65"},{"x":"10","y":"48"},{"x":"11","y":"32"},{"x":"12","y":"18"},{"x":"13","y":"8"}]}],"data":{"source":"inline"},"settings":{"chart.size.width":640,"chart.size.height":400,"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
 </section>
 <section style="padding:1rem 1.25rem;border-radius:0.5rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-staircase-heading">
 <h3 id="hc-staircase-heading">Chart 2: Staircase</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A line chart with four distinct steps at values 20, 50, 80, and 100 (three points each). Use arrow keys to navigate through and feel the four distinct haptic zones increase in intensity. Each step repeats three times so you can feel consistent vibration at each level.</p>
-<para-chart id="hc-staircase" manifest='{"datasets":[{"type":"line","title":"Staircase (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Level (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Level","records":[{"x":"A1","y":"20"},{"x":"A2","y":"20"},{"x":"A3","y":"20"},{"x":"B1","y":"50"},{"x":"B2","y":"50"},{"x":"B3","y":"50"},{"x":"C1","y":"80"},{"x":"C2","y":"80"},{"x":"C3","y":"80"},{"x":"D1","y":"100"},{"x":"D2","y":"100"},{"x":"D3","y":"100"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
+<para-chart id="hc-staircase" manifest='{"datasets":[{"type":"line","title":"Staircase (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Level (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Level","records":[{"x":"A1","y":"20"},{"x":"A2","y":"20"},{"x":"A3","y":"20"},{"x":"B1","y":"50"},{"x":"B2","y":"50"},{"x":"B3","y":"50"},{"x":"C1","y":"80"},{"x":"C2","y":"80"},{"x":"C3","y":"80"},{"x":"D1","y":"100"},{"x":"D2","y":"100"},{"x":"D3","y":"100"}]}],"data":{"source":"inline"},"settings":{"chart.size.width":640,"chart.size.height":400,"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
 </section>
 </div>
 <script type="module">
