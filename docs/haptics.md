@@ -42,6 +42,18 @@ If debug logs show successful `vibrate(...) sent` entries but you do not feel an
 
 The self-test metadata is exported with the debug JSON (`metadata.selfTest`) so field testing can distinguish implementation issues from device-policy suppression.
 
+## Android Troubleshooting Checklist
+
+Use this quick flow when self-test works but chart interactions feel weak:
+
+1. Confirm there is no Chrome-only toggle to enable web vibration on Android; behavior is primarily controlled by OS/device policy.
+1. Run **Run Vibration Self-Test** and confirm `metadata.selfTest.passed` is `true`.
+1. In **Touch Feedback Preferences**, set `Scrub feedback mode` to `haptic` or `audio + haptics`.
+1. Set `Scrub sensitivity` to `high` while testing.
+1. Enable `Boost chart haptics (diagnostic)`.
+1. Touch-scrub across either chart and verify new entries include `mode=scrub` (or navigate with keyboard and check `mode=nav`).
+1. If chart pulses are still hard to feel but self-test remains strong, keep diagnostic boost enabled for your device profile.
+
 ## Multi-Modal Lab
 
 Press **Initialize Audio Engine** first, then use the Manual Probe or run a pattern test. If you are on a supported Android device over HTTPS, the vibration motor will fire at the same time as each audio tone.
@@ -99,6 +111,10 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <option value="high">High (faster updates)</option>
 </select>
 </label>
+<label style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;line-height:1.4">
+<input id="hc-pref-diagnostic-boost" type="checkbox" style="margin-top:0.15rem" />
+<span>Boost chart haptics (diagnostic)</span>
+</label>
 </div>
 <p id="hc-pref-status" style="margin:0.75rem 0 0;font-size:0.75rem" aria-live="polite"></p>
 </section>
@@ -149,6 +165,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     scrubEnabled: true,
     feedbackMode: 'both',
     scrubSensitivity: 'normal',
+    diagnosticBoost: false,
   };
 
   const scrubState = {
@@ -166,6 +183,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   const prefScrubEnabled = document.getElementById('hc-pref-scrub-enabled');
   const prefFeedbackMode = document.getElementById('hc-pref-feedback-mode');
   const prefScrubSensitivity = document.getElementById('hc-pref-scrub-sensitivity');
+  const prefDiagnosticBoost = document.getElementById('hc-pref-diagnostic-boost');
   const prefStatus = document.getElementById('hc-pref-status');
   const selfTestBtn = document.getElementById('hc-self-test-btn');
   const selfTestStatus = document.getElementById('hc-self-test-status');
@@ -240,9 +258,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
 
   function getScrubIntensityScale() {
-    if (prefs.scrubSensitivity === 'low') return 0.85;
-    if (prefs.scrubSensitivity === 'high') return 1.2;
-    return 1;
+    if (prefs.scrubSensitivity === 'low') return 1;
+    if (prefs.scrubSensitivity === 'high') return 1.35;
+    return 1.15;
   }
 
   function updatePrefStatus() {
@@ -253,7 +271,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     prefStatus.textContent = 'Touch scrub: '
       + (prefs.scrubEnabled ? 'enabled' : 'disabled')
       + '. Mode: ' + modeLabel
-      + '. Sensitivity: ' + prefs.scrubSensitivity + '.';
+      + '. Sensitivity: ' + prefs.scrubSensitivity
+      + '. Diagnostic boost: ' + (prefs.diagnosticBoost ? 'on' : 'off') + '.';
   }
 
   function buildDebugMetadata() {
@@ -277,10 +296,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         scrubEnabled: !!prefs.scrubEnabled,
         feedbackMode: prefs.feedbackMode,
         scrubSensitivity: prefs.scrubSensitivity,
+        diagnosticBoost: !!prefs.diagnosticBoost,
       },
       runtime: {
         scrubEventMinMs: getScrubEventMinMs(),
         scrubIntensityScale: getScrubIntensityScale(),
+        diagnosticBoostMultiplier: prefs.diagnosticBoost ? 1.8 : 1,
         debugEntryCount: debugEntries.length,
       },
         selfTest: selfTestResult,
@@ -395,6 +416,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       if (parsed.scrubSensitivity === 'low' || parsed.scrubSensitivity === 'normal' || parsed.scrubSensitivity === 'high') {
         prefs.scrubSensitivity = parsed.scrubSensitivity;
       }
+      if (typeof parsed.diagnosticBoost === 'boolean') {
+        prefs.diagnosticBoost = parsed.diagnosticBoost;
+      }
     } catch (_err) {
       appendDebug('warn', 'Failed to load touch preferences from localStorage.');
     }
@@ -404,13 +428,14 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     if (prefScrubEnabled) prefScrubEnabled.checked = !!prefs.scrubEnabled;
     if (prefFeedbackMode) prefFeedbackMode.value = prefs.feedbackMode;
     if (prefScrubSensitivity) prefScrubSensitivity.value = prefs.scrubSensitivity;
+    if (prefDiagnosticBoost) prefDiagnosticBoost.checked = !!prefs.diagnosticBoost;
     updatePrefStatus();
   }
 
   function setupPreferencePanel() {
     loadPrefs();
     syncPrefControls();
-    if (!prefScrubEnabled || !prefFeedbackMode || !prefScrubSensitivity) {
+    if (!prefScrubEnabled || !prefFeedbackMode || !prefScrubSensitivity || !prefDiagnosticBoost) {
       appendDebug('warn', 'Preference controls not found; using defaults.');
       return;
     }
@@ -434,6 +459,13 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       savePrefs();
       updatePrefStatus();
       appendDebug('info', 'Preference changed: scrub sensitivity=' + prefs.scrubSensitivity + '.');
+    });
+
+    prefDiagnosticBoost.addEventListener('change', () => {
+      prefs.diagnosticBoost = !!prefDiagnosticBoost.checked;
+      savePrefs();
+      updatePrefStatus();
+      appendDebug('info', 'Preference changed: diagnostic boost ' + (prefs.diagnosticBoost ? 'enabled' : 'disabled') + '.');
     });
   }
 
@@ -661,15 +693,39 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
     const val = Math.max(1, Math.min(100, value));
     const scrubScale = getScrubIntensityScale();
-    const baseDuration = isScrubMode ? (6 + val * 0.7) : (10 + val * 1.3);
-    const baseGap = isScrubMode ? (220 - val * 2.0) : (500 - val * 4.8);
-    const duration = Math.max(4, Math.round(baseDuration * (isScrubMode ? scrubScale : 1)));
-    const gap = Math.max(8, Math.round(baseGap / (isScrubMode ? scrubScale : 1)));
+    const baseDuration = isScrubMode ? (10 + val * 0.9) : (12 + val * 1.35);
+    const baseGap = isScrubMode ? (190 - val * 1.3) : (480 - val * 4.2);
+    const modeScale = isScrubMode ? scrubScale : 1;
+    const hapticOnlyBoost = prefs.feedbackMode === 'haptic' ? 1.15 : 1;
+    const diagnosticBoost = prefs.diagnosticBoost ? 1.8 : 1;
+    const combinedScale = modeScale * hapticOnlyBoost * diagnosticBoost;
+    const duration = Math.max(8, Math.round(baseDuration * combinedScale));
+    const gap = Math.max(18, Math.round(baseGap / Math.max(1, modeScale)));
     let pattern;
     let zone;
-    if (val < 40) { pattern = duration; zone = 'single-tick'; }
-    else if (val < 80) { pattern = [duration, gap, duration]; zone = 'double-pulse'; }
-    else { pattern = [duration, gap, duration, gap, duration]; zone = 'triple-buzz'; }
+    if (prefs.diagnosticBoost) {
+      const strongDuration = Math.max(duration, 120);
+      const strongGap = Math.max(gap, 90);
+      if (val < 40) {
+        pattern = [strongDuration, strongGap, strongDuration];
+        zone = 'diagnostic-double';
+      } else if (val < 80) {
+        pattern = [strongDuration, strongGap, strongDuration, strongGap, strongDuration];
+        zone = 'diagnostic-triple';
+      } else {
+        pattern = [strongDuration, strongGap, strongDuration, strongGap, strongDuration, strongGap, strongDuration];
+        zone = 'diagnostic-quad';
+      }
+    } else if (val < 40) {
+      pattern = duration;
+      zone = 'single-tick';
+    } else if (val < 80) {
+      pattern = [duration, gap, duration];
+      zone = 'double-pulse';
+    } else {
+      pattern = [duration, gap, duration, gap, duration];
+      zone = 'triple-buzz';
+    }
     let result = false;
     try {
       result = navigator.vibrate(pattern);
