@@ -329,7 +329,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   function buildDebugMetadata() {
     const nav = navigator;
+    const branchHint = location.hostname === 'mgifford.github.io'
+      ? 'main (GitHub Pages deployment)'
+      : 'non-pages-or-local';
     return {
+      deployment: {
+        sourceRepo: 'mgifford/ParaCharts',
+        branchHint,
+        pagePath: location.pathname,
+      },
       environment: {
         href: location.href,
         userAgent: nav.userAgent,
