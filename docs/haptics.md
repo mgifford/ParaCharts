@@ -26,6 +26,22 @@ Key constraints:
 - **Desktop browsers** expose no haptic motor; only the audio channel will play.
 - **User gesture required.** The Web Audio API will not start until you press "Initialize Audio Engine."
 
+## Compatibility Policy
+
+- **PWA installation is not required.** This page can vibrate from a regular website tab when browser/device policies allow it.
+- **Support is capability-based, not app-type-based.** The deciding factors are browser support, device hardware, secure context, and user settings.
+- **Treat haptics as progressive enhancement.** Audio, visible UI, and keyboard/screen reader flows remain the primary channels.
+
+### When Logs Say "vibrate(...) sent" But You Feel Nothing
+
+If debug logs show successful `vibrate(...) sent` entries but you do not feel any motor output:
+
+1. Run **Run Vibration Self-Test** in the System Status card first.
+1. If self-test returns accepted patterns but nothing is felt, verify phone settings: vibration/haptics enabled at OS level; Silent/Do Not Disturb/Battery Saver not suppressing haptics; accessibility or per-app vibration controls not disabled.
+1. Retry with a firmer grip-free touch (some motors are easier to feel when the phone is resting on a surface).
+
+The self-test metadata is exported with the debug JSON (`metadata.selfTest`) so field testing can distinguish implementation issues from device-policy suppression.
+
 ## Multi-Modal Lab
 
 Press **Initialize Audio Engine** first, then use the Manual Probe or run a pattern test. If you are on a supported Android device over HTTPS, the vibration motor will fire at the same time as each audio tone.
@@ -296,9 +312,10 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
 
     const patterns = [
-      { name: 'single-short', pattern: 20 },
-      { name: 'double-pulse', pattern: [30, 80, 30] },
-      { name: 'triple-pulse', pattern: [50, 60, 50, 60, 50] },
+      { name: 'single-short', pattern: 30 },
+      { name: 'single-long', pattern: 400 },
+      { name: 'double-strong', pattern: [200, 120, 200] },
+      { name: 'triple-strong', pattern: [150, 100, 150, 100, 150] },
     ];
 
     let anySuccess = false;
@@ -339,8 +356,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     selfTestResult.passed = anySuccess;
     if (selfTestStatus) {
       selfTestStatus.textContent = anySuccess
-        ? 'Self-test complete: API accepted at least one pattern. If you still feel nothing, check phone vibration settings/policies.'
-        : 'Self-test complete: API did not accept any pattern. Check browser/device support and permissions.';
+        ? 'Self-test complete: API accepted at least one pattern. If none were physically felt, this points to phone policy/settings or hardware behavior.'
+        : 'Self-test complete: API did not accept any pattern. Check browser/device support and secure context.';
     }
     appendDebug(anySuccess ? 'info' : 'warn', 'Self-test completed. Any accepted pattern=' + anySuccess + '.');
   }
@@ -594,7 +611,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
         msg.textContent = 'Vibration API detected but haptics require HTTPS. This page appears to be served over plain HTTP \u2014 reload over HTTPS to enable haptic feedback. Audio will still play.';
         appendDebug('warn', 'Haptics unavailable: page is not served over HTTPS.');
       } else {
-        msg.textContent = 'Haptic support detected. Navigate the charts below with the keyboard to feel the data.';
+        msg.textContent = 'Haptic support detected. Run Vibration Self-Test first, then navigate the charts below to feel value-linked patterns.';
         appendDebug('info', 'Haptics supported and HTTPS is enabled.');
       }
     }
