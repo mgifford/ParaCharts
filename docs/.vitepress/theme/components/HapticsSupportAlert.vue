@@ -2,9 +2,13 @@
 import { ref, onMounted } from 'vue'
 
 const isSupported = ref<boolean | null>(null)
+const isHttps = ref<boolean | null>(null)
 
 onMounted(() => {
   isSupported.value = 'vibrate' in navigator
+  isHttps.value =
+    typeof location !== 'undefined' &&
+    (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')
 })
 </script>
 
@@ -12,16 +16,17 @@ onMounted(() => {
   <div
     v-if="isSupported !== null"
     class="hsa-alert"
-    :class="isSupported ? 'hsa-alert--supported' : 'hsa-alert--unsupported'"
+    :class="isSupported && isHttps ? 'hsa-alert--supported' : 'hsa-alert--unsupported'"
     role="status"
   >
-    <span class="hsa-icon" aria-hidden="true">{{ isSupported ? '✚' : '⛔' }}</span>
+    <span class="hsa-icon" aria-hidden="true">{{ isSupported && isHttps ? '✚' : '⛔' }}</span>
     <span class="hsa-text">
-      <strong>Haptics {{ isSupported ? 'supported' : 'not supported' }}</strong>
-      <span v-if="isSupported"> — this device supports the Web Vibration API.
+      <strong>Haptics {{ isSupported && isHttps ? 'supported' : 'not supported' }}</strong>
+      <span v-if="isSupported && isHttps"> — this device supports the Web Vibration API and the page is served over HTTPS.
         Jump to <a href="#chart-navigation-lab" class="hsa-link">Chart Navigation Lab</a> or
         <a href="#multi-modal-lab" class="hsa-link">Multi-Modal Lab</a> to feel the data.
       </span>
+      <span v-else-if="isSupported && !isHttps"> — the Web Vibration API is available, but <strong>haptics require HTTPS</strong>. This page is served over plain HTTP. Reload over HTTPS to enable haptic feedback. Audio will still play.</span>
       <span v-else> — the Web Vibration API is not available on this device or browser. Audio will still play. For haptics, try Chrome on Android over HTTPS.</span>
     </span>
   </div>
