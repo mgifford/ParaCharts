@@ -612,23 +612,25 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   function vibrate(value) {
     if (!prefs.hapticsEnabled) {
-      console.debug('[HapticsPage] vibrate(' + value + ') skipped: haptics disabled');
+      appendDebug('info', 'vibrate(' + value + ') skipped: haptics disabled by user.');
       return;
     }
     if (!isHapticSupported) {
-      console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 Vibration API not supported');
+      console.warn('[HapticsPage] vibrate(' + value + ') skipped — Vibration API not supported');
       appendDebug('warn', 'vibrate(' + value + ') skipped: Vibration API not supported.');
       return;
     }
     if (!isHttps) {
-      console.warn('[HapticsPage] vibrate(' + value + ') skipped \u2014 HTTPS required for haptics');
+      console.warn('[HapticsPage] vibrate(' + value + ') skipped — HTTPS required for haptics');
       appendDebug('warn', 'vibrate(' + value + ') skipped: HTTPS required for haptics.');
       return;
     }
 
     const now = Date.now();
-    if (now - lastHapticTime < 50) {
-      console.debug('[HapticsPage] vibrate(' + value + ') skipped \u2014 throttled (< 50ms since last)');
+    const timeSinceLastVibrate = now - lastHapticTime;
+    if (timeSinceLastVibrate < 50) {
+      console.debug('[HapticsPage] vibrate(' + value + ') throttled (only ' + timeSinceLastVibrate + 'ms since last)');
+      appendDebug('info', 'vibrate(' + value + ') throttled: only ' + timeSinceLastVibrate + 'ms since last vibrate.');
       return;
     }
     lastHapticTime = now;
@@ -661,20 +663,21 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     let result = false;
     try {
       result = navigator.vibrate(pattern);
+      console.log('[HapticsPage] vibrate(' + val + ') called — zone: ' + zone + ' | pattern: ' + (Array.isArray(pattern) ? '[' + pattern.join(',') + ']' : pattern) + 'ms | result: ' + result);
     } catch (err) {
       const errMessage = err instanceof Error ? (err.name + ': ' + err.message) : String(err);
-      console.error('[HapticsPage] vibrate(' + val + ') failed \u2014 ' + errMessage);
-      appendDebug('error', 'vibrate(' + val + ') failed: ' + errMessage);
+      console.error('[HapticsPage] vibrate(' + val + ') threw error: ' + errMessage);
+      appendDebug('error', 'vibrate(' + val + ') threw: ' + errMessage);
       return;
     }
 
     const patternStr = Array.isArray(pattern) ? '[' + pattern.join(',') + ']' : String(pattern);
-    console.log('[HapticsPage] vibrate(' + val + ') \u2014 zone: ' + zone + ' | pattern: ' + patternStr + 'ms | result: ' + result);
     if (!result) {
-      appendDebug('warn', 'vibrate(' + val + ') returned false. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
+      appendDebug('warn', 'vibrate(' + val + ') returned false. Pattern=' + patternStr + 'ms; zone=' + zone + '. (Vibration API accepted but device may not have motor or may have it disabled.)');
       return;
     }
-    appendDebug('info', 'vibrate(' + val + ') sent. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
+
+    appendDebug('info', 'vibrate(' + val + ') sent successfully. Pattern=' + patternStr + 'ms; zone=' + zone + '.');
   }
 
   function hapticZoneLabel(val) {
@@ -740,36 +743,44 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     const key = detail.key;
     const value = detail.value;
     const now = Date.now();
+    
+    // Log ALL paranotice events to help debug missing haptics
+    console.debug('[HapticsPage] paranotice event detected — key: ' + key + ', value:', value);
+    appendDebug('info', 'paranotice event: key=' + key + '; has value=' + (!!value) + '; has options=' + (!!(value && value.options)) + '.');
+
     if (['animRevealStep', 'animRevealEnd', 'animRevealStart'].indexOf(key) !== -1) {
       return;
     }
-    const isScrubSuppressingSelect = Object.values(scrubState).some(state => state.active || state.suppressSelectUntil > now);
-    if (key === 'select' && isScrubSuppressingSelect) {
+
+    if (['move', 'goSeriesMinMax', 'goChartMinMax', 'goFirst', 'goLast'].indexOf(key) === -1) {
+      appendDebug('info', 'paranotice key "' + key + '" is not in navigation list (move/goSeriesMinMax/goChartMinMax/goFirst/goLast).');
       return;
     }
-    console.debug('[HapticsPage] paranotice \u2014 key: ' + key);
-    appendDebug('info', 'paranotice key=' + key + '.');
-    if (['move', 'goSeriesMinMax', 'goChartMinMax', 'goFirst', 'goLast'].indexOf(key) === -1) return;
+
     const options = value && value.options;
     if (!options || options.seriesKey === null || options.seriesKey === undefined || options.index === null || options.index === undefined) {
-      console.warn('[HapticsPage] paranotice(' + key + ') \u2014 missing options.seriesKey or options.index', value);
-      appendDebug('warn', 'paranotice(' + key + ') missing options.seriesKey or options.index.');
+      console.warn('[HapticsPage] paranotice(' + key + ') — missing options or index/seriesKey', value);
+      appendDebug('warn', 'paranotice(' + key + ') missing options.seriesKey or options.index. value=' + JSON.stringify(value) + '.');
       return;
     }
+
     const seriesKey = options.seriesKey;
     const index = options.index;
     const target = e.target;
     if (!target || !target.id) {
-      console.warn('[HapticsPage] paranotice(' + key + ') \u2014 no target id');
+      console.warn('[HapticsPage] paranotice(' + key + ') — no target id');
       appendDebug('warn', 'paranotice(' + key + ') ignored: missing target id.');
       return;
     }
+
     const lookup = DATA_LOOKUP[target.id];
     if (!lookup) {
-      console.debug('[HapticsPage] paranotice(' + key + ') \u2014 target id "' + target.id + '" not in DATA_LOOKUP; ignoring');
+      console.debug('[HapticsPage] paranotice(' + key + ') — target id "' + target.id + '" not in DATA_LOOKUP');
       appendDebug('info', 'paranotice(' + key + ') ignored: target id ' + target.id + ' not in DATA_LOOKUP.');
       return;
     }
+
+    appendDebug('info', 'paranotice -> handleDataPoint: chart=' + target.id + ', series=' + seriesKey + ', index=' + index + '.');
     handleDataPoint(target.id, seriesKey, index, 'keyboard-nav');
   }
   setupDebugPanel();
@@ -777,6 +788,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   setupSelfTestButton();
   setupTouchScrub('hc-mountain', 'Intensity');
   setupTouchScrub('hc-staircase', 'Level');
+  
+  // Add comprehensive paranotice listener for debugging
+  document.addEventListener('paranotice', function(e) {
+    const detail = e.detail || {};
+    const targetId = e.target ? e.target.id : 'null';
+    appendDebug('debug', '[RAW paranotice] key=' + detail.key + ', target=' + targetId + ', has options=' + (!!(detail.value && detail.value.options)) + '.');
+  }, { passive: true, capture: true });
+  
+  appendDebug('info', 'Event listeners registered: paranotice (raw capture) + handleParanotice (main handler).');
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', initStatus); } else { initStatus(); }
   document.addEventListener('paranotice', handleParanotice);
 }());
