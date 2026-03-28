@@ -67,11 +67,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <script type="module" src="assets/paracharts-loader.js"></script>
 <style>
 #hc-root {
-  gap: 1rem !important;
+  gap: 0.75rem;
+  margin: 1rem 0;
 }
 
 #hc-root > section {
-  padding: 1rem !important;
+  padding: 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--vp-c-divider, #e2e2e2);
+  background: var(--vp-c-bg-soft, #f9f9f9);
 }
 
 #hc-root p,
@@ -82,46 +86,70 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 #hc-root summary,
 #hc-root dd,
 #hc-root dt {
-  font-size: 0.98rem !important;
+  font-size: 0.9rem;
 }
 
 #hc-root h3 {
-  font-size: 1.08rem !important;
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 #hc-root para-chart {
   width: 100% !important;
   max-width: 100% !important;
   aspect-ratio: 1 / 1 !important;
+  margin: 0.5rem 0 !important;
 }
 
-@media (min-width: 768px) {
+/* Tablet and up: wider layout, wider charts */
+@media (min-width: 640px) {
   #hc-root {
-    gap: 1.25rem !important;
+    gap: 1rem;
+    margin: 1.25rem auto;
+    max-width: 95vw;
   }
 
   #hc-root > section {
-    padding: 1.25rem 1.5rem !important;
+    padding: 1rem 1.25rem;
   }
 
   #hc-root para-chart {
-    max-width: 48rem !important;
+    aspect-ratio: 4 / 3 !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Desktop: constrained max-width */
+@media (min-width: 1024px) {
+  #hc-root {
+    max-width: 900px;
+    margin: 1.5rem auto;
+  }
+
+  #hc-root > section {
+    padding: 1.25rem 1.5rem;
+  }
+
+  #hc-root para-chart {
+    max-width: 100%;
     aspect-ratio: 4 / 3 !important;
   }
 }
 </style>
-<div id="hc-root" style="display:flex;flex-direction:column;gap:1.25rem;margin:1.5rem 0">
-<section id="hc-status-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-status-heading">
-<h3 id="hc-status-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">System Status</h3>
+
+<div id="hc-root" style="display:flex;flex-direction:column;gap:1rem">
+<section id="hc-status-card" aria-labelledby="hc-status-heading">
+<h3 id="hc-status-heading">System Status</h3>
 <div id="hc-badge-row" style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.75rem"></div>
 <p id="hc-support-msg" style="margin:0;font-size:0.875rem" aria-live="polite">Initializing…</p>
 <div style="margin-top:0.75rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
-<button id="hc-self-test-btn" type="button" style="font-size:0.75rem;padding:0.35rem 0.6rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">Run Vibration Self-Test</button>
+<button id="hc-self-test-btn" type="button" style="font-size:0.75rem;padding:0.35rem 0.6rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);cursor:pointer">Run Vibration Self-Test</button>
 <p id="hc-self-test-status" style="margin:0;font-size:0.75rem" aria-live="polite">Self-test not run yet.</p>
 </div>
 </section>
-<section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-how-heading">
-<h3 id="hc-how-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">How to Navigate</h3>
+<section aria-labelledby="hc-how-heading">
+<h3 id="hc-how-heading">How to Navigate</h3>
 <ol style="margin:0;padding-left:1.25rem;font-size:0.875rem;line-height:1.8">
 <li>Tab into one of the charts below to focus it.</li>
 <li>Press <kbd>Enter</kbd> or <kbd>↓</kbd> to enter the data layer.</li>
@@ -131,8 +159,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 <li>Press <kbd>q</kbd> while on a data point to hear a spoken summary.</li>
 </ol>
 </section>
-<section id="hc-prefs-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-prefs-heading">
-<h3 id="hc-prefs-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Haptics Settings</h3>
+<section id="hc-prefs-card" aria-labelledby="hc-prefs-heading">
+<h3 id="hc-prefs-heading">Haptics Settings</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">These settings are saved on this device.</p>
 <div style="display:grid;gap:0.75rem;max-width:28rem">
 <label style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;line-height:1.4">
@@ -142,19 +170,19 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 </div>
 <p id="hc-pref-status" style="margin:0.75rem 0 0;font-size:0.75rem" aria-live="polite"></p>
 </section>
-<section id="hc-feedback-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-feedback-heading" aria-live="polite" aria-atomic="true">
-<h3 id="hc-feedback-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Current Point</h3>
+<section id="hc-feedback-card" aria-labelledby="hc-feedback-heading" aria-live="polite" aria-atomic="true">
+<h3 id="hc-feedback-heading">Current Point</h3>
 <div id="hc-current"><p style="margin:0;font-size:0.875rem">Navigate into a chart with the keyboard to see point details here.</p></div>
 </section>
-<section id="hc-debug-card" style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-debug-heading">
-<h3 id="hc-debug-heading" style="margin:0 0 0.5rem;font-size:1rem;font-weight:700">Haptics Debug Log</h3>
+<section id="hc-debug-card" aria-labelledby="hc-debug-heading">
+<h3 id="hc-debug-heading">Haptics Debug Log</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">Use this on mobile when the browser console is not available. It logs vibration support checks, skipped calls, API return values, and runtime chart events.</p>
 <details id="hc-debug-details">
 <summary id="hc-debug-summary" style="cursor:pointer;font-weight:600">Show debug log (0 entries)</summary>
 <div style="margin-top:0.6rem">
-<button id="hc-debug-clear" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff)">Clear log</button>
-<button id="hc-debug-copy" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem">Copy log</button>
-<button id="hc-debug-copy-json" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem">Copy as JSON</button>
+<button id="hc-debug-clear" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);cursor:pointer">Clear log</button>
+<button id="hc-debug-copy" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem;cursor:pointer">Copy log</button>
+<button id="hc-debug-copy-json" type="button" style="font-size:0.75rem;padding:0.25rem 0.5rem;border-radius:0.4rem;border:1px solid var(--vp-c-divider,#d1d5db);background:var(--vp-c-bg,#fff);margin-left:0.4rem;cursor:pointer">Copy as JSON</button>
 </div>
 <p id="hc-debug-copy-status" style="margin:0.5rem 0 0;font-size:0.72rem" aria-live="polite"></p>
 <ol id="hc-debug-log" style="margin:0.75rem 0 0;padding-left:1.25rem;font-size:0.75rem;line-height:1.45;display:grid;gap:0.25rem;max-height:14rem;overflow:auto">
@@ -162,15 +190,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 </ol>
 </details>
 </section>
-<section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-mountain-heading">
-<h3 id="hc-mountain-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Chart 1: Mountain Peak</h3>
+<section style="padding:1rem 1.25rem;border-radius:0.5rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-mountain-heading">
+<h3 id="hc-mountain-heading">Chart 1: Mountain Peak</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A column chart with values rising from 8 to 100 then falling back to 8. Use arrow keys to navigate left to right and feel intensity climb then descend. Higher values produce longer vibrations. The peak (point 7, value 100) vibrates longest.</p>
-<para-chart id="hc-mountain" manifest='{"datasets":[{"type":"column","title":"Mountain Peak (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Intensity (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Intensity","records":[{"x":"1","y":"8"},{"x":"2","y":"18"},{"x":"3","y":"32"},{"x":"4","y":"48"},{"x":"5","y":"65"},{"x":"6","y":"82"},{"x":"7","y":"100"},{"x":"8","y":"82"},{"x":"9","y":"65"},{"x":"10","y":"48"},{"x":"11","y":"32"},{"x":"12","y":"18"},{"x":"13","y":"8"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block;width:100%;max-width:48rem;aspect-ratio:4/3;margin:0.5rem 0" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
+<para-chart id="hc-mountain" manifest='{"datasets":[{"type":"column","title":"Mountain Peak (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Intensity (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Intensity","records":[{"x":"1","y":"8"},{"x":"2","y":"18"},{"x":"3","y":"32"},{"x":"4","y":"48"},{"x":"5","y":"65"},{"x":"6","y":"82"},{"x":"7","y":"100"},{"x":"8","y":"82"},{"x":"9","y":"65"},{"x":"10","y":"48"},{"x":"11","y":"32"},{"x":"12","y":"18"},{"x":"13","y":"8"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block" aria-label="Mountain Peak haptic chart — bell-curve column chart, 13 points from 8 to 100 and back"></para-chart>
 </section>
-<section style="padding:1.25rem 1.5rem;border-radius:0.75rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-staircase-heading">
-<h3 id="hc-staircase-heading" style="margin:0 0 0.75rem;font-size:1rem;font-weight:700">Chart 2: Staircase</h3>
+<section style="padding:1rem 1.25rem;border-radius:0.5rem;border:1px solid var(--vp-c-divider,#e2e2e2);background:var(--vp-c-bg-soft,#f9f9f9)" aria-labelledby="hc-staircase-heading">
+<h3 id="hc-staircase-heading">Chart 2: Staircase</h3>
 <p style="margin:0 0 0.75rem;font-size:0.8rem;line-height:1.5">A line chart with four distinct steps at values 20, 50, 80, and 100 (three points each). Use arrow keys to navigate through and feel the four distinct haptic zones increase in intensity. Each step repeats three times so you can feel consistent vibration at each level.</p>
-<para-chart id="hc-staircase" manifest='{"datasets":[{"type":"line","title":"Staircase (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Level (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Level","records":[{"x":"A1","y":"20"},{"x":"A2","y":"20"},{"x":"A3","y":"20"},{"x":"B1","y":"50"},{"x":"B2","y":"50"},{"x":"B3","y":"50"},{"x":"C1","y":"80"},{"x":"C2","y":"80"},{"x":"C3","y":"80"},{"x":"D1","y":"100"},{"x":"D2","y":"100"},{"x":"D3","y":"100"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block;width:100%;max-width:48rem;aspect-ratio:4/3;margin:0.5rem 0" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
+<para-chart id="hc-staircase" manifest='{"datasets":[{"type":"line","title":"Staircase (haptic chart)","facets":{"x":{"label":"Step","variableType":"independent","measure":"interval","datatype":"string","displayType":{"type":"axis","orientation":"horizontal"}},"y":{"label":"Level (0-100)","variableType":"dependent","measure":"ratio","datatype":"number","displayType":{"type":"axis","orientation":"vertical"}}},"series":[{"key":"Level","records":[{"x":"A1","y":"20"},{"x":"A2","y":"20"},{"x":"A3","y":"20"},{"x":"B1","y":"50"},{"x":"B2","y":"50"},{"x":"B3","y":"50"},{"x":"C1","y":"80"},{"x":"C2","y":"80"},{"x":"C3","y":"80"},{"x":"D1","y":"100"},{"x":"D2","y":"100"},{"x":"D3","y":"100"}]}],"data":{"source":"inline"},"settings":{"sonification.isSoniEnabled":true,"controlPanel.isControlPanelDefaultOpen":false,"animation.isAnimationEnabled":false}}]}' manifestType="content" style="display:block" aria-label="Staircase haptic chart — line chart with four stepped levels: 20, 50, 80, 100"></para-chart>
 </section>
 </div>
 <script type="module">
@@ -754,7 +782,20 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 }());
 </script>
 
-## Perceptual Zones
+## What To Notice During Testing
+
+- **Value discrimination (Staircase):** Use arrow keys to navigate through the four steps (20, 50, 80, 100). Can you clearly distinguish each haptic zone by feel alone?
+- **Trend detection (Mountain Peak):** Navigate left to right through the bell curve. Does the increasing then decreasing vibration intensity help you sense the peak?
+- **Zero handling:** Notice the weak tick at value 0 — it confirms the value exists without creating a false rhythm.
+- **Sensory binding:** Sound and touch within ~50 ms are typically fused by the brain. Do the audio tone and vibration feel unified?
+- **Eyes-closed navigation:** Try closing your eyes while navigating to rely fully on haptic + audio feedback.
+
+## Learn More
+
+<details style="margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--vp-c-divider, #ddd); border-radius: 0.5rem; background: var(--vp-c-bg-soft, #f9f9f9)">
+<summary style="cursor: pointer; font-weight: 600; margin: -1rem -1rem 1rem">✨ Technical Details</summary>
+
+### Perceptual Zones
 
 Haptic intensity increases with data value through six distinct sensory zones:
 
@@ -769,7 +810,7 @@ Haptic intensity increases with data value through six distinct sensory zones:
 
 The perceptual zones map linearly to data values. Users can distinguish these zones through haptic perception alone, enabling data exploration by touch feedback. The value 0 is acknowledged with a minimal vibration to confirm its presence without confusion with "no value."
 
-## Frequency Mapping
+### Frequency Mapping
 
 Audio frequency maps linearly from **150 Hz** (value 1) to **900 Hz** (value 100):
 
@@ -779,7 +820,7 @@ freq (Hz) = 150 + (value × 7.5)
 
 This places low-value data in the low-frequency range (rumble/thud) and high-value data in the high-frequency range (beep/tone), reinforcing the haptic intensity signal.
 
-## HapticFeedbackManager Reference
+### HapticFeedbackManager Reference
 
 Below is the standalone `HapticFeedbackManager` class developed for this evaluation. It can be integrated into ParaCharts as a decoupled module that listens to chart focus events.
 
@@ -827,13 +868,9 @@ class HapticFeedbackManager {
 }
 ```
 
-### Throttling
+**Throttling:** The 50 ms throttle prevents the device motor from queuing hundreds of commands when a user traverses a dense chart rapidly by keyboard. Without it, the phone may continue buzzing long after the user stops moving.
 
-The 50 ms throttle prevents the device motor from queuing hundreds of commands when a user traverses a dense chart rapidly by keyboard. Without it, the phone may continue buzzing long after the user stops moving.
-
-### Integration With ParaCharts
-
-The intended hook is the chart's `pointFocus` or equivalent event:
+**Integration With ParaCharts:** The intended hook is the chart's `pointFocus` or equivalent event:
 
 ```js
 const haptics = new HapticFeedbackManager({ enabled: true })
@@ -846,24 +883,10 @@ chart.on('pointFocus', (data) => {
 
 The haptic trigger is synchronous so it fires at the same timestamp as the `AudioContext` note start, which keeps the two sensory channels aligned within the ~50 ms threshold where the brain perceives them as a single event.
 
-## Accessibility Notes
+### Accessibility Notes
 
 - **Haptics are never the only channel.** All data is also conveyed through visual labels, keyboard queries (`q`), ARIA live regions, and sonification.
 - **Users must be able to disable haptics** independently of audio. A toggle should be added to the Control Panel before this feature is promoted out of experimental status.
 - **No motor intensity control.** The Web Vibration API only controls timing, not amplitude. This limits resolution to approximately 8–12 distinguishable zones.
 
-## What To Notice During Testing
-
-- **Value discrimination (Staircase):** Use arrow keys to navigate through the four steps (20, 50, 80, 100). Can you clearly distinguish each haptic zone by feel alone?
-- **Trend detection (Mountain Peak):** Navigate left to right through the bell curve. Does the increasing then decreasing vibration intensity help you sense the peak?
-- **Zero handling:** Notice the weak tick at value 0 — it confirms the value exists without creating a false rhythm.
-- **Sensory binding:** Sound and touch within ~50 ms are typically fused by the brain. Do the audio tone and vibration feel unified?
-- **Eyes-closed navigation:** Try closing your eyes while navigating to rely fully on haptic + audio feedback.
-
-## Status
-
-The **Chart Navigation Lab** above implements point-based haptics: keyboard navigation (arrow keys) on every data point triggers both an audio tone and a vibration pattern whose intensity reflects the data value. 
-
-Touch scrub (continuous drag) has been disabled in favor of deliberate, discrete point interaction — reducing overload and allowing accurate value sensing.
-
-Haptics can be toggled on/off via the "Haptics Settings" panel and are saved to your device. The debug log tracks all vibration calls for troubleshooting.
+</details>
