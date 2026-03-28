@@ -98,7 +98,9 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 #hc-root para-chart {
   width: 100% !important;
   max-width: 100% !important;
-  aspect-ratio: 1 / 1 !important;
+  aspect-ratio: 4 / 3 !important;
+  max-height: 52vh !important;
+  min-height: 13.5rem !important;
   margin: 0.5rem 0 !important;
 }
 
@@ -115,7 +117,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
 
   #hc-root para-chart {
-    aspect-ratio: 4 / 3 !important;
+    aspect-ratio: 16 / 10 !important;
+    max-height: 56vh !important;
     max-width: 100% !important;
   }
 }
@@ -133,7 +136,8 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   #hc-root para-chart {
     max-width: 100%;
-    aspect-ratio: 4 / 3 !important;
+    aspect-ratio: 16 / 10 !important;
+    max-height: 34rem !important;
   }
 }
 </style>
@@ -233,6 +237,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     passed: null,
     steps: [],
   };
+  const pointEventState = {
+    lastChartId: null,
+    lastIndex: null,
+    lastTime: 0,
+  };
+  const keyboardFallbackIndex = {
+    'hc-mountain': 0,
+    'hc-staircase': 0,
+  };
 
   function nowStamp() {
     return new Date().toLocaleTimeString([], { hour12: false });
@@ -316,7 +329,15 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
   function buildDebugMetadata() {
     const nav = navigator;
+    const branchHint = location.hostname === 'mgifford.github.io'
+      ? 'main (GitHub Pages deployment)'
+      : 'non-pages-or-local';
     return {
+      deployment: {
+        sourceRepo: 'mgifford/ParaCharts',
+        branchHint,
+        pagePath: location.pathname,
+      },
       environment: {
         href: location.href,
         userAgent: nav.userAgent,
@@ -718,6 +739,12 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
   }
 
   function handleDataPoint(chartId, seriesKey, index, source) {
+    const now = Date.now();
+    if (pointEventState.lastChartId === chartId && pointEventState.lastIndex === index && (now - pointEventState.lastTime) < 120) {
+      appendDebug('info', source + ': duplicate point suppressed for chart=' + chartId + ', index=' + index + '.');
+      return;
+    }
+
     const lookup = DATA_LOOKUP[chartId];
     if (!lookup) {
       appendDebug('warn', source + ': chart id ' + chartId + ' not found in DATA_LOOKUP.');
@@ -730,20 +757,96 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
     }
     const val = seriesData[index];
     const chartName = CHART_NAMES[chartId] || chartId;
+    pointEventState.lastChartId = chartId;
+    pointEventState.lastIndex = index;
+    pointEventState.lastTime = now;
     appendDebug('info', source + ': point focus chart=' + chartName + ', series=' + seriesKey + ', index=' + index + ', value=' + val + '.');
     renderCurrentPoint(chartName, index, seriesData.length, val, source);
     vibrate(val);
   }
 
-  function setupTouchScrub(chartId, seriesKey) {
-    // Touch scrub is disabled. Keyboard navigation is the primary interaction model.
+  function resolveChartId(evt, detail) {
+    const directTarget = evt && evt.target;
+    if (directTarget && directTarget.id && DATA_LOOKUP[directTarget.id]) return directTarget.id;
+
+    if (directTarget && typeof directTarget.closest === 'function') {
+      const chartHost = directTarget.closest('para-chart');
+      if (chartHost && chartHost.id && DATA_LOOKUP[chartHost.id]) return chartHost.id;
+    }
+
+    if (detail && typeof detail.chartId === 'string' && DATA_LOOKUP[detail.chartId]) return detail.chartId;
+    if (detail && typeof detail.targetId === 'string' && DATA_LOOKUP[detail.targetId]) return detail.targetId;
+    if (detail && detail.value && typeof detail.value.chartId === 'string' && DATA_LOOKUP[detail.value.chartId]) return detail.value.chartId;
+
+    const active = document.activeElement;
+    if (active && typeof active.closest === 'function') {
+      const activeChart = active.closest('para-chart');
+      if (activeChart && activeChart.id && DATA_LOOKUP[activeChart.id]) return activeChart.id;
+    }
+
+    return null;
   }
+
+  function setupDirectPointFallback(chartId, seriesKey) {
+    const chartEl = document.getElementById(chartId);
+    if (!chartEl) {
+      appendDebug('warn', 'Fallback setup skipped: chart element ' + chartId + ' not found.');
+      return;
+    }
+    const series = DATA_LOOKUP[chartId] && DATA_LOOKUP[chartId][seriesKey];
+    if (!series || !series.length) {
+      appendDebug('warn', 'Fallback setup skipped: missing series for ' + chartId + '.');
+      return;
+    }
+
+    function clientXToIndex(clientX) {
+      const rect = chartEl.getBoundingClientRect();
+      if (!rect.width) return 0;
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.round(ratio * (series.length - 1));
+    }
+
+    chartEl.addEventListener('pointerup', (ev) => {
+      if (ev.pointerType === 'mouse') return;
+      const idx = clientXToIndex(ev.clientX);
+      keyboardFallbackIndex[chartId] = idx;
+      handleDataPoint(chartId, seriesKey, idx, 'touch-tap');
+    }, { passive: true });
+
+    chartEl.addEventListener('keydown', (ev) => {
+      const total = series.length;
+      let nextIndex = keyboardFallbackIndex[chartId] || 0;
+      let handled = false;
+
+      if (ev.key === 'ArrowRight') {
+        nextIndex = Math.min(total - 1, nextIndex + 1);
+        handled = true;
+      } else if (ev.key === 'ArrowLeft') {
+        nextIndex = Math.max(0, nextIndex - 1);
+        handled = true;
+      } else if (ev.key === 'Home') {
+        nextIndex = 0;
+        handled = true;
+      } else if (ev.key === 'End') {
+        nextIndex = total - 1;
+        handled = true;
+      } else if (ev.key === 'ArrowDown' || ev.key === 'Enter' || ev.key === ' ') {
+        handled = true;
+      }
+
+      if (!handled) return;
+      keyboardFallbackIndex[chartId] = nextIndex;
+      handleDataPoint(chartId, seriesKey, nextIndex, 'keyboard-fallback');
+    }, true);
+
+    appendDebug('info', 'Fallback handlers ready for ' + (CHART_NAMES[chartId] || chartId) + ': touch-tap + keyboard.');
+  }
+
   function handleParanotice(e) {
     const detail = e.detail || {};
     const key = detail.key;
     const value = detail.value;
-    const now = Date.now();
-    
+
     // Log ALL paranotice events to help debug missing haptics
     console.debug('[HapticsPage] paranotice event detected — key: ' + key + ', value:', value);
     appendDebug('info', 'paranotice event: key=' + key + '; has value=' + (!!value) + '; has options=' + (!!(value && value.options)) + '.');
@@ -752,12 +855,7 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
       return;
     }
 
-    if (['move', 'goSeriesMinMax', 'goChartMinMax', 'goFirst', 'goLast'].indexOf(key) === -1) {
-      appendDebug('info', 'paranotice key "' + key + '" is not in navigation list (move/goSeriesMinMax/goChartMinMax/goFirst/goLast).');
-      return;
-    }
-
-    const options = value && value.options;
+    const options = (value && value.options) || detail.options || value || null;
     if (!options || options.seriesKey === null || options.seriesKey === undefined || options.index === null || options.index === undefined) {
       console.warn('[HapticsPage] paranotice(' + key + ') — missing options or index/seriesKey', value);
       appendDebug('warn', 'paranotice(' + key + ') missing options.seriesKey or options.index. value=' + JSON.stringify(value) + '.');
@@ -766,28 +864,21 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
     const seriesKey = options.seriesKey;
     const index = options.index;
-    const target = e.target;
-    if (!target || !target.id) {
-      console.warn('[HapticsPage] paranotice(' + key + ') — no target id');
-      appendDebug('warn', 'paranotice(' + key + ') ignored: missing target id.');
+    const chartId = resolveChartId(e, detail);
+    if (!chartId) {
+      appendDebug('warn', 'paranotice(' + key + ') could not resolve chart id.');
       return;
     }
 
-    const lookup = DATA_LOOKUP[target.id];
-    if (!lookup) {
-      console.debug('[HapticsPage] paranotice(' + key + ') — target id "' + target.id + '" not in DATA_LOOKUP');
-      appendDebug('info', 'paranotice(' + key + ') ignored: target id ' + target.id + ' not in DATA_LOOKUP.');
-      return;
-    }
-
-    appendDebug('info', 'paranotice -> handleDataPoint: chart=' + target.id + ', series=' + seriesKey + ', index=' + index + '.');
-    handleDataPoint(target.id, seriesKey, index, 'keyboard-nav');
+    appendDebug('info', 'paranotice -> handleDataPoint: chart=' + chartId + ', series=' + seriesKey + ', index=' + index + '.');
+    keyboardFallbackIndex[chartId] = index;
+    handleDataPoint(chartId, seriesKey, index, 'keyboard-nav');
   }
   setupDebugPanel();
   setupPreferencePanel();
   setupSelfTestButton();
-  setupTouchScrub('hc-mountain', 'Intensity');
-  setupTouchScrub('hc-staircase', 'Level');
+  setupDirectPointFallback('hc-mountain', 'Intensity');
+  setupDirectPointFallback('hc-staircase', 'Level');
   
   // Add comprehensive paranotice listener for debugging
   document.addEventListener('paranotice', function(e) {
