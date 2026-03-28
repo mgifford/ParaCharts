@@ -936,24 +936,31 @@ The charts below are fully integrated with haptic and audio feedback. Navigate i
 
 ## Resources
 
-If you want to go deeper into haptics, accessibility, and tactile communication, these are good starting points.
+If you want to go deeper into haptics, accessibility, and tactile communication, these are the most useful starting points from this experiment.
 
-### Getting started on the web
+### 1. Web API docs
 
-- [MDN: Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API) — the core browser API used for simple vibration patterns on supported devices.
-- [MDN: Progressive web apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) — useful background on PWAs, installability, and offline behavior. A PWA is **not required** for basic vibration support, but this explains the broader app model.
+- [MDN: Vibration API](https://developer.mozilla.org/en-US/docs/Web/API/Vibration_API) — the main browser reference for `navigator.vibrate()`, vibration patterns, cancellation, and compatibility.
+- [MDN: Progressive web apps](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps) — broader background on installability and offline behavior. Useful context, but a PWA is **not required** for basic vibration support.
 
-### Accessibility and design context
+### 2. Accessibility and deafblind research
 
-- [Beyond the fingertips: imagining haptic technologies for a deafblind future](https://mh.bmj.com/content/50/4/610) — open-access research on haptics, social-haptic communication, and why touch should usually augment, not replace, other channels.
-- [Nagish: Deafblind communication devices and apps](https://nagish.com/post/deaf-blind-communication-devices-and-apps) — a practical overview of communication methods and apps that combine haptics, text, speech, and assistive workflows.
+- [Beyond the fingertips: imagining haptic technologies for a deafblind future](https://mh.bmj.com/content/50/4/610) — strong design framing for haptics as part of a larger sociotechnical system, especially for deafblind users.
+- [Nagish: Deafblind communication devices and apps](https://nagish.com/post/deaf-blind-communication-devices-and-apps) — practical overview of how haptics, text, AI, braille, and communication tools can work together.
 
-### Ideas worth carrying into product design
+### 3. Practical takeaways for builders
 
-- Prefer **multimodal experiences** over haptics alone.
-- Use haptics to **support orientation, emphasis, and confirmation**, not to overload the user with constant motion.
-- Design for **real-time interaction** and **user control** so people can explore at their own pace.
-- Expect people to combine tools: haptics, audio, text, braille, interpreters, and device settings often work best together.
+- Start with **confirmation and emphasis** patterns before attempting continuous tactile encoding.
+- Treat haptics as **one channel in a multimodal experience**, alongside audio, text, visible labels, and assistive tech.
+- Design for **real-time interaction** and **user pacing** so people can explore without being overloaded.
+- Expect people to assemble their own workflow from multiple tools: haptics, speech, braille, interpreters, device settings, and contextual knowledge.
+
+### 4. Good questions to keep asking
+
+- Does the haptic cue add meaning, or just motion?
+- Can the user control the pace of exploration?
+- Is the system still understandable without haptics?
+- Are you supporting real tasks and shared experiences, not just demonstrating a device feature?
 
 ## Learn More
 
