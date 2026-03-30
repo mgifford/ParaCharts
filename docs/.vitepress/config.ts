@@ -41,6 +41,14 @@ export default defineConfig({
       { text: 'API', link: '/chartTypes' },
       { text: '🎮 Haptics Lab', link: '/haptics' }
     ],
+    // editLink adds the "Improve this page" anchor inside .VPDocFooter on every
+    // docs page.  The CSS rule `.VPDocFooter a { text-decoration-line: underline }`
+    // in custom.css ensures the link is visually distinguishable from surrounding
+    // text without relying on color alone (fixes axe link-in-text-block, WCAG 1.4.1).
+    editLink: {
+      pattern: 'https://github.com/mgifford/ParaCharts/edit/main/docs/:path',
+      text: 'Improve this page',
+    },
     sidebar: {
       '/': [
         {

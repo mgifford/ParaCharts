@@ -129,6 +129,49 @@ describe('docs link accessibility', () => {
     // distinguishable from surrounding text without relying on color.
     expect(layout).toMatch(/text-decoration-line\s*:\s*underline/);
   });
+
+  /**
+   * Regression test for axe rule link-in-text-block (WCAG 1.4.1).
+   * Violation originally reported on /ParaCharts/exampleGallery.html:
+   * <a href="https://github.com/mgifford/ParaCharts/edit/main/docs/exampleGallery.md">Improve
+   * this page</a> had insufficient color contrast (1.17:1) with surrounding text and no
+   * non-color distinguisher.
+   * Fix: editLink in VitePress themeConfig places the link inside .VPDocFooter, and the
+   * .VPDocFooter a rule in custom.css sets text-decoration-line: underline.
+   */
+  it('VitePress config has editLink configured with "Improve this page" text', () => {
+    const config = readFileSync(
+      resolve(DOCS_DIR, '.vitepress/config.ts'),
+      'utf-8',
+    );
+
+    // editLink must be configured so the "Improve this page" anchor is rendered
+    // inside .VPDocFooter on every page.
+    expect(config).toContain('editLink');
+
+    // The link text must be "Improve this page" to match the accessibility scan finding.
+    expect(config).toContain('Improve this page');
+
+    // The edit URL pattern must point to the correct GitHub edit path for this repo.
+    expect(config).toContain('https://github.com/mgifford/ParaCharts/edit/main/docs/:path');
+  });
+
+  it('VitePress custom.css applies underline to VPDocFooter edit links (link-in-text-block fix)', () => {
+    const css = readFileSync(
+      resolve(DOCS_DIR, '.vitepress/theme/custom.css'),
+      'utf-8',
+    );
+
+    // The selector must target links inside the .VPDocFooter wrapper so that the
+    // "Improve this page" edit link is visually distinguishable from surrounding text.
+    expect(css).toContain('.VPDocFooter a');
+
+    // The rule block must set text-decoration-line: underline.
+    const selectorIndex = css.indexOf('.VPDocFooter a');
+    const blockEnd = css.indexOf('}', selectorIndex);
+    const ruleBlock = css.slice(selectorIndex, blockEnd + 1);
+    expect(ruleBlock).toContain('text-decoration-line: underline');
+  });
 });
 
 /**
