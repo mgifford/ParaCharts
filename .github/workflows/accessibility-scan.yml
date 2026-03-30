@@ -141,6 +141,9 @@ jobs:
             } >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check out repository
+        uses: actions/checkout@v4
+
       - name: Run accessibility scanner
         if: steps.prereqs.outputs.can_scan == 'true'
         uses: github/accessibility-scanner@v2
