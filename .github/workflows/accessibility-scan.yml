@@ -90,7 +90,6 @@ jobs:
               echo 'https://mgifford.github.io/ParaCharts/example-waterfall-contribution-live.html'
               echo EOF
             } >> "$GITHUB_OUTPUT"
-            echo "cache_key=cached_results-ParaCharts-full-main.json" >> "$GITHUB_OUTPUT"
           else
             {
               echo 'urls<<EOF'
@@ -99,7 +98,6 @@ jobs:
               echo 'https://mgifford.github.io/ParaCharts/accessibility.html'
               echo EOF
             } >> "$GITHUB_OUTPUT"
-            echo "cache_key=cached_results-ParaCharts-core-main.json" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run accessibility scanner
@@ -109,7 +107,6 @@ jobs:
           urls: ${{ steps.urls.outputs.urls }}
           repository: ${{ github.repository }}
           token: ${{ github.token }}
-          cache_key: ${{ steps.urls.outputs.cache_key }}
           skip_copilot_assignment: true
           include_screenshots: false
           reduced_motion: reduce
