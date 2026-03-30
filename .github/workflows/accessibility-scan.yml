@@ -150,7 +150,8 @@ jobs:
         with:
           urls: ${{ steps.urls.outputs.urls }}
           repository: ${{ github.repository }}
-          token: ${{ github.token }}
+          token: ${{ secrets.GH_TOKEN }}
+          cache_key: cached_results-ParaCharts.json
           skip_copilot_assignment: true
           include_screenshots: false
           reduced_motion: reduce
