@@ -1,3 +1,7 @@
+---
+title: ParaCharts Documentation
+---
+
 # ParaCharts Documentation
 
 Welcome to the paracharts documentation.

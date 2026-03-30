@@ -11,6 +11,11 @@ on:
         options:
           - core
           - full
+      close_stale_issues:
+        description: Close existing open accessibility-scan issues before running (prevents duplicates)
+        required: false
+        default: 'true'
+        type: boolean
   schedule:
     - cron: '23 10 * * 1'
   pull_request:
@@ -66,6 +71,42 @@ jobs:
             fi
           fi
 
+      - name: Close stale accessibility-scan issues
+        if: steps.prereqs.outputs.can_scan == 'true' && (github.event_name != 'workflow_dispatch' || inputs.close_stale_issues == 'true')
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+        run: |
+          # Close all open issues tagged axe-scanning-issue before running a fresh scan.
+          # If violations still exist the scanner will re-open them as new issues.
+          # This prevents an unbounded accumulation of duplicate issues over time.
+          echo "Fetching open axe-scanning-issue issues..."
+          issue_numbers=$(curl -sf \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues?labels=axe-scanning-issue&state=open&per_page=100" \
+            | jq -r '.[].number' 2>/dev/null || echo "")
+
+          if [ -z "${issue_numbers}" ]; then
+            echo "No open axe-scanning-issue issues found. Nothing to close."
+          else
+            echo "Closing open axe-scanning-issue issues: ${issue_numbers}"
+            for num in ${issue_numbers}; do
+              curl -sf -X PATCH \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/${num}" \
+                -d '{"state":"closed"}' > /dev/null
+              curl -sf -X POST \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                -H "Content-Type: application/json" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/${num}/comments" \
+                -d '{"body":"Closed before re-scan to prevent duplicate issues. If this violation is still present on the live site, the accessibility scanner will create a new issue in this run."}' > /dev/null
+              echo "  Closed #${num}"
+            done
+          fi
+
       - name: Select URL set
         id: urls
         env:
@@ -111,3 +152,116 @@ jobs:
           include_screenshots: false
           reduced_motion: reduce
           color_scheme: light
+
+  # One-time cleanup job: closes all existing open axe-scanning-issue duplicates and
+  # issue #10 (haptics page already implemented).  Run via workflow_dispatch only.
+  close-duplicate-issues:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Close duplicate axe-scanning-issue issues
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Close all open issues labelled axe-scanning-issue, grouping duplicates.
+          # Keeps only the most recently created issue per unique title; closes the rest.
+          python3 - <<'PYEOF'
+          import json, os, urllib.request, urllib.parse, urllib.error
+
+          token = os.environ["GH_TOKEN"]
+          repo  = os.environ["REPO"]
+          base  = f"https://api.github.com/repos/{repo}"
+
+          def api(method, path, body=None):
+              url = base + path
+              data = json.dumps(body).encode() if body else None
+              req = urllib.request.Request(url, data=data, method=method,
+                    headers={"Authorization": f"Bearer {token}",
+                              "Accept": "application/vnd.github+json",
+                              "Content-Type": "application/json",
+                              "X-GitHub-Api-Version": "2022-11-28"})
+              with urllib.request.urlopen(req) as r:
+                  content = r.read()
+                  return json.loads(content) if r.status < 300 and content else {}
+
+          # Fetch all open axe-scanning-issue issues (up to 200)
+          issues = []
+          for page in range(1, 4):
+              batch = api("GET", f"/issues?labels=axe-scanning-issue&state=open&per_page=100&page={page}")
+              if not batch:
+                  break
+              issues.extend(batch)
+
+          print(f"Found {len(issues)} open axe-scanning-issue issues")
+
+          # Group by title
+          from collections import defaultdict
+          groups = defaultdict(list)
+          for issue in issues:
+              groups[issue["title"]].append(issue)
+
+          closed = 0
+          for title, group in groups.items():
+              # Sort descending by issue number (most recent first)
+              group.sort(key=lambda i: i["number"], reverse=True)
+              keep = group[0]
+              duplicates = group[1:]
+              print(f"Title: {title!r}")
+              print(f"  Keep:  #{keep['number']}")
+              for dup in duplicates:
+                  print(f"  Close: #{dup['number']} (duplicate of #{keep['number']})")
+                  api("PATCH", f"/issues/{dup['number']}",
+                      {"state": "closed"})
+                  api("POST", f"/issues/{dup['number']}/comments",
+                      {"body": f"Closing as duplicate of #{keep['number']} (same violation, same URL). The most recent report is retained."})
+                  closed += 1
+
+          print(f"\nClosed {closed} duplicate issues. {len(groups)} unique violations remain open.")
+          PYEOF
+
+      - name: Close issue #10 (haptics page implemented)
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Issue #10 requested a haptics page; it has been fully implemented
+          # (docs/haptics.md, nav link, HapticsLab component, HapticsCharts component).
+          python3 - <<'PYEOF'
+          import json, os, urllib.request
+
+          token = os.environ["GH_TOKEN"]
+          repo  = os.environ["REPO"]
+          base  = f"https://api.github.com/repos/{repo}"
+
+          def api(method, path, body=None):
+              url = base + path
+              data = json.dumps(body).encode() if body else None
+              req = urllib.request.Request(url, data=data, method=method,
+                    headers={"Authorization": f"Bearer {token}",
+                              "Accept": "application/vnd.github+json",
+                              "Content-Type": "application/json",
+                              "X-GitHub-Api-Version": "2022-11-28"})
+              try:
+                  with urllib.request.urlopen(req) as r:
+                      return json.loads(r.read()) if r.status < 300 else {}
+              except Exception as e:
+                  print(f"  Warning: {e}")
+                  return {}
+
+          issue = api("GET", "/issues/10")
+          if issue.get("state") == "open":
+              api("POST", "/issues/10/comments",
+                  {"body": (
+                      "Implemented! The Haptics Lab page has been added:\n\n"
+                      "- `docs/haptics.md` — dedicated haptics exploration page\n"
+                      "- `HapticsLab` Vue component with Web Vibration API + Web Audio API\n"
+                      "- `HapticsCharts` component integrating sonification with tactile feedback\n"
+                      "- Linked from the top-level navigation bar and sidebar\n\n"
+                      "Closing as completed."
+                  )})
+              api("PATCH", "/issues/10", {"state": "closed", "state_reason": "completed"})
+              print("Closed issue #10 as completed.")
+          else:
+              print(f"Issue #10 is already {issue.get('state', 'unknown')}; nothing to do.")
+          PYEOF
