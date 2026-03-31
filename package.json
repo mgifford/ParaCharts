@@ -59,6 +59,9 @@
     "url": "https://github.com/fizzstudio/paracharts/issues"
   },
   "homepage": "https://github.com/fizzstudio/paracharts#readme",
+  "engines": {
+    "node": ">=24"
+  },
   "type": "module",
   "scripts": {
     "dev": "storybook dev --no-open -p 5180",
