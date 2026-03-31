@@ -26,6 +26,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 permissions:
+  actions: write
   contents: write
   issues: write
   pull-requests: write
@@ -48,9 +49,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           if [ -z "${GH_TOKEN}" ]; then
-            echo "::notice::GH_TOKEN secret is not set. The accessibility scanner requires a fine-grained PAT with actions:write, contents:write, issues:write, pull-requests:write, and metadata:read access. Add a GH_TOKEN repository secret to enable issue filing. Falling back to built-in GITHUB_TOKEN, which cannot file issues."
+            echo "::notice::GH_TOKEN secret is not set. The scanner uses the built-in GITHUB_TOKEN (github.token) for all operations. A GH_TOKEN fine-grained PAT is optional and only needed if you require cross-repository issue-filing or other capabilities beyond the built-in token."
           else
-            echo "GH_TOKEN secret is configured."
+            echo "GH_TOKEN secret is configured (informational only; the scanner uses github.token)."
           fi
 
           # Check whether Issues are enabled — the scanner requires Issues to file findings.
@@ -150,7 +151,7 @@ jobs:
         with:
           urls: ${{ steps.urls.outputs.urls }}
           repository: ${{ github.repository }}
-          token: ${{ secrets.GH_TOKEN || github.token }}
+          token: ${{ github.token }}
           cache_key: cached_results-ParaCharts.json
           skip_copilot_assignment: true
           include_screenshots: false
