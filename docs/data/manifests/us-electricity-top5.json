@@ -2,7 +2,7 @@
   "datasets": [
     {
       "type": "donut",
-      "title": "Top 5 U.S. Electricity Generation Sources (2024)",
+      "title": "Top 5 U.S. Electricity Generation Sources (2025)",
       "facets": {
         "x": {
           "label": "Generation source",
@@ -29,23 +29,23 @@
           "records": [
             {
               "x": "Natural Gas",
-              "y": "1869902.15"
+              "y": "1807338.29"
             },
             {
               "x": "Nuclear Electric Power",
-              "y": "781865.31"
+              "y": "784780.72"
             },
             {
               "x": "Coal",
-              "y": "652155.92"
+              "y": "737150.71"
             },
             {
               "x": "Wind",
-              "y": "451904.36"
+              "y": "464390.61"
             },
             {
-              "x": "Conventional Hydroelectric Power",
-              "y": "242896.05"
+              "x": "Solar",
+              "y": "295671.38"
             }
           ]
         }
