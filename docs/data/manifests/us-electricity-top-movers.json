@@ -2,7 +2,7 @@
   "datasets": [
     {
       "type": "bar",
-      "title": "U.S. Electricity: Top Generation Movers (2026-03 vs 2026-02)",
+      "title": "U.S. Electricity: Top Generation Movers (2026-04 vs 2026-03)",
       "facets": {
         "x": {
           "label": "Electricity source",
@@ -30,28 +30,28 @@
           "key": "Month-over-month change",
           "records": [
             {
-              "x": "Wind",
-              "y": "12511.85"
-            },
-            {
-              "x": "Coal",
-              "y": "-11726.99"
-            },
-            {
-              "x": "Solar",
-              "y": "7695.28"
-            },
-            {
-              "x": "Natural Gas",
-              "y": "-4714.06"
+              "x": "Nuclear Electric Power",
+              "y": "-4722.88"
             },
             {
               "x": "Conventional Hydroelectric Power",
-              "y": "4459.5"
+              "y": "-4427.31"
             },
             {
-              "x": "Petroleum",
-              "y": "-2184.57"
+              "x": "Coal",
+              "y": "-4354.16"
+            },
+            {
+              "x": "Wind",
+              "y": "-3083.11"
+            },
+            {
+              "x": "Natural Gas",
+              "y": "-2925.82"
+            },
+            {
+              "x": "Solar",
+              "y": "2103.22"
             }
           ]
         }

@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-01T10:32:28Z",
+  "updatedAt": "2026-08-01T09:55:34Z",
   "sources": {
     "us_unemployment_monthly": {
       "state": "updated",
@@ -8,7 +8,7 @@
     "us_median_age_census": {
       "state": "kept_cached",
       "path": "docs/data/manifests/us-median-age-census.json",
-      "reason": "Expecting value: line 2 column 1 (char 1)"
+      "reason": "Expecting value: line 1 column 1 (char 0)"
     },
     "us_gdp_industry_tech": {
       "state": "updated",

@@ -2,7 +2,7 @@
   "datasets": [
     {
       "type": "waterfall",
-      "title": "U.S. Electricity Generation Change by Source (2026-03 vs 2026-02)",
+      "title": "U.S. Electricity Generation Change by Source (2026-03 vs 2026-04)",
       "facets": {
         "x": {
           "label": "Source contribution",
@@ -30,28 +30,28 @@
           "key": "Month-over-month contribution",
           "records": [
             {
-              "x": "Wind",
-              "y": "12511.85"
+              "x": "Nuclear power",
+              "y": "4722.88"
             },
             {
-              "x": "Solar",
-              "y": "7695.28"
-            },
-            {
-              "x": "Other",
-              "y": "2189.63"
+              "x": "Hydroelectric",
+              "y": "4427.31"
             },
             {
               "x": "Coal",
-              "y": "-11726.99"
+              "y": "4354.16"
             },
             {
-              "x": "Natural Gas",
-              "y": "-4714.06"
+              "x": "Wind",
+              "y": "3083.11"
+            },
+            {
+              "x": "Other",
+              "y": "1462.35"
             },
             {
               "x": "Net total",
-              "y": "5955.72"
+              "y": "18049.81"
             }
           ]
         }
