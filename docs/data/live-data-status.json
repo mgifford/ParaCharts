@@ -1,10 +1,9 @@
 {
-  "updatedAt": "2026-09-01T09:29:53Z",
+  "updatedAt": "2026-10-01T16:26:09Z",
   "sources": {
     "us_unemployment_monthly": {
-      "state": "kept_cached",
-      "path": "docs/data/manifests/us-unemployment-monthly.json",
-      "reason": "BLS request failed: ['Request could not be serviced, as the daily threshold for total number of requests allocated to the user with registration key  has been reached.']"
+      "state": "updated",
+      "path": "docs/data/manifests/us-unemployment-monthly.json"
     },
     "us_median_age_census": {
       "state": "kept_cached",
@@ -20,18 +19,16 @@
       "path": "docs/data/manifests/us-eu-inflation.json"
     },
     "us_unemployment_decade": {
-      "state": "kept_cached",
-      "path": "docs/data/manifests/us-unemployment-decade.json",
-      "reason": "BLS request failed: ['Request could not be serviced, as the daily threshold for total number of requests allocated to the user with registration key  has been reached.']"
+      "state": "updated",
+      "path": "docs/data/manifests/us-unemployment-decade.json"
     },
     "us_electricity_top5": {
       "state": "updated",
       "path": "docs/data/manifests/us-electricity-top5.json"
     },
     "us_macro_scatter": {
-      "state": "kept_cached",
-      "path": "docs/data/manifests/us-macro-scatter.json",
-      "reason": "BLS request failed: ['Request could not be serviced, as the daily threshold for total number of requests allocated to the user with registration key  has been reached.']"
+      "state": "updated",
+      "path": "docs/data/manifests/us-macro-scatter.json"
     },
     "us_hourly_heatmap": {
       "state": "updated",
@@ -50,18 +47,16 @@
       "path": "docs/data/manifests/us-inflation-snapshot.json"
     },
     "us_policy_unemployment_line": {
-      "state": "kept_cached",
-      "path": "docs/data/manifests/us-policy-unemployment-line.json",
-      "reason": "BLS request failed: ['Request could not be serviced, as the daily threshold for total number of requests allocated to the user with registration key  has been reached.']"
+      "state": "updated",
+      "path": "docs/data/manifests/us-policy-unemployment-line.json"
     },
     "us_electricity_top_movers": {
       "state": "updated",
       "path": "docs/data/manifests/us-electricity-top-movers.json"
     },
     "us_policy_scatter": {
-      "state": "kept_cached",
-      "path": "docs/data/manifests/us-policy-scatter.json",
-      "reason": "BLS request failed: ['Request could not be serviced, as the daily threshold for total number of requests allocated to the user with registration key  has been reached.']"
+      "state": "updated",
+      "path": "docs/data/manifests/us-policy-scatter.json"
     }
   },
   "policy": "cached files are retained until replacement data is downloaded and validated"
